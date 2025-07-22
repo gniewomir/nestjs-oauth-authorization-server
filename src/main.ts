@@ -1,8 +1,20 @@
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+import { AppModule } from "./infrastructure/app/app.module";
+import { LoggerService } from "./infrastructure/logger";
+
+const port = process.env.PORT ?? 3000;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true, // store logs until custom logger is available
+  });
+  const logger = await app.resolve(LoggerService);
+  logger.setContext("bootstrap");
+  app.useLogger(logger);
+  await app.listen(port);
+  return logger;
 }
-bootstrap();
+
+bootstrap().then((logger) => {
+  logger.log(`Server is running on port ${port}`);
+});
