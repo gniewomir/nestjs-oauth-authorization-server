@@ -1,3 +1,5 @@
+/* eslint @typescript-eslint/no-unsafe-assignment: 0 */
+
 import { LoggerInterface } from "./logger.interface";
 import { LogLevel } from "@nestjs/common";
 

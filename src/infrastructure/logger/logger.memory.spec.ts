@@ -13,7 +13,7 @@ describe("LoggerMemory", () => {
         const archive = [[level, logContext, ...logMethodArgs]];
         logger.setContext(logContext);
 
-        // @ts-ignore
+        // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
         logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(logger.archive).toEqual(archive);
@@ -28,10 +28,10 @@ describe("LoggerMemory", () => {
         const logMethodArgs = ["test", "first-optional", "second-optional"];
         logger.setContext(logContext);
 
-        // @ts-ignore
+        // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
         logger[level as keyof LoggerInterface](...logMethodArgs);
 
-        // @ts-ignore
+        // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
         expect(logger.hasCall(level, logContext, ...logMethodArgs)).toBe(true);
       });
     });
@@ -43,14 +43,14 @@ describe("LoggerMemory", () => {
         const logMethodArgsWithObjectOfDifferentReference = ["test", {}];
         logger.setContext(logContext);
 
-        // @ts-ignore
+        // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
         logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(
           logger.hasCall(
             level,
             logContext,
-            // @ts-ignore
+            // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
             ...logMethodArgsWithObjectOfDifferentReference,
           ),
         ).toBe(false);
@@ -68,7 +68,7 @@ describe("LoggerMemory", () => {
         const logMethodArgs = [logMessage, "first-optional", "second-optional"];
         logger.setContext(logContext);
 
-        // @ts-ignore
+        // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
         logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(logger.hasStringMessage(logMessage)).toBe(true);
@@ -86,7 +86,7 @@ describe("LoggerMemory", () => {
         const logMethodArgs = [logMessage, "first-optional", "second-optional"];
         logger.setContext(logContext);
 
-        // @ts-ignore
+        // @ts-expect-error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
         logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(logger.hasStringMessageContaining("example")).toBe(true);
