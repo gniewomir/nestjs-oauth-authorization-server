@@ -1,2 +1,4 @@
-export { LoggerService } from "./logger.service";
-export { LoggerModule } from "./logger.module";
+export {LoggerService} from "./logger.service";
+export {LoggerMemory} from './logger.memory';
+export {LoggerModule} from "./logger.module";
+export {LoggerInterface, LoggerInterfaceSymbol} from "./logger.interface";
