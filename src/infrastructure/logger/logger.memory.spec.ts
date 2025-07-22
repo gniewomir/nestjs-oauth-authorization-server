@@ -14,7 +14,7 @@ describe("LoggerMemory", () => {
         logger.setContext(logContext);
 
         // @ts-ignore
-        logger[level as string as keyof LoggerInterface](...logMethodArgs);
+        logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(logger.archive).toEqual(archive);
       });
@@ -29,7 +29,7 @@ describe("LoggerMemory", () => {
         logger.setContext(logContext);
 
         // @ts-ignore
-        logger[level as string as keyof LoggerInterface](...logMethodArgs);
+        logger[level as keyof LoggerInterface](...logMethodArgs);
 
         // @ts-ignore
         expect(logger.hasCall(level, logContext, ...logMethodArgs)).toBe(true);
@@ -44,7 +44,7 @@ describe("LoggerMemory", () => {
         logger.setContext(logContext);
 
         // @ts-ignore
-        logger[level as string as keyof LoggerInterface](...logMethodArgs);
+        logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(
           logger.hasCall(
@@ -69,7 +69,7 @@ describe("LoggerMemory", () => {
         logger.setContext(logContext);
 
         // @ts-ignore
-        logger[level as string as keyof LoggerInterface](...logMethodArgs);
+        logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(logger.hasStringMessage(logMessage)).toBe(true);
         expect(logger.hasStringMessage(differentLogMessage)).toBe(false);
@@ -87,7 +87,7 @@ describe("LoggerMemory", () => {
         logger.setContext(logContext);
 
         // @ts-ignore
-        logger[level as string as keyof LoggerInterface](...logMethodArgs);
+        logger[level as keyof LoggerInterface](...logMethodArgs);
 
         expect(logger.hasStringMessageContaining("example")).toBe(true);
         expect(logger.hasStringMessageContaining("different")).toBe(false);
