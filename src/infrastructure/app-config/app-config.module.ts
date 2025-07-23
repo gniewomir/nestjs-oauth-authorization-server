@@ -6,6 +6,6 @@ import { LoggerModule } from "../logger";
 @Module({
   imports: [LoggerModule, NestConfigModule.forRoot()],
   providers: [AppConfig.provider(), DatabaseConfig.provider()],
-  exports: [],
+  exports: [AppConfig, DatabaseConfig],
 })
-export class ConfigModule {}
+export class AppConfigModule {}
