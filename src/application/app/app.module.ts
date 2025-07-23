@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ApiModule } from "../../interface/api";
-import { LoggerModule } from "../logger";
-import { AppConfigModule } from "../app-config";
-import { DatabaseModule } from "../database";
+import { LoggerModule } from "../../infrastructure/logger";
+import { AppConfigModule } from "../../infrastructure/app-config";
+import { DatabaseModule } from "../../infrastructure/database";
 
 @Module({
   imports: [ApiModule, LoggerModule, AppConfigModule, DatabaseModule],
