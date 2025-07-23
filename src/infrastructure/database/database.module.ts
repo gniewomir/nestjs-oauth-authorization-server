@@ -16,6 +16,7 @@ import { DatabaseConfig } from "../app-config/configs";
         password: databaseConfig.password,
         database: databaseConfig.database,
         entities: [__dirname + "/entities/**/*.entity{.ts,.js}"],
+        migrations: ["dist/infrastructure/database/migrations/*{.ts,.js}"],
         autoLoadEntities: true,
         synchronize: false,
       }),
