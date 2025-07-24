@@ -48,10 +48,3 @@
 
 ## Questions 
 
-      * Which leads me to believe that the order of tasks should be global for the `Assigned`, not specific for current view
-        * Considering that max safe integer for JS is 9007199254740991
-        * Considering that we can store it as BIGINT in the postgres database
-        * Considering that, we will add `Tasks` from the top
-        * We can go with simple spaced indexes for order, 
-          * By putting limitation on `Assigne` to not have more than 100_000 tasks it gives us a 10s of billions of space insert reordered tasks
-          * W
