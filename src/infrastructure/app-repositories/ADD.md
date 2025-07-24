@@ -2,7 +2,7 @@
 
 # Intention
 
-Application repositories are intended to be read layer of application. 
+Application repositories are intended to be read layer of application.
 
 Application repositories public interface MUST operate on orm models.
 

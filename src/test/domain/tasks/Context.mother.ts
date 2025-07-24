@@ -1,7 +1,7 @@
-import { IdentityValue } from "../../../domain/IdentityValue";
+import { IdentityValue } from "@domain/IdentityValue";
 import { v4 } from "uuid";
-import { DescriptionValue } from "../../../domain/tasks/DescriptionValue";
-import { Context } from "../../../domain/tasks/context/Context";
+import { DescriptionValue } from "@domain/tasks/DescriptionValue";
+import { Context } from "@domain/tasks/context/Context";
 
 export const contextMother = () => {
   return new Context(
