@@ -1,4 +1,4 @@
-# Technical Design Document—Domain Repositories
+# Architecture Design Document—Domain Repositories
 
 ## Vocabulary
 * `persistence` any way of preserving state of the application, which will typically mean a database, but is not limited to it. It can be other REST API, filesystem, etc.

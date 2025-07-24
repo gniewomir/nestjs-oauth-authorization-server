@@ -1,4 +1,4 @@
-# Technical Design Document—Application Repositories
+# Architecture Design Document—Application Repositories
 
 # Intention
 

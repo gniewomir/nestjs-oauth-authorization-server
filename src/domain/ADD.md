@@ -1,4 +1,4 @@
-# Technical Design Document—Domain Repositories
+# Architecture Design Document—Bounded Contexts
 
 Each directory under domain is supposed to be a `BoundedContext`
 
