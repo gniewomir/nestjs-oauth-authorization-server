@@ -14,7 +14,7 @@ describe("StatusController", () => {
     statusController = app.get<StatusController>(StatusController);
   });
 
-  it('should return "Hello World!"', () => {
+  it("should return response", () => {
     expect(statusController.getStatus()).toBe("OK");
   });
 });
