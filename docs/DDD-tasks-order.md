@@ -21,5 +21,6 @@
 
 ## Resolution
 
-All `Assigne` `Tasks` should be having one ordering sequence reflected on all-views regardless of current `Goal` and `Context` filter
+All `Assigne` `Tasks` should be having one ordering sequence reflected on all-views regardless of current `Goal` and
+`Context` filter
 
