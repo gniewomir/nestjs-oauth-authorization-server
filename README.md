@@ -1,9 +1,9 @@
 # Documentation 
 
-The Repository contains documents in different places, describing my line of thinking
-* `ADD.md` reasoning behind architecture decisions 
-* `DDD.md` reasoning behind domain decisions 
-* `TDD.md` reasoning behind technical decisions
+The Repository contains documentation for decisions made
+* `ADD-{decision-or-subject}.md` reasoning behind architecture decisions 
+* `DDD-{decision-or-subject}.md` reasoning behind domain decisions 
+* `TDD-{decision-or-subject}.md` reasoning behind technical decisions
 
 # Database
 ```shell

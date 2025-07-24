@@ -1,6 +1,6 @@
 # Domain Decision Documentation—Tasks
 
-## Problem to solve
+## Problems to solve
 
 * I find most task tracking/todo-list solutions tend to be too simplistic or too complicated
     * simplistic put too much before my eyes
@@ -14,7 +14,7 @@
     * `Task` has to be attached to a `Assigne` who can complete it
     * `Task` can be completed
     * `Tasks` have to have order of intended completion
-        * Task order is subject to change
+        * `Tasks` order is subject to change
             * Arbitrary changes
             * Postponement—which means moving the task to the end of the queue
                 * important bit: in the context of the current filter
@@ -29,8 +29,6 @@
         * If my `Goal` is getting jacked
             * And part of it is to dead-lift
                 * This `Task` is doable only in the `Context` of the gym
-* **FUTURE**: Example of the dead-lift/gym leads to the concept of `RoutineTask`? Which is repeatable and which might
-  add to i.e., morning routine
 
 ## Solution
 
@@ -57,3 +55,11 @@ model time, location, dependencies between tasks, etc. and other constraints tha
       access to the internet.
     * context for paying your tab: when you are at your friendly bar
 * `Assigne` person that is supposed to complete the `Task`
+
+## Discovered questions
+* Technical decision on how to express `Tasks` order. [Which will be explored in separate document](TDD-tasks-order.md)? 
+  * Which is dependent on domain question. [Which will be explored in separate document](DDD-tasks-order.md)?
+    * if `Tasks` order should be global, 
+    * or dependent on current view
+      * combination of `Goal` and `Context`?
+      * chosen `Goal` alone?
