@@ -1,7 +1,5 @@
 # Technical Design Document—Application Repositories
 
-TODO
-
 # Intention
 
 Application repositories are intended to be read layer of application. 

@@ -33,7 +33,3 @@
       * that can be replaced by using deterministic `in-memory` implementation of `Domain repositories`
         * which spares us from a lot of fragile, maintenance heavy mocking
   * We can have separate **read-only** repositories optimized for fast reads and ignoring both `Domain Objects` and how they are represented i.e., by ORM models. 
-
-## Costs
-
-TODO
