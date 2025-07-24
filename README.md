@@ -1,9 +1,9 @@
 # Documentation 
 
-The Repository contains documentation for decisions made
-* `ADD-{decision-or-subject}.md` reasoning behind architecture decisions 
-* `DDD-{decision-or-subject}.md` reasoning behind domain decisions 
-* `TDD-{decision-or-subject}.md` reasoning behind technical decisions
+The Repository contains documentation for decisions made in `./docs` directory
+* `ADD-{decisions-subject}.md` reasoning behind architecture decisions 
+* `DDD-{decisions-subject}.md` reasoning behind domain decisions 
+* `TDD-{decisions-subject}.md` reasoning behind technical decisions
 
 # Database
 ```shell
