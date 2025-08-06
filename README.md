@@ -5,6 +5,14 @@ The Repository contains documentation for decisions made in `./docs` directory
 * `DDD-{decisions-subject}.md` reasoning behind domain decisions 
 * `TDD-{decisions-subject}.md` reasoning behind technical decisions
 
+# Setup
+```shell
+$ cp .env.dist .env
+$ nvm use 
+$ npm install 
+$ npm run test
+```
+
 # Database
 ```shell
 $ docker run -p 5432:5432 --name postgres -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=test -d postgres

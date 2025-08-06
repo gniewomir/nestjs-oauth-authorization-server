@@ -1,7 +1,8 @@
 import { IdentityValue } from "../../IdentityValue";
 import { Goal } from "./Goal";
+import { OrderInterface } from "@domain/tasks/order";
 
-export interface GoalInterface {
+export interface GoalsInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Goal>;
 
   persist(goal: Goal): Promise<void>;
