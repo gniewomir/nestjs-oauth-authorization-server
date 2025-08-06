@@ -1,17 +1,18 @@
-import { Task } from "@domain/tasks/Task";
+import { Task, TTaskConstructorParam } from "@domain/tasks/task/Task";
 import { IdentityValue } from "@domain/IdentityValue";
-import { v4 } from "uuid";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
 import { goalMother } from "./Goal.mother";
 import { contextMother } from "./Context.mother";
 import { assignedMother } from "./Assigned.mother";
 
-export const taskMother = () => {
-  return new Task(
-    IdentityValue.fromString(v4()),
-    DescriptionValue.fromString("example task"),
-    assignedMother(),
-    goalMother(),
-    contextMother(),
-  );
+export const taskMother = (params: Partial<TTaskConstructorParam> = {}) => {
+  return new Task({
+    identity: IdentityValue.create(),
+    assigned: assignedMother(),
+    description: DescriptionValue.fromString("example task"),
+    goal: goalMother(),
+    context: contextMother(),
+    ordinalNumber: Number.MAX_SAFE_INTEGER,
+    ...params,
+  });
 };

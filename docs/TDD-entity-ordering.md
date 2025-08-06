@@ -36,22 +36,26 @@
 * Float indexes
     * pro: one simple database update, one simple db query
     * pro: low complexity
-    * con: possibility of collisions? rather unrealistic one at that
+    * con: possibility of collisions?
+    * con: probably not pleasant to handle on frontend?
     * not researched enough
 * String indexes
     * pro: one simple database update, one simple db query
     * pro: low to medium complexity
-    * con: possibility of to long indexes? rather unrealistic one at that
+    * con: possibility of too long ordinal strings?
     * not researched enough
 * BLOB of ordered ids
+    * con: any bigger number of tasks will have a big overhead  
     * con: medium complexity
     * con: ordering becomes separate from `Task` itself
     * q: while it is possible to sort by [unnested array with ordinality](https://dba.stackexchange.com/a/300194), what
       kind of performance overhead it brings?
 * [red-black tree](https://cs.stackexchange.com/a/127855)
-    * con: high complexity
-    * con: high cognitive load
+    * con: high complexity; has to be modeled separately in db
+    * con: makes reading more complex
     * not researched enough
 
-## Questions 
+## Chosen resolution
 
+`Spaced integer indexes (extreme spacing—BIGINT as an index), querying for a previous task, starting from MAX_INTEGER
+  descending, billions of free indexes between tasks` - does what I need, low implementation cost, can be replaced if needed 

@@ -1,11 +1,13 @@
 import { IdentityValue } from "@domain/IdentityValue";
 import { v4 } from "uuid";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
-import { Goal } from "@domain/tasks/goal/Goal";
+import { Goal, TGoalConstructorParam } from "@domain/tasks/goal/Goal";
 
-export const goalMother = () => {
-  return new Goal(
-    IdentityValue.fromString(v4()),
-    DescriptionValue.fromString("example goal"),
-  );
+export const goalMother = (params: Partial<TGoalConstructorParam> = {}) => {
+  return new Goal({
+    identity: IdentityValue.fromString(v4()),
+    description: DescriptionValue.fromString("example goal"),
+    ordinalNumber: Number.MAX_SAFE_INTEGER,
+    ...params,
+  });
 };
