@@ -59,9 +59,11 @@ model time, location, dependencies between tasks, etc. and other constraints tha
 ## Discovered questions
 
 * Technical decision on how to express `Tasks` order. [Which will be explored in separate document](TDD-entity-ordering.md)?
-    * Which is dependent on domain question. [Which will be explored in separate document](DDD-tasks-order.md)?
+    * Which is dependent on the domain question. [Which will be explored in separate document](DDD-tasks-order.md)?
         * if `Tasks` order should be global,
-        * or dependent on current view
+        * or dependent on the current view
             * combination of `Goal` and `Context`?
             * chosen `Goal` alone?
-    * Which also leads to the same question for `Goals` and `Contexts`
+* Domain decisions to be made: 
+  * What will happen when `Context` for the `Task` is deleted? 
+  * What will happen when `Goal` for the `Task` is deleted?
