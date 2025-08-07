@@ -1,4 +1,4 @@
-import { OrderingConfig } from "@infrastructure/app-config/configs/ordering.config";
+import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OrderInterface } from "@domain/tasks/order/Order.interface";
 
