@@ -13,4 +13,4 @@ import { OrderingConfig } from "./configs/ordering.config";
   ],
   exports: [AppConfig, DatabaseConfig],
 })
-export class AppConfigModule {}
+export class ConfigModule {}

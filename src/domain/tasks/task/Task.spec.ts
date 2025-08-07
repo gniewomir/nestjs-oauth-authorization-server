@@ -1,8 +1,8 @@
 import { taskMother } from "@test/domain/tasks/Task.mother";
 import { TasksDomainRepositoryInMemory } from "@infrastructure/domain-repositories/Tasks/Tasks.domain-repository.in-memory";
 import { OrderService } from "@domain/tasks/order";
-import { plainToConfig } from "@infrastructure/app-config/configs/utility/plainToConfig";
-import { OrderingConfig } from "@infrastructure/app-config/configs/ordering.config";
+import { plainToConfig } from "@infrastructure/config/configs/utility/plainToConfig";
+import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
 import { v4 } from "uuid";
 import { IdentityValue } from "@domain/IdentityValue";
 
