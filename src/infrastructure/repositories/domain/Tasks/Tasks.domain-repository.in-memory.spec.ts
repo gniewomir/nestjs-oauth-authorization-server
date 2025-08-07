@@ -1,5 +1,5 @@
 import { taskMother } from "@test/domain/tasks/Task.mother";
-import { TasksDomainRepositoryInMemory } from "@infrastructure/domain-repositories/Tasks/Tasks.domain-repository.in-memory";
+import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/Tasks/Tasks.domain-repository.in-memory";
 
 describe("TasksDomainRepositoryInMemory", () => {
   describe("persist", () => {

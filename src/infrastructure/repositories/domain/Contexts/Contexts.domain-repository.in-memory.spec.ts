@@ -1,4 +1,4 @@
-import { ContextsDomainRepositoryInMemory } from "@infrastructure/domain-repositories/Contexts/Contexts.domain-repository.in-memory";
+import { ContextsDomainRepositoryInMemory } from "@infrastructure/repositories/domain/Contexts/Contexts.domain-repository.in-memory";
 import { contextMother } from "@test/domain/tasks/Context.mother";
 
 describe("ContextsDomainRepositoryInMemory", () => {

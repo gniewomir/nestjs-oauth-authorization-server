@@ -1,5 +1,5 @@
 import { taskMother } from "@test/domain/tasks/Task.mother";
-import { TasksDomainRepositoryInMemory } from "@infrastructure/domain-repositories/Tasks/Tasks.domain-repository.in-memory";
+import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/Tasks/Tasks.domain-repository.in-memory";
 import { OrderService } from "@domain/tasks/order";
 import { plainToConfig } from "@infrastructure/config/configs/utility/plainToConfig";
 import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
