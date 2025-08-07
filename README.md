@@ -1,3 +1,11 @@
+# What and why? 
+
+I want to test some of my ideas on how to apply DDD to TS based backends.
+
+Possibly have a template/reference for future projects. 
+
+Repo will be intentionally heavily overengineered for what it actually does.
+
 # Documentation 
 
 The Repository contains documentation for decisions made in `./docs` directory
