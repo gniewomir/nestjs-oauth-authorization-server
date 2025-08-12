@@ -343,8 +343,38 @@ describe("AuthenticationFacade", () => {
         ]).toString(),
       });
     });
-    it.todo("rejects idToken");
-    it.todo("rejects access token");
+    it("rejects idToken", async () => {
+      const { idToken, tokenPayloads, clock, authConfig, users } =
+        await createAuthenticationTestContext({
+          requestedScopes: ScopeImmutableSet.fromString("customer:api"),
+        });
+
+      await expect(
+        AuthenticationFacade.refresh(
+          idToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        ),
+      ).rejects.toThrow("jwt does not contain required scope");
+    });
+    it("rejects access token", async () => {
+      const { accessToken, tokenPayloads, clock, authConfig, users } =
+        await createAuthenticationTestContext({
+          requestedScopes: ScopeImmutableSet.fromString("customer:api"),
+        });
+
+      await expect(
+        AuthenticationFacade.refresh(
+          accessToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        ),
+      ).rejects.toThrow("jwt does not contain required scope");
+    });
     it.todo("rejects expired refresh token");
     it.todo("rejects garbled refresh token");
     it.todo("rejects refresh token signed with invalid secret/key");

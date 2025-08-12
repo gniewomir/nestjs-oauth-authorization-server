@@ -41,6 +41,13 @@ export class AuthenticationFacade {
     const payload = await tokenPayloads.verify(refreshToken);
     const user = await users.retrieve(IdentityValue.fromString(payload.sub));
 
+    Assert(
+      ScopeImmutableSet.fromString(payload.scope).hasScope(
+        ScopeValue.TOKEN_REFRESH(),
+      ),
+      "jwt does not contain required scope",
+    );
+
     const idTokenPayload = IdTokenPayload.createIdToken({
       clock,
       authConfig,
