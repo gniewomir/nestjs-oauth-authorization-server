@@ -396,7 +396,22 @@ describe("AuthenticationFacade", () => {
         ),
       ).rejects.toThrow("jwt expired");
     });
-    it.todo("rejects garbled refresh token");
+    it("rejects garbled refresh token", async () => {
+      const { tokenPayloads, clock, authConfig, users } =
+        await createAuthenticationTestContext({
+          requestedScopes: ScopeImmutableSet.fromString("customer:api"),
+        });
+
+      await expect(
+        AuthenticationFacade.refresh(
+          randomString(1024),
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        ),
+      ).rejects.toThrow("jwt malformed");
+    });
     it.todo("rejects refresh token signed with invalid secret/key");
     it.todo("rejects refresh token with invalid issuer");
     it.todo("rejects refresh token lacking required scope");
