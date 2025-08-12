@@ -12,7 +12,7 @@ import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
 import { clientMother } from "@test/domain/authentication/Client.mother";
 
-export const createAuthorizationContext = async () => {
+export const createAuthorizationTestContext = async () => {
   const clients = new ClientDomainRepositoryInMemory();
   const client = clientMother();
   await clients.persist(client);

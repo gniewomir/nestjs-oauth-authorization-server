@@ -8,7 +8,7 @@ import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/Pas
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
-import { createAuthorizationContext } from "@test/domain/authentication/Authorization.context";
+import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
 
 describe("AuthorizationFacade", () => {
   describe("authorizationRequest", () => {
@@ -54,7 +54,7 @@ describe("AuthorizationFacade", () => {
         clock,
         clients,
         client,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
 
       await AuthorizationFacade.authorizationRequest(
         { ...requestMother(), clientId: client.id, id: requestId },
@@ -96,7 +96,7 @@ describe("AuthorizationFacade", () => {
         clock,
         clients,
         client,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
       const invalidPassword = "invalidPassword";
       assert(userPassword !== invalidPassword);
 
@@ -138,7 +138,7 @@ describe("AuthorizationFacade", () => {
         clock,
         clients,
         client,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
       const unknownEmail = "unknown@unknown.com";
       assert(user.email.toString() !== unknownEmail);
 
@@ -186,7 +186,7 @@ describe("AuthorizationFacade", () => {
         tokenPayloads,
         codeChallenge,
         codeVerifier,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromString("customer:api");
       const request = await AuthorizationFacade.authorizationRequest(
@@ -273,7 +273,7 @@ describe("AuthorizationFacade", () => {
         tokenPayloads,
         codeChallenge,
         codeVerifier,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromArray([
         "customer:api",
@@ -365,7 +365,7 @@ describe("AuthorizationFacade", () => {
         tokenPayloads,
         codeChallenge,
         codeVerifier,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromString("customer:api");
       const request = await AuthorizationFacade.authorizationRequest(
@@ -447,7 +447,7 @@ describe("AuthorizationFacade", () => {
         tokenPayloads,
         codeChallenge,
         codeVerifier,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
 
       const request = await AuthorizationFacade.authorizationRequest(
         {
@@ -514,7 +514,7 @@ describe("AuthorizationFacade", () => {
         PKCE,
         tokenPayloads,
         codeChallenge,
-      } = await createAuthorizationContext();
+      } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromString("customer:api");
       const request = await AuthorizationFacade.authorizationRequest(
