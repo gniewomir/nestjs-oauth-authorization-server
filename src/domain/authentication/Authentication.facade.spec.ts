@@ -1,4 +1,4 @@
-import { createAuthenticationContext } from "@test/domain/authentication/Authentication.context";
+import { createAuthenticationTestContext } from "@test/domain/authentication/Authentication.test-context";
 import { AuthenticationFacade } from "@domain/authentication/Authentication.facade";
 import { randomString } from "@test/randomString";
 import { plainToConfig } from "@infrastructure/config/configs/utility";
@@ -6,15 +6,15 @@ import { AuthConfig } from "@infrastructure/config/configs";
 import { JwtServiceFake } from "@infrastructure/authentication/jwt";
 import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
 import { IdentityValue } from "@domain/IdentityValue";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeImmutableSet";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
+import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
 import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 
 describe("AuthenticationFacade", () => {
   describe("authenticate", () => {
     it("accept valid access token", async () => {
       const { accessToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
@@ -27,7 +27,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects idToken", async () => {
       const { idToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
@@ -40,7 +40,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects refresh token", async () => {
       const { refreshToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
@@ -53,7 +53,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects expired access token", async () => {
       const { accessToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       clock.timeTravelSeconds(
         clock.nowAsSecondsSinceEpoch() +
@@ -72,7 +72,7 @@ describe("AuthenticationFacade", () => {
 
     it("rejects garbled access token", async () => {
       const { tokenPayloads, clock, authConfig } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
@@ -85,7 +85,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects access token signed with invalid secret/key", async () => {
       const { tokenPayloads, clock, authConfig, user } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       const modifiedAuthConfig = await plainToConfig(
         {
@@ -126,7 +126,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects access token with invalid issuer", async () => {
       const { tokenPayloads, clock, authConfig, user } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       const modifiedAuthConfig = await plainToConfig(
         {
@@ -165,7 +165,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects access token lacking required scope", async () => {
       const { tokenPayloads, clock, authConfig, user } =
-        await createAuthenticationContext();
+        await createAuthenticationTestContext();
 
       const newToken = new TokenPayload({
         iss: authConfig.jwtIssuer,
@@ -191,8 +191,22 @@ describe("AuthenticationFacade", () => {
     });
   });
   describe("refresh", () => {
-    it("accepts valid refresh token", async () => {});
+    it("accepts valid refresh token", async () => {
+      const { tokenPayloads, clock, authConfig, refreshToken, users } =
+        await createAuthenticationTestContext();
+
+      await expect(
+        AuthenticationFacade.refresh(
+          refreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        ),
+      ).resolves.not.toThrow();
+    });
     it.todo("issues new idToken, accessToken and refresh token");
+    it.todo("passes on scopes contained in received refresh token");
     it.todo(
       "issues longer ttl refresh token, if refresh token contained required scope",
     );

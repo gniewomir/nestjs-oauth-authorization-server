@@ -2,8 +2,12 @@ import { AuthConfig } from "@infrastructure/config/configs";
 import { TokenPayloadInterface } from "./OAuth/User/Token/TokenPayload.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
+import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenPayload";
+import { UserInterface } from "@domain/authentication/OAuth/User/User.interface";
+import { IdentityValue } from "@domain/IdentityValue";
+import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 
 export class AuthenticationFacade {
   public static async authenticate(
@@ -22,8 +26,47 @@ export class AuthenticationFacade {
     return payload;
   }
 
-  public static refresh() {
-    throw new Error("Not implemented");
+  public static async refresh(
+    refreshToken: string,
+    tokenPayloads: TokenPayloadInterface,
+    clock: ClockInterface,
+    authConfig: AuthConfig,
+    users: UserInterface,
+  ): Promise<{
+    accessToken: string;
+    expiration: number;
+    refreshToken: string;
+    idToken: string;
+  }> {
+    const payload = await tokenPayloads.verify(refreshToken);
+    const user = await users.retrieve(IdentityValue.fromString(payload.sub));
+
+    const idTokenPayload = IdTokenPayload.createIdToken({
+      clock,
+      authConfig,
+      user,
+    });
+
+    const accessTokenPayload = TokenPayload.createAccessToken({
+      authConfig,
+      user,
+      scope: ScopeImmutableSet.fromString(payload.scope),
+      clock,
+    });
+
+    const refreshTokenPayload = TokenPayload.createRefreshToken({
+      authConfig,
+      user,
+      scope: ScopeImmutableSet.fromString(payload.scope),
+      clock,
+    });
+
+    return {
+      idToken: await idTokenPayload.sign(tokenPayloads),
+      accessToken: await accessTokenPayload.sign(tokenPayloads),
+      expiration: accessTokenPayload.exp,
+      refreshToken: await refreshTokenPayload.sign(tokenPayloads),
+    };
   }
 
   public static logoutClient() {
