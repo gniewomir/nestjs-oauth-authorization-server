@@ -7,7 +7,6 @@ import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeV
 import { Assert } from "@domain/Assert";
 import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 import { User } from "@domain/authentication/OAuth/User/User";
-import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 
 export type TTokenPayloadConstructorArgs = ConstructorParameters<
   typeof TokenPayload
@@ -40,13 +39,13 @@ export class TokenPayload {
 
   public static createAccessToken({
     authConfig,
-    request,
+    scope,
     user,
     clock,
   }: {
     authConfig: AuthConfig;
     user: User;
-    request: Request;
+    scope: ScopeImmutableSet;
     clock: ClockInterface;
   }) {
     const now = clock.nowAsSecondsSinceEpoch();
@@ -58,7 +57,7 @@ export class TokenPayload {
       exp: NumericDateValue.fromNumber(
         now + authConfig.jwtAccessTokenExpirationSeconds,
       ),
-      scope: request.scope
+      scope: scope
         .add(ScopeValue.TOKEN_AUTHENTICATE())
         .remove(ScopeValue.TOKEN_REFRESH()),
     });
@@ -66,13 +65,13 @@ export class TokenPayload {
 
   public static createRefreshToken({
     authConfig,
-    request,
+    scope,
     user,
     clock,
   }: {
     authConfig: AuthConfig;
     user: User;
-    request: Request;
+    scope: ScopeImmutableSet;
     clock: ClockInterface;
   }) {
     const now = clock.nowAsSecondsSinceEpoch();
@@ -83,11 +82,11 @@ export class TokenPayload {
       iat: NumericDateValue.fromNumber(now),
       exp: NumericDateValue.fromNumber(
         now +
-          (request.scope.hasScope(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
+          (scope.hasScope(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
             ? authConfig.jwtLongTTLRefreshTokenExpirationSeconds
             : authConfig.jwtRefreshTokenExpirationSeconds),
       ),
-      scope: request.scope
+      scope: scope
         .remove(ScopeValue.TOKEN_AUTHENTICATE())
         .add(ScopeValue.TOKEN_REFRESH()),
     });

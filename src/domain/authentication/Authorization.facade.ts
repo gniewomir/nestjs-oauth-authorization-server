@@ -140,7 +140,7 @@ export class AuthorizationFacade {
     const accessTokenPayload = TokenPayload.createAccessToken({
       authConfig,
       user,
-      request,
+      scope: request.scope,
       clock,
     });
 
@@ -152,7 +152,7 @@ export class AuthorizationFacade {
     const refreshTokenPayload = TokenPayload.createRefreshToken({
       authConfig,
       user,
-      request,
+      scope: request.scope,
       clock,
     });
 
