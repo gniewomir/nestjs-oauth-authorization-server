@@ -32,9 +32,7 @@ export class ScopeImmutableSet {
     Assert(Array.isArray(scope), "scope is not an array");
     Assert(
       scope.every(
-        (scope) =>
-          typeof scope === "string" ||
-          (typeof scope === "object" && scope instanceof ScopeValue),
+        (scope) => typeof scope === "string" || scope instanceof ScopeValue,
       ),
       "scope is not an array of ScopeVale or strings",
     );

@@ -5,10 +5,8 @@ import { plainToConfig } from "@infrastructure/config/configs/utility";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { JwtServiceFake } from "@infrastructure/authentication/jwt";
 import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
-import { IdentityValue } from "@domain/IdentityValue";
 import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
-import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 
 describe("AuthenticationFacade", () => {
   describe("authenticate", () => {
@@ -114,7 +112,9 @@ describe("AuthenticationFacade", () => {
         user,
         authConfig,
         clock,
-        scope: requestedScopes,
+        scope: requestedScopes
+          .add(ScopeValue.TOKEN_AUTHENTICATE())
+          .remove(ScopeValue.TOKEN_REFRESH()),
       });
       const accessTokenWithInvalidSignature = await newToken.sign(
         tokenPayloadsWithModifiedConfig,
@@ -149,7 +149,9 @@ describe("AuthenticationFacade", () => {
       const newToken = TokenPayload.createAccessToken({
         user,
         authConfig: modifiedAuthConfig,
-        scope: requestedScopes,
+        scope: requestedScopes
+          .add(ScopeValue.TOKEN_AUTHENTICATE())
+          .remove(ScopeValue.TOKEN_REFRESH()),
         clock,
       });
       const invalidToken = await newToken.sign(tokenPayloadsWithModifiedConfig);
@@ -164,27 +166,25 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("jwt has invalid issuer");
     });
     it("rejects access token lacking required scope", async () => {
+      const requestedScopes = ScopeImmutableSet.fromArray([
+        ScopeValue.CUSTOMER_API(),
+        ScopeValue.TOKEN_AUTHENTICATE(),
+      ]);
       const { tokenPayloads, clock, authConfig, user } =
         await createAuthenticationTestContext({
-          requestedScopes: ScopeImmutableSet.fromString("customer:api"),
+          requestedScopes,
         });
 
-      const newToken = new TokenPayload({
-        iss: authConfig.jwtIssuer,
-        iat: NumericDateValue.fromNumber(clock.nowAsSecondsSinceEpoch()),
-        sub: user.identity,
-        jti: IdentityValue.create(),
-        exp: NumericDateValue.fromNumber(
-          clock.nowAsSecondsSinceEpoch() +
-            authConfig.jwtAccessTokenExpirationSeconds,
-        ),
-        scope: ScopeImmutableSet.fromArray([ScopeValue.CUSTOMER_API()]),
+      const accessToken = TokenPayload.createAccessToken({
+        user,
+        authConfig,
+        clock,
+        scope: requestedScopes.remove(ScopeValue.TOKEN_AUTHENTICATE()),
       });
-      const invalidToken = await newToken.sign(tokenPayloads);
 
       await expect(
         AuthenticationFacade.authenticate(
-          invalidToken,
+          await accessToken.sign(tokenPayloads),
           tokenPayloads,
           clock,
           authConfig,
@@ -419,7 +419,9 @@ describe("AuthenticationFacade", () => {
         clock,
         authConfig,
         user,
-        scope: requestedScopes,
+        scope: requestedScopes
+          .add(ScopeValue.TOKEN_REFRESH())
+          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
       });
       const accessTokenWithInvalidSignature = await newRefreshToken.sign(
         tokenPayloadsWithModifiedConfig,
@@ -455,7 +457,9 @@ describe("AuthenticationFacade", () => {
       const newRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig: modifiedAuthConfig,
-        scope: requestedScopes,
+        scope: requestedScopes
+          .add(ScopeValue.TOKEN_REFRESH())
+          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
         clock,
       });
       const invalidRefreshToken = await newRefreshToken.sign(
@@ -473,40 +477,32 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("jwt has invalid issuer");
     });
     it("rejects refresh token lacking required scope", async () => {
-      const requestedScopes = ScopeImmutableSet.fromString("customer:api");
-      const { tokenPayloads, clock, authConfig, user } =
+      const requestedScopes = ScopeImmutableSet.fromArray([
+        ScopeValue.TOKEN_REFRESH(),
+        ScopeValue.CUSTOMER_API(),
+      ]);
+      const { tokenPayloads, clock, authConfig, user, users } =
         await createAuthenticationTestContext({
           requestedScopes,
         });
 
-      const modifiedAuthConfig = await plainToConfig(
-        {
-          ...authConfig,
-          jwtIssuer: "John Doe <john.doe@gmail.com>",
-        },
-        AuthConfig,
-      );
-      const tokenPayloadsWithModifiedConfig = new JwtServiceFake(
-        modifiedAuthConfig,
-      );
       const newRefreshToken = TokenPayload.createRefreshToken({
         user,
-        authConfig: modifiedAuthConfig,
-        scope: requestedScopes,
+        authConfig,
+        scope: requestedScopes.remove(ScopeValue.TOKEN_REFRESH()),
         clock,
       });
-      const invalidRefreshToken = await newRefreshToken.sign(
-        tokenPayloadsWithModifiedConfig,
-      );
+      const invalidRefreshToken = await newRefreshToken.sign(tokenPayloads);
 
       await expect(
-        AuthenticationFacade.authenticate(
+        AuthenticationFacade.refresh(
           invalidRefreshToken,
           tokenPayloads,
           clock,
           authConfig,
+          users,
         ),
-      ).rejects.toThrow("jwt has invalid issuer");
+      ).rejects.toThrow("jwt does not contain required scope");
     });
     it.todo("accepts only known refresh tokens");
     it.todo("removes used refresh token after use");

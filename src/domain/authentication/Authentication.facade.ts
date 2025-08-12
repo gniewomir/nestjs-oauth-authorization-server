@@ -61,14 +61,18 @@ export class AuthenticationFacade {
     const accessTokenPayload = TokenPayload.createAccessToken({
       authConfig,
       user,
-      scope: ScopeImmutableSet.fromString(payload.scope),
+      scope: ScopeImmutableSet.fromString(payload.scope)
+        .add(ScopeValue.TOKEN_AUTHENTICATE())
+        .remove(ScopeValue.TOKEN_REFRESH()),
       clock,
     });
 
     const refreshTokenPayload = TokenPayload.createRefreshToken({
       authConfig,
       user,
-      scope: ScopeImmutableSet.fromString(payload.scope),
+      scope: ScopeImmutableSet.fromString(payload.scope)
+        .add(ScopeValue.TOKEN_REFRESH())
+        .remove(ScopeValue.TOKEN_AUTHENTICATE()),
       clock,
     });
 

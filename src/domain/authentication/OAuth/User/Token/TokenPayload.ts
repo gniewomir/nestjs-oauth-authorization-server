@@ -57,9 +57,7 @@ export class TokenPayload {
       exp: NumericDateValue.fromNumber(
         now + authConfig.jwtAccessTokenExpirationSeconds,
       ),
-      scope: scope
-        .add(ScopeValue.TOKEN_AUTHENTICATE())
-        .remove(ScopeValue.TOKEN_REFRESH()),
+      scope,
     });
   }
 
@@ -86,9 +84,7 @@ export class TokenPayload {
             ? authConfig.jwtLongTTLRefreshTokenExpirationSeconds
             : authConfig.jwtRefreshTokenExpirationSeconds),
       ),
-      scope: scope
-        .remove(ScopeValue.TOKEN_AUTHENTICATE())
-        .add(ScopeValue.TOKEN_REFRESH()),
+      scope,
     });
   }
 

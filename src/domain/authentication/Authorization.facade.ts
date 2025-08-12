@@ -17,6 +17,7 @@ import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenP
 import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
+import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
 
 export class AuthorizationFacade {
   public static async request(
@@ -140,7 +141,9 @@ export class AuthorizationFacade {
     const accessTokenPayload = TokenPayload.createAccessToken({
       authConfig,
       user,
-      scope: request.scope,
+      scope: request.scope
+        .add(ScopeValue.TOKEN_AUTHENTICATE())
+        .remove(ScopeValue.TOKEN_REFRESH()),
       clock,
     });
 
@@ -152,7 +155,9 @@ export class AuthorizationFacade {
     const refreshTokenPayload = TokenPayload.createRefreshToken({
       authConfig,
       user,
-      scope: request.scope,
+      scope: request.scope
+        .add(ScopeValue.TOKEN_REFRESH())
+        .remove(ScopeValue.TOKEN_AUTHENTICATE()),
       clock,
     });
 
