@@ -3,8 +3,8 @@ import {
   Request,
   TRequestConstructorParam,
 } from "@domain/authentication/OAuth/Authorization/Request";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
-import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { randomString } from "@test/randomString";
 
@@ -15,7 +15,7 @@ export const requestMother = (
     id: IdentityValue.create(),
     clientId: IdentityValue.create(),
     redirectUri: HttpUrlValue.fromString("https://client-website.com/callback"),
-    scope: ScopeImmutableSet.fromArray([ScopeValue.CUSTOMER_API()]),
+    scope: ScopeValueImmutableSet.fromArray([ScopeValue.CUSTOMER_API()]),
     state: randomString(),
     codeChallenge: randomString(),
     authorizationCode: null,

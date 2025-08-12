@@ -11,13 +11,13 @@ import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/C
 import { AuthConfig } from "@infrastructure/config/configs";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
-import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
-import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenPayload";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
-import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 
 export class AuthorizationFacade {
   public static async request(
@@ -25,7 +25,7 @@ export class AuthorizationFacade {
       id: IdentityValue;
       clientId: IdentityValue;
       redirectUri: HttpUrlValue;
-      scope: ScopeImmutableSet;
+      scope: ScopeValueImmutableSet;
       state: string;
       codeChallenge: string;
     },
@@ -94,6 +94,7 @@ export class AuthorizationFacade {
     authConfig: AuthConfig,
     users: UserInterface,
     tokenPayloads: TokenPayloadInterface,
+    clients: ClientInterface,
   ): Promise<{
     accessToken: string;
     expiration: number;
@@ -121,6 +122,7 @@ export class AuthorizationFacade {
 
     Assert(request.authorizationCode instanceof Code);
     const user = await users.retrieve(request.authorizationCode.userId);
+    const client = await clients.retrieve(clientId);
 
     /**
      * idToken is intended as proof of authentication.
@@ -132,6 +134,7 @@ export class AuthorizationFacade {
       clock,
       authConfig,
       user,
+      client,
     });
 
     /**
@@ -145,6 +148,7 @@ export class AuthorizationFacade {
         .add(ScopeValue.TOKEN_AUTHENTICATE())
         .remove(ScopeValue.TOKEN_REFRESH()),
       clock,
+      client,
     });
 
     /**
@@ -159,9 +163,13 @@ export class AuthorizationFacade {
         .add(ScopeValue.TOKEN_REFRESH())
         .remove(ScopeValue.TOKEN_AUTHENTICATE()),
       clock,
+      client,
     });
 
     await requests.persist(request);
+
+    user.rotateRefreshToken(refreshTokenPayload, clock);
+    await users.persist(user);
 
     return {
       idToken: await idTokenPayload.sign(tokenPayloads),

@@ -1,18 +1,18 @@
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
-import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 
-describe("ScopeImmutableSet", () => {
+describe("ScopeValueImmutableSet", () => {
   it("can be created from string", () => {
     const scopesAsString = "token:authenticate customer:api";
     const scopesStringArray = scopesAsString.split(" ");
-    const sut = ScopeImmutableSet.fromString(scopesAsString);
+    const sut = ScopeValueImmutableSet.fromString(scopesAsString);
     expect(sut.hasScope(scopesStringArray[0])).toEqual(true);
     expect(sut.hasScope(scopesStringArray[1])).toEqual(true);
   });
   it("can be created from array of strings", () => {
     const scopesAsString = "token:authenticate customer:api";
     const scopesStringArray = scopesAsString.split(" ");
-    const sut = ScopeImmutableSet.fromArray(scopesStringArray);
+    const sut = ScopeValueImmutableSet.fromArray(scopesStringArray);
     expect(sut.hasScope(scopesStringArray[0])).toEqual(true);
     expect(sut.hasScope(scopesStringArray[1])).toEqual(true);
   });
@@ -22,7 +22,7 @@ describe("ScopeImmutableSet", () => {
     const scopesAsValues = scopesStringArray.map((value) =>
       ScopeValue.fromString(value),
     );
-    const sut = ScopeImmutableSet.fromArray(scopesAsValues);
+    const sut = ScopeValueImmutableSet.fromArray(scopesAsValues);
     expect(sut.hasScope(scopesStringArray[0])).toEqual(true);
     expect(sut.hasScope(scopesStringArray[1])).toEqual(true);
   });
@@ -30,7 +30,7 @@ describe("ScopeImmutableSet", () => {
     it("adding scopes return new object", () => {
       const scopesAsString = "token:authenticate customer:api";
       const scopesStringArray = scopesAsString.split(" ");
-      const sut = ScopeImmutableSet.fromString(scopesAsString);
+      const sut = ScopeValueImmutableSet.fromString(scopesAsString);
       const addedScope = "admin:api";
       const newSut = sut.add(addedScope);
       expect(sut.hasScope(addedScope)).toEqual(false);
@@ -42,7 +42,7 @@ describe("ScopeImmutableSet", () => {
     it("removing scopes return new object", () => {
       const scopesAsString = "token:authenticate customer:api admin:api";
       const scopesStringArray = scopesAsString.split(" ");
-      const sut = ScopeImmutableSet.fromString(scopesAsString);
+      const sut = ScopeValueImmutableSet.fromString(scopesAsString);
       const removedScope = "admin:api";
       const newSut = sut.remove(removedScope);
       expect(sut.hasScope(removedScope)).toEqual(true);
@@ -55,7 +55,7 @@ describe("ScopeImmutableSet", () => {
   it("represented as string it will be sorted alphabetically", () => {
     const scopesAsString = "token:authenticate customer:api";
     const sortedScopesAsString = "customer:api token:authenticate";
-    const sut = ScopeImmutableSet.fromString(scopesAsString);
+    const sut = ScopeValueImmutableSet.fromString(scopesAsString);
     expect(sut.toString()).toEqual(sortedScopesAsString);
   });
 });

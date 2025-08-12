@@ -7,8 +7,9 @@ import * as assert from "node:assert";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
+import { IdentityValue } from "@domain/IdentityValue";
 
 describe("AuthorizationFacade", () => {
   describe("request", () => {
@@ -188,7 +189,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("customer:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -232,13 +233,14 @@ describe("AuthorizationFacade", () => {
           authConfig,
           users,
           tokenPayloads,
+          clients,
         );
 
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
-        scope: ScopeImmutableSet.fromArray([
+        scope: ScopeValueImmutableSet.fromArray([
           "customer:api",
           "token:authenticate",
         ]).toString(),
@@ -249,7 +251,7 @@ describe("AuthorizationFacade", () => {
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
-        scope: ScopeImmutableSet.fromArray([
+        scope: ScopeValueImmutableSet.fromArray([
           "customer:api",
           "token:refresh",
         ]).toString(),
@@ -274,7 +276,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeImmutableSet.fromArray([
+      const scope = ScopeValueImmutableSet.fromArray([
         "customer:api",
         "token:refresh:issue-large-ttl",
       ]);
@@ -321,13 +323,14 @@ describe("AuthorizationFacade", () => {
           authConfig,
           users,
           tokenPayloads,
+          clients,
         );
 
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
-        scope: ScopeImmutableSet.fromArray([
+        scope: ScopeValueImmutableSet.fromArray([
           "customer:api",
           "token:authenticate",
           "token:refresh:issue-large-ttl",
@@ -339,7 +342,7 @@ describe("AuthorizationFacade", () => {
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
-        scope: ScopeImmutableSet.fromArray([
+        scope: ScopeValueImmutableSet.fromArray([
           "customer:api",
           "token:refresh",
           "token:refresh:issue-large-ttl",
@@ -365,7 +368,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("customer:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -408,6 +411,7 @@ describe("AuthorizationFacade", () => {
         authConfig,
         users,
         tokenPayloads,
+        clients,
       );
 
       await expect(
@@ -424,6 +428,7 @@ describe("AuthorizationFacade", () => {
           authConfig,
           users,
           tokenPayloads,
+          clients,
         ),
       ).rejects.toThrow("Authorization Code already used!");
     });
@@ -490,6 +495,7 @@ describe("AuthorizationFacade", () => {
           authConfig,
           users,
           tokenPayloads,
+          clients,
         ),
       ).rejects.toThrow("Authorization code expired!");
     });
@@ -512,7 +518,7 @@ describe("AuthorizationFacade", () => {
         codeChallenge,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("customer:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -556,8 +562,85 @@ describe("AuthorizationFacade", () => {
           authConfig,
           users,
           tokenPayloads,
+          clients,
         ),
       ).rejects.toThrow("Failed PKCE code challenge");
+    });
+
+    it("stores issued refresh tokens", async () => {
+      const {
+        requests,
+        requestId,
+        users,
+        userPassword,
+        user,
+        authConfig,
+        passwords,
+        codes,
+        clock,
+        clients,
+        client,
+        PKCE,
+        tokenPayloads,
+        codeChallenge,
+        codeVerifier,
+      } = await createAuthorizationTestContext();
+
+      const scope = ScopeValueImmutableSet.fromString("customer:api");
+      const request = await AuthorizationFacade.request(
+        {
+          ...requestMother(),
+          clientId: client.id,
+          id: requestId,
+          codeChallenge,
+          scope,
+        },
+        requests,
+        clients,
+      );
+
+      const { authorizationCode } = await AuthorizationFacade.prompt(
+        {
+          requestId,
+          credentials: {
+            email: user.email,
+            rememberMe: false,
+            password: PasswordValue.fromString(userPassword),
+          },
+        },
+        requests,
+        users,
+        passwords,
+        codes,
+        clock,
+        authConfig,
+      );
+
+      const { refreshToken } = await AuthorizationFacade.codeExchange(
+        {
+          clientId: client.id,
+          code: authorizationCode.toString(),
+          codeVerifier,
+          redirectUri: request.redirectUri,
+        },
+        requests,
+        PKCE,
+        clock,
+        authConfig,
+        users,
+        tokenPayloads,
+        clients,
+      );
+
+      const freshUser = await users.retrieve(user.identity);
+      const decodedRefreshToken = await tokenPayloads.decode(refreshToken);
+
+      expect(
+        freshUser.hasRefreshToken(
+          IdentityValue.fromString(decodedRefreshToken.jti),
+          clock,
+        ),
+      ).toEqual(true);
     });
   });
 });

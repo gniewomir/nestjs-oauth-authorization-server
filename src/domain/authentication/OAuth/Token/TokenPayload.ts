@@ -1,12 +1,13 @@
 import { IdentityValue } from "@domain/IdentityValue";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
 import { ClockInterface } from "@domain/Clock.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
-import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
+import { NumericDateValue } from "@domain/authentication/OAuth/User/NumericDateValue";
 import { User } from "@domain/authentication/OAuth/User/User";
+import { Client } from "@domain/authentication/OAuth/Client/Client";
 
 export type TTokenPayloadConstructorArgs = ConstructorParameters<
   typeof TokenPayload
@@ -14,6 +15,7 @@ export type TTokenPayloadConstructorArgs = ConstructorParameters<
 export type TTokenPayloadParam = TTokenPayloadConstructorArgs[0];
 
 export class TokenPayload {
+  public readonly aud: string;
   public readonly jti: string;
   public readonly iss: string;
   public readonly sub: string;
@@ -22,13 +24,15 @@ export class TokenPayload {
   public readonly scope: string;
 
   constructor(payload: {
+    aud: IdentityValue;
     jti: IdentityValue;
     iss: string;
     sub: IdentityValue;
     exp: NumericDateValue;
     iat: NumericDateValue;
-    scope: ScopeImmutableSet;
+    scope: ScopeValueImmutableSet;
   }) {
+    this.aud = payload.aud.toString();
     this.iss = payload.iss;
     this.iat = payload.iat.toNumber();
     this.exp = payload.exp.toNumber();
@@ -42,14 +46,17 @@ export class TokenPayload {
     scope,
     user,
     clock,
+    client,
   }: {
     authConfig: AuthConfig;
     user: User;
-    scope: ScopeImmutableSet;
+    scope: ScopeValueImmutableSet;
     clock: ClockInterface;
+    client: Client;
   }) {
     const now = clock.nowAsSecondsSinceEpoch();
     return new TokenPayload({
+      aud: client.id,
       jti: IdentityValue.create(),
       iss: authConfig.jwtIssuer,
       sub: user.identity,
@@ -66,14 +73,17 @@ export class TokenPayload {
     scope,
     user,
     clock,
+    client,
   }: {
     authConfig: AuthConfig;
     user: User;
-    scope: ScopeImmutableSet;
+    scope: ScopeValueImmutableSet;
     clock: ClockInterface;
+    client: Client;
   }) {
     const now = clock.nowAsSecondsSinceEpoch();
     return new TokenPayload({
+      aud: client.id,
       jti: IdentityValue.create(),
       iss: authConfig.jwtIssuer,
       sub: user.identity,
@@ -98,17 +108,18 @@ export class TokenPayload {
     );
 
     return new TokenPayload({
+      aud: IdentityValue.fromUnknown(payload.aud),
       iss: payload.iss,
       exp,
       iat,
       jti: IdentityValue.fromUnknown(payload.jti),
       sub: IdentityValue.fromUnknown(payload.sub),
-      scope: ScopeImmutableSet.fromUnknown(payload.scope ?? ""),
+      scope: ScopeValueImmutableSet.fromUnknown(payload.scope ?? ""),
     });
   }
 
   public hasScope(scope: ScopeValue | string): boolean {
-    return ScopeImmutableSet.fromString(this.scope).hasScope(scope);
+    return ScopeValueImmutableSet.fromString(this.scope).hasScope(scope);
   }
 
   public async sign(tokenInterface: TokenPayloadInterface): Promise<string> {

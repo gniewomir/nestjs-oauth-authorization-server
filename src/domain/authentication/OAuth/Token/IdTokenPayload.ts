@@ -1,11 +1,12 @@
 import { IdentityValue } from "@domain/IdentityValue";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { Assert } from "@domain/Assert";
-import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
+import { NumericDateValue } from "@domain/authentication/OAuth/User/NumericDateValue";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { User } from "@domain/authentication/OAuth/User/User";
 import { ClockInterface } from "@domain/Clock.interface";
+import { Client } from "@domain/authentication/OAuth/Client/Client";
 
 export type TIdTokenPayloadConstructorArgs = ConstructorParameters<
   typeof IdTokenPayload
@@ -13,6 +14,7 @@ export type TIdTokenPayloadConstructorArgs = ConstructorParameters<
 export type TIdTokenPayloadParams = TIdTokenPayloadConstructorArgs[0];
 
 export class IdTokenPayload {
+  public readonly aud: string;
   public readonly jti: string;
   public readonly iss: string;
   public readonly sub: string;
@@ -22,6 +24,7 @@ export class IdTokenPayload {
   public readonly email_verified: boolean;
 
   constructor(payload: {
+    aud: IdentityValue;
     jti: IdentityValue;
     iss: string;
     sub: IdentityValue;
@@ -30,6 +33,7 @@ export class IdTokenPayload {
     email: EmailValue;
     email_verified: boolean;
   }) {
+    this.aud = payload.aud.toString();
     this.iss = payload.iss;
     this.iat = payload.iat.toNumber();
     this.exp = payload.exp.toNumber();
@@ -43,13 +47,16 @@ export class IdTokenPayload {
     authConfig,
     user,
     clock,
+    client,
   }: {
     authConfig: AuthConfig;
     user: User;
     clock: ClockInterface;
+    client: Client;
   }) {
     const now = clock.nowAsSecondsSinceEpoch();
     return new IdTokenPayload({
+      aud: client.id,
       jti: IdentityValue.create(),
       iss: authConfig.jwtIssuer,
       sub: user.identity,
@@ -76,6 +83,7 @@ export class IdTokenPayload {
     );
 
     return new IdTokenPayload({
+      aud: IdentityValue.fromUnknown(payload.aud),
       iss: payload.iss,
       exp,
       iat,

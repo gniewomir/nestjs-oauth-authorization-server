@@ -22,7 +22,7 @@ export const userMother = async (
     email: EmailValue.fromString(
       `${IdentityValue.create().toString()}@gmail.com`,
     ),
-    tokens: [],
+    refreshTokens: [],
     hashedPassword,
     emailVerified: false,
     ...params,

@@ -6,7 +6,7 @@ import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
 import { Assert } from "@domain/Assert";
 
 export type TRequestConstructorArgs = ConstructorParameters<typeof Request>;
@@ -18,13 +18,13 @@ export class Request {
   public readonly redirectUri: HttpUrlValue;
   public readonly state: string;
   public readonly codeChallenge: string;
-  public readonly scope: ScopeImmutableSet;
+  public readonly scope: ScopeValueImmutableSet;
 
   constructor(params: {
     id: IdentityValue;
     clientId: IdentityValue;
     redirectUri: HttpUrlValue;
-    scope: ScopeImmutableSet;
+    scope: ScopeValueImmutableSet;
     state: string;
     codeChallenge: string;
     authorizationCode: Code | null;

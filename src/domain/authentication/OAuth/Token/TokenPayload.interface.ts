@@ -1,4 +1,4 @@
-import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 
 export interface TokenPayloadInterface {
   sign(tokenPayload: Record<string, unknown>): Promise<string>;

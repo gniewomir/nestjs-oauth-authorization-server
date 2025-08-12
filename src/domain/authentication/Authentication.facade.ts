@@ -1,13 +1,14 @@
 import { AuthConfig } from "@infrastructure/config/configs";
-import { TokenPayloadInterface } from "./OAuth/User/Token/TokenPayload.interface";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { ClockInterface } from "@domain/Clock.interface";
-import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
-import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
-import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenPayload";
+import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
 import { UserInterface } from "@domain/authentication/OAuth/User/User.interface";
 import { IdentityValue } from "@domain/IdentityValue";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
 
 export class AuthenticationFacade {
   public static async authenticate(
@@ -32,6 +33,7 @@ export class AuthenticationFacade {
     clock: ClockInterface,
     authConfig: AuthConfig,
     users: UserInterface,
+    clients: ClientInterface,
   ): Promise<{
     accessToken: string;
     expiration: number;
@@ -40,11 +42,14 @@ export class AuthenticationFacade {
   }> {
     const payload = await tokenPayloads.verify(refreshToken);
     const user = await users.retrieve(IdentityValue.fromString(payload.sub));
+    const client = await clients.retrieve(
+      IdentityValue.fromString(payload.aud),
+    );
 
     Assert(payload.hasNotExpired(clock), "jwt expired");
 
     Assert(
-      ScopeImmutableSet.fromString(payload.scope).hasScope(
+      ScopeValueImmutableSet.fromString(payload.scope).hasScope(
         ScopeValue.TOKEN_REFRESH(),
       ),
       "jwt does not contain required scope",
@@ -56,24 +61,27 @@ export class AuthenticationFacade {
       clock,
       authConfig,
       user,
+      client,
     });
 
     const accessTokenPayload = TokenPayload.createAccessToken({
       authConfig,
       user,
-      scope: ScopeImmutableSet.fromString(payload.scope)
+      scope: ScopeValueImmutableSet.fromString(payload.scope)
         .add(ScopeValue.TOKEN_AUTHENTICATE())
         .remove(ScopeValue.TOKEN_REFRESH()),
       clock,
+      client,
     });
 
     const refreshTokenPayload = TokenPayload.createRefreshToken({
       authConfig,
       user,
-      scope: ScopeImmutableSet.fromString(payload.scope)
+      scope: ScopeValueImmutableSet.fromString(payload.scope)
         .add(ScopeValue.TOKEN_REFRESH())
         .remove(ScopeValue.TOKEN_AUTHENTICATE()),
       clock,
+      client,
     });
 
     return {

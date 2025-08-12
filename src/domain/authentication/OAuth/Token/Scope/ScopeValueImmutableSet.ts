@@ -1,7 +1,7 @@
-import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
 
-export class ScopeImmutableSet {
+export class ScopeValueImmutableSet {
   private readonly scopes: Set<string>;
 
   private constructor(scopes: (ScopeValue | string)[]) {
@@ -12,12 +12,14 @@ export class ScopeImmutableSet {
     );
   }
 
-  public static fromArray(scopes: (ScopeValue | string)[]): ScopeImmutableSet {
-    return new ScopeImmutableSet(scopes);
+  public static fromArray(
+    scopes: (ScopeValue | string)[],
+  ): ScopeValueImmutableSet {
+    return new ScopeValueImmutableSet(scopes);
   }
 
-  public static fromString(scope: string): ScopeImmutableSet {
-    return new ScopeImmutableSet(
+  public static fromString(scope: string): ScopeValueImmutableSet {
+    return new ScopeValueImmutableSet(
       scope
         .split(" ")
         .map((scope) => scope.trim())
@@ -25,9 +27,9 @@ export class ScopeImmutableSet {
     );
   }
 
-  public static fromUnknown(scope: unknown): ScopeImmutableSet {
+  public static fromUnknown(scope: unknown): ScopeValueImmutableSet {
     if (typeof scope === "string") {
-      return ScopeImmutableSet.fromString(scope);
+      return ScopeValueImmutableSet.fromString(scope);
     }
     Assert(Array.isArray(scope), "scope is not an array");
     Assert(
@@ -36,7 +38,7 @@ export class ScopeImmutableSet {
       ),
       "scope is not an array of ScopeVale or strings",
     );
-    return ScopeImmutableSet.fromArray(scope);
+    return ScopeValueImmutableSet.fromArray(scope);
   }
 
   public toString(): string {
@@ -49,13 +51,13 @@ export class ScopeImmutableSet {
     );
   }
 
-  public add(...args: (ScopeValue | string)[]): ScopeImmutableSet {
-    return ScopeImmutableSet.fromArray([...this.scopes.values(), ...args]);
+  public add(...args: (ScopeValue | string)[]): ScopeValueImmutableSet {
+    return ScopeValueImmutableSet.fromArray([...this.scopes.values(), ...args]);
   }
 
-  public remove(...args: (ScopeValue | string)[]): ScopeImmutableSet {
-    const toRemove = new ScopeImmutableSet(args);
-    return new ScopeImmutableSet(
+  public remove(...args: (ScopeValue | string)[]): ScopeValueImmutableSet {
+    const toRemove = new ScopeValueImmutableSet(args);
+    return new ScopeValueImmutableSet(
       Array.from(this.scopes.values()).filter(
         (scope) => !toRemove.hasScope(scope),
       ),
