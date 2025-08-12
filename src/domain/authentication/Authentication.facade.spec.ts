@@ -375,7 +375,27 @@ describe("AuthenticationFacade", () => {
         ),
       ).rejects.toThrow("jwt does not contain required scope");
     });
-    it.todo("rejects expired refresh token");
+    it("rejects expired refresh token", async () => {
+      const { tokenPayloads, clock, authConfig, refreshToken, users } =
+        await createAuthenticationTestContext({
+          requestedScopes: ScopeImmutableSet.fromString("customer:api"),
+        });
+
+      clock.timeTravelSeconds(
+        clock.nowAsSecondsSinceEpoch() +
+          authConfig.jwtRefreshTokenExpirationSeconds,
+      );
+
+      await expect(
+        AuthenticationFacade.refresh(
+          refreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        ),
+      ).rejects.toThrow("jwt expired");
+    });
     it.todo("rejects garbled refresh token");
     it.todo("rejects refresh token signed with invalid secret/key");
     it.todo("rejects refresh token with invalid issuer");

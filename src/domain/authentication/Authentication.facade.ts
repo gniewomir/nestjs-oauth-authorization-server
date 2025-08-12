@@ -41,6 +41,8 @@ export class AuthenticationFacade {
     const payload = await tokenPayloads.verify(refreshToken);
     const user = await users.retrieve(IdentityValue.fromString(payload.sub));
 
+    Assert(payload.hasNotExpired(clock), "jwt expired");
+
     Assert(
       ScopeImmutableSet.fromString(payload.scope).hasScope(
         ScopeValue.TOKEN_REFRESH(),
