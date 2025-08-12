@@ -9,7 +9,6 @@ export type TGoalConstructorParam = TGoalConstructorArgs[0];
 export class Goal {
   public readonly description: DescriptionValue;
   public readonly identity: IdentityValue;
-  private _ordinalNumber: number;
 
   constructor(parameters: {
     identity: IdentityValue;
@@ -21,6 +20,12 @@ export class Goal {
     this._ordinalNumber = parameters.ordinalNumber;
   }
 
+  private _ordinalNumber: number;
+
+  public get ordinalNumber(): number {
+    return this._ordinalNumber;
+  }
+
   public async moveBefore(
     referenceEntityIdentity: IdentityValue,
     orderingService: OrderService<GoalsInterface>,
@@ -28,9 +33,5 @@ export class Goal {
     this._ordinalNumber = await orderingService.nextAvailableOrdinalNumber(
       referenceEntityIdentity,
     );
-  }
-
-  public get ordinalNumber(): number {
-    return this._ordinalNumber;
   }
 }

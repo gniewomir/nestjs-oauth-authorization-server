@@ -1,5 +1,5 @@
-import { TokenPayloadInterface } from "@domain/authentication/Token/TokenPayload.interface";
-import { TokenPayload } from "@domain/authentication/Token/TokenPayload";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
+import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
 import { Injectable } from "@nestjs/common";
 import { JwtService as NestJwtService } from "@nestjs/jwt";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
@@ -32,7 +32,7 @@ export class JwtService implements TokenPayloadInterface {
     return TokenPayload.fromUnknown(payload);
   }
 
-  async sign(tokenPayload: TokenPayload): Promise<string> {
+  async sign(tokenPayload: Record<string, unknown>): Promise<string> {
     return await this.jwtService.signAsync(tokenPayload, {
       algorithm: this.authConfig.jwtAlgorithm,
       secret: this.authConfig.jwtSecret,

@@ -1,4 +1,4 @@
-import { GoalsDomainRepositoryInMemory } from "@infrastructure/repositories/domain/Goals/Goals.domain-repository.in-memory";
+import { GoalsDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Goals/Goals.domain-repository.in-memory";
 import { goalMother } from "@test/domain/tasks/Goal.mother";
 
 describe("GoalsDomainRepositoryInMemory", () => {

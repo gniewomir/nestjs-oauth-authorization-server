@@ -1,8 +1,8 @@
-import * as assert from "assert";
+import { Assert } from "@domain/Assert";
 
 export class DescriptionValue {
   private constructor(private readonly text: string) {
-    assert(text.length, "Description cannot be empty");
+    Assert(text.length > 0, "Description cannot be empty");
   }
 
   public static fromString(text: string): DescriptionValue {

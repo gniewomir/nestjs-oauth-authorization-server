@@ -11,6 +11,8 @@ export const configValidator: <T extends Record<keyof T, unknown>>(
   for (const error of errors) {
     if (logger) {
       logger.error(error.toString());
+    } else {
+      console.error(error.toString());
     }
   }
 

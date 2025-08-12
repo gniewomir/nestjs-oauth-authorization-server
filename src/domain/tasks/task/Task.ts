@@ -15,7 +15,6 @@ export class Task {
   public readonly assigned: Assigned;
   public readonly goal: Goal;
   public readonly context: Context;
-  private _ordinalNumber: number;
 
   constructor(parameters: {
     identity: IdentityValue;
@@ -32,6 +31,8 @@ export class Task {
     this.context = parameters.context;
     this._ordinalNumber = parameters.ordinalNumber;
   }
+
+  private _ordinalNumber: number;
 
   public get ordinalNumber() {
     return this._ordinalNumber;

@@ -1,20 +1,12 @@
 import { PKCEService } from "@infrastructure/authentication/pkce/pkce.service";
-import { createHash, getRandomValues } from "crypto";
-
-const generateCodeVerifier = () => {
-  const randomBytes = getRandomValues(new Uint8Array(32));
-  return Buffer.from(randomBytes).toString("base64");
-};
-
-const generateChallenge = (codeVerifier: string) => {
-  return createHash("sha256").update(codeVerifier).digest("base64");
-};
+import { PKCEServiceFake } from "@infrastructure/authentication/pkce/pkce.service.fake";
 
 describe("PKCEService", () => {
   it("is able to positively verify codeChallenge with codeVerifier", () => {
     const sut = new PKCEService();
-    const codeVerifier = generateCodeVerifier();
-    const codeChallenge = generateChallenge(codeVerifier);
+    const fake = new PKCEServiceFake();
+    const codeVerifier = fake.generateCodeVerifier();
+    const codeChallenge = fake.generateChallenge(codeVerifier);
     expect(
       sut.verify({
         codeVerifier,
@@ -24,8 +16,9 @@ describe("PKCEService", () => {
   });
   it("is able to negatively verify codeChallenge with codeVerifier", () => {
     const sut = new PKCEService();
-    const codeVerifier = generateCodeVerifier();
-    const codeChallenge = generateChallenge(generateCodeVerifier());
+    const fake = new PKCEServiceFake();
+    const codeVerifier = fake.generateCodeVerifier();
+    const codeChallenge = fake.generateChallenge(fake.generateCodeVerifier());
     expect(
       sut.verify({
         codeVerifier,

@@ -1,10 +1,10 @@
 import { isUUID } from "class-validator";
-import * as assert from "assert";
 import { v4 } from "uuid";
+import { Assert } from "@domain/Assert";
 
 export class IdentityValue {
   private constructor(public readonly identity: string) {
-    assert(isUUID(identity, "4"));
+    Assert(isUUID(identity, "4"));
   }
 
   public static create(): IdentityValue {

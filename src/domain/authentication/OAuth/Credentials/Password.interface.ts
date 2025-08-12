@@ -3,6 +3,7 @@ export interface PasswordInterface {
     passwordPlainText: string,
     passwordHash: string,
   ): Promise<boolean>;
+
   hashPlaintextPassword(passwordPlainText: string): Promise<string>;
 }
 
