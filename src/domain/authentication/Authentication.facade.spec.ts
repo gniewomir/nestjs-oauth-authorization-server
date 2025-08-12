@@ -205,7 +205,45 @@ describe("AuthenticationFacade", () => {
         ),
       ).resolves.not.toThrow();
     });
-    it.todo("issues new idToken, accessToken and refresh token");
+    it("issues new idToken, accessToken and refresh token and provides accessToken expiration", async () => {
+      const {
+        tokenPayloads,
+        clock,
+        authConfig,
+        refreshToken: incomingRefreshToken,
+        users,
+      } = await createAuthenticationTestContext();
+
+      const { idToken, accessToken, refreshToken, expiration } =
+        await AuthenticationFacade.refresh(
+          incomingRefreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        );
+
+      await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
+      await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
+      await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
+        exp: expiration,
+        scope: ScopeImmutableSet.fromArray([
+          "customer:api",
+          "token:authenticate",
+        ]).toString(),
+      });
+      await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
+      await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
+        exp:
+          expiration -
+          authConfig.jwtAccessTokenExpirationSeconds +
+          authConfig.jwtRefreshTokenExpirationSeconds,
+        scope: ScopeImmutableSet.fromArray([
+          "customer:api",
+          "token:refresh",
+        ]).toString(),
+      });
+    });
     it.todo("passes on scopes contained in received refresh token");
     it.todo(
       "issues longer ttl refresh token, if refresh token contained required scope",
