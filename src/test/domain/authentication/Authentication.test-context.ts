@@ -4,7 +4,11 @@ import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope
 import { requestMother } from "@test/domain/authentication/Request.mother";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 
-export const createAuthenticationTestContext = async () => {
+export const createAuthenticationTestContext = async ({
+  requestedScopes,
+}: {
+  requestedScopes: ScopeImmutableSet;
+}) => {
   const authenticationContext = await createAuthorizationTestContext();
   const {
     requests,
@@ -24,14 +28,13 @@ export const createAuthenticationTestContext = async () => {
     codeVerifier,
   } = authenticationContext;
 
-  const scope = ScopeImmutableSet.fromString("customer:api");
   const request = await AuthorizationFacade.authorizationRequest(
     {
       ...requestMother(),
       clientId: client.id,
       id: requestId,
       codeChallenge,
-      scope,
+      scope: requestedScopes,
     },
     requests,
     clients,
