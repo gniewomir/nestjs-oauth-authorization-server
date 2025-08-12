@@ -3,6 +3,9 @@ import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/T
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { Assert } from "@domain/Assert";
 import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
+import { AuthConfig } from "@infrastructure/config/configs";
+import { User } from "@domain/authentication/OAuth/User/User";
+import { ClockInterface } from "@domain/Clock.interface";
 
 export type TIdTokenPayloadConstructorArgs = ConstructorParameters<
   typeof IdTokenPayload
@@ -34,6 +37,29 @@ export class IdTokenPayload {
     this.jti = payload.jti.toString();
     this.email = payload.email.toString();
     this.email_verified = payload.email_verified;
+  }
+
+  public static createIdToken({
+    authConfig,
+    user,
+    clock,
+  }: {
+    authConfig: AuthConfig;
+    user: User;
+    clock: ClockInterface;
+  }) {
+    const now = clock.nowAsSecondsSinceEpoch();
+    return new IdTokenPayload({
+      jti: IdentityValue.create(),
+      iss: authConfig.jwtIssuer,
+      sub: user.identity,
+      iat: NumericDateValue.fromNumber(now),
+      exp: NumericDateValue.fromNumber(
+        now + authConfig.jwtAccessTokenExpirationSeconds,
+      ),
+      email: user.email,
+      email_verified: user.emailVerified,
+    });
   }
 
   public static fromUnknown(payload: Record<string, unknown>) {

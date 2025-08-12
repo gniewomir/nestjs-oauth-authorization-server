@@ -17,7 +17,6 @@ import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenP
 import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
-import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 
 export class AuthorizationFacade {
   public static async authorizationRequest(
@@ -121,7 +120,6 @@ export class AuthorizationFacade {
 
     Assert(request.authorizationCode instanceof Code);
     const user = await users.retrieve(request.authorizationCode.userId);
-    const now = clock.nowAsSecondsSinceEpoch();
 
     /**
      * idToken is intended as proof of authentication.
@@ -129,16 +127,10 @@ export class AuthorizationFacade {
      * It cannot be used to authenticate api requests therefore it cannot contain scope.
      * It can be inspected by the client.
      */
-    const idTokenPayload = new IdTokenPayload({
-      jti: IdentityValue.create(),
-      iss: authConfig.jwtIssuer,
-      sub: user.identity,
-      iat: NumericDateValue.fromNumber(now),
-      exp: NumericDateValue.fromNumber(
-        now + authConfig.jwtAccessTokenExpirationSeconds,
-      ),
-      email: user.email,
-      email_verified: user.emailVerified,
+    const idTokenPayload = IdTokenPayload.createIdToken({
+      clock,
+      authConfig,
+      user,
     });
 
     /**
