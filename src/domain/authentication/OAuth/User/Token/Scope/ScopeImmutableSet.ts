@@ -1,4 +1,4 @@
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
 
 export class ScopeImmutableSet {

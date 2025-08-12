@@ -1,8 +1,8 @@
 import { createAuthorizationContext } from "@test/domain/authentication/Authorization.context";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeImmutableSet";
+import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { requestMother } from "@test/domain/authentication/Request.mother";
-import { PasswordValue } from "@domain/authentication/OAuth/Credentials/PasswordValue";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 
 export const createAuthenticationContext = async () => {
   const authenticationContext = await createAuthorizationContext();

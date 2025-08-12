@@ -1,21 +1,20 @@
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
-import { PasswordValue } from "@domain/authentication/OAuth/Credentials/PasswordValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
 import { UserInterface } from "@domain/authentication/OAuth/User/User.interface";
-import { PasswordInterface } from "@domain/authentication/OAuth/Credentials/Password.interface";
+import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
 import { TokenPayload } from "@domain/authentication/OAuth/User/Token/TokenPayload";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
 import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenPayload";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeImmutableSet";
+import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
 import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
@@ -146,17 +145,11 @@ export class AuthorizationFacade {
      * accessToken is intended to authenticate api calls.
      * It should not be inspected by client.
      */
-    const accessTokenPayload = new TokenPayload({
-      jti: IdentityValue.create(),
-      iss: authConfig.jwtIssuer,
-      sub: user.identity,
-      iat: NumericDateValue.fromNumber(now),
-      exp: NumericDateValue.fromNumber(
-        now + authConfig.jwtAccessTokenExpirationSeconds,
-      ),
-      scope: request.scope
-        .add(ScopeValue.TOKEN_AUTHENTICATE())
-        .remove(ScopeValue.TOKEN_REFRESH()),
+    const accessTokenPayload = TokenPayload.createAccessToken({
+      authConfig,
+      user,
+      request,
+      clock,
     });
 
     /**
@@ -164,20 +157,11 @@ export class AuthorizationFacade {
      * It cannot be used to authenticate api calls - only to obtain access token.
      * It should not be inspected by client.
      */
-    const refreshTokenPayload = new TokenPayload({
-      jti: IdentityValue.create(),
-      iss: authConfig.jwtIssuer,
-      sub: user.identity,
-      iat: NumericDateValue.fromNumber(now),
-      exp: NumericDateValue.fromNumber(
-        now +
-          (request.scope.hasScope(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
-            ? authConfig.jwtLongTTLRefreshTokenExpirationSeconds
-            : authConfig.jwtRefreshTokenExpirationSeconds),
-      ),
-      scope: request.scope
-        .remove(ScopeValue.TOKEN_AUTHENTICATE())
-        .add(ScopeValue.TOKEN_REFRESH()),
+    const refreshTokenPayload = TokenPayload.createRefreshToken({
+      authConfig,
+      user,
+      request,
+      clock,
     });
 
     await requests.persist(request);

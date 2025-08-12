@@ -1,6 +1,6 @@
 import { IdentityValue } from "@domain/IdentityValue";
 import { Token } from "@domain/authentication/OAuth/User/Token/Token";
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 
 export type TUserConstructorArgs = ConstructorParameters<typeof User>;
 export type TUserConstructorParam = TUserConstructorArgs[0];

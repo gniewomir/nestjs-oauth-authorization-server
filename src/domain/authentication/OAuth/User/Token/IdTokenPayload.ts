@@ -1,6 +1,6 @@
 import { IdentityValue } from "@domain/IdentityValue";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { Assert } from "@domain/Assert";
 import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 

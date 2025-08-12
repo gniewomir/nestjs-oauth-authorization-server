@@ -1,4 +1,4 @@
-import { PasswordInterface } from "@domain/authentication/OAuth/Credentials/Password.interface";
+import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { Assert } from "@domain/Assert";
 
 export class PasswordValue {

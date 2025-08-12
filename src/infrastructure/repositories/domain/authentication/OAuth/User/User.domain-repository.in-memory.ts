@@ -1,5 +1,5 @@
 import { UserInterface } from "@domain/authentication/OAuth/User/User.interface";
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { User } from "@domain/authentication/OAuth/User/User";
 import * as assert from "node:assert";

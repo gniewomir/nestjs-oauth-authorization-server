@@ -2,9 +2,9 @@ import {
   TUserConstructorParam,
   User,
 } from "@domain/authentication/OAuth/User/User";
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { IdentityValue } from "@domain/IdentityValue";
-import { PasswordInterface } from "@domain/authentication/OAuth/Credentials/Password.interface";
+import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 
 export const userMother = async (
   params: Partial<TUserConstructorParam> = {},

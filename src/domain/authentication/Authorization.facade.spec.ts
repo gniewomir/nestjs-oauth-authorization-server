@@ -4,10 +4,10 @@ import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/do
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import * as assert from "node:assert";
-import { PasswordValue } from "@domain/authentication/OAuth/Credentials/PasswordValue";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeImmutableSet";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { createAuthorizationContext } from "@test/domain/authentication/Authorization.context";
 
 describe("AuthorizationFacade", () => {

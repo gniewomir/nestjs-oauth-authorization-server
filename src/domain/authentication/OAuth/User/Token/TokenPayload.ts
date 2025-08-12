@@ -1,11 +1,13 @@
 import { IdentityValue } from "@domain/IdentityValue";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
-import { ScopeImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeImmutableSet";
+import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope/ScopeImmutableSet";
 import { ClockInterface } from "@domain/Clock.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/User/Token/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
 import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
+import { User } from "@domain/authentication/OAuth/User/User";
+import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 
 export type TTokenPayloadConstructorArgs = ConstructorParameters<
   typeof TokenPayload
@@ -34,6 +36,61 @@ export class TokenPayload {
     this.sub = payload.sub.toString();
     this.jti = payload.jti.toString();
     this.scope = payload.scope.toString();
+  }
+
+  public static createAccessToken({
+    authConfig,
+    request,
+    user,
+    clock,
+  }: {
+    authConfig: AuthConfig;
+    user: User;
+    request: Request;
+    clock: ClockInterface;
+  }) {
+    const now = clock.nowAsSecondsSinceEpoch();
+    return new TokenPayload({
+      jti: IdentityValue.create(),
+      iss: authConfig.jwtIssuer,
+      sub: user.identity,
+      iat: NumericDateValue.fromNumber(now),
+      exp: NumericDateValue.fromNumber(
+        now + authConfig.jwtAccessTokenExpirationSeconds,
+      ),
+      scope: request.scope
+        .add(ScopeValue.TOKEN_AUTHENTICATE())
+        .remove(ScopeValue.TOKEN_REFRESH()),
+    });
+  }
+
+  public static createRefreshToken({
+    authConfig,
+    request,
+    user,
+    clock,
+  }: {
+    authConfig: AuthConfig;
+    user: User;
+    request: Request;
+    clock: ClockInterface;
+  }) {
+    const now = clock.nowAsSecondsSinceEpoch();
+    return new TokenPayload({
+      jti: IdentityValue.create(),
+      iss: authConfig.jwtIssuer,
+      sub: user.identity,
+      iat: NumericDateValue.fromNumber(now),
+      exp: NumericDateValue.fromNumber(
+        now +
+          (request.scope.hasScope(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
+            ? authConfig.jwtLongTTLRefreshTokenExpirationSeconds
+            : authConfig.jwtRefreshTokenExpirationSeconds),
+      ),
+      scope: request.scope
+        .remove(ScopeValue.TOKEN_AUTHENTICATE())
+        .add(ScopeValue.TOKEN_REFRESH()),
+    });
   }
 
   public static fromUnknown(payload: Record<string, unknown>) {

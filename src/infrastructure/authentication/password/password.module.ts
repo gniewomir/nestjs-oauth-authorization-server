@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@infrastructure/config";
 import { PasswordService } from "@infrastructure/authentication/password/password.service";
-import { PasswordInterfaceSymbol } from "@domain/authentication/OAuth/Credentials/Password.interface";
+import { PasswordInterfaceSymbol } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 
 @Module({
   imports: [ConfigModule],

@@ -1,6 +1,6 @@
 import { User } from "@domain/authentication/OAuth/User/User";
 import { IdentityValue } from "@domain/IdentityValue";
-import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 
 export interface UserInterface {
   retrieve(identity: IdentityValue): Promise<User>;

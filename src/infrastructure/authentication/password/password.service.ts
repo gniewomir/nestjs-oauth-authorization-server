@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PasswordInterface } from "@domain/authentication/OAuth/Credentials/Password.interface";
+import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { compare, hash } from "bcrypt";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
 import * as assert from "node:assert";

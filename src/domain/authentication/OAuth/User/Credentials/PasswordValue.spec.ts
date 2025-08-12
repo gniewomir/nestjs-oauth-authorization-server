@@ -1,4 +1,4 @@
-import { PasswordValue } from "@domain/authentication/OAuth/Credentials/PasswordValue";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { PasswordService } from "@infrastructure/authentication/password/password.service";
 import { plainToConfig } from "@infrastructure/config/configs/utility";
 import {
