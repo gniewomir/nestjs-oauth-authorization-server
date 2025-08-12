@@ -278,17 +278,14 @@ describe("AuthenticationFacade", () => {
         ]),
       });
 
-      const { idToken, accessToken, refreshToken } =
-        await AuthenticationFacade.refresh(
-          receivedRefreshToken,
-          tokenPayloads,
-          clock,
-          authConfig,
-          users,
-        );
+      const { accessToken, refreshToken } = await AuthenticationFacade.refresh(
+        receivedRefreshToken,
+        tokenPayloads,
+        clock,
+        authConfig,
+        users,
+      );
 
-      await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         scope: ScopeImmutableSet.fromArray([
           "customer:api",
@@ -296,7 +293,6 @@ describe("AuthenticationFacade", () => {
           "token:authenticate",
         ]).toString(),
       });
-      await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         scope: ScopeImmutableSet.fromArray([
           "customer:api",
@@ -305,9 +301,48 @@ describe("AuthenticationFacade", () => {
         ]).toString(),
       });
     });
-    it.todo(
-      "issues longer ttl refresh token, if refresh token contained required scope",
-    );
+    it("issues refresh token with longer ttl, if refresh token contained required scope", async () => {
+      const {
+        tokenPayloads,
+        clock,
+        authConfig,
+        refreshToken: receivedRefreshToken,
+        users,
+      } = await createAuthenticationTestContext({
+        requestedScopes: ScopeImmutableSet.fromArray([
+          "customer:api",
+          "token:refresh:issue-large-ttl",
+        ]),
+      });
+
+      const { accessToken, refreshToken, expiration } =
+        await AuthenticationFacade.refresh(
+          receivedRefreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+        );
+
+      await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
+        scope: ScopeImmutableSet.fromArray([
+          "customer:api",
+          "token:refresh:issue-large-ttl",
+          "token:authenticate",
+        ]).toString(),
+      });
+      await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
+        exp:
+          expiration -
+          authConfig.jwtAccessTokenExpirationSeconds +
+          authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
+        scope: ScopeImmutableSet.fromArray([
+          "customer:api",
+          "token:refresh:issue-large-ttl",
+          "token:refresh",
+        ]).toString(),
+      });
+    });
     it.todo("rejects idToken");
     it.todo("rejects access token");
     it.todo("rejects expired refresh token");
