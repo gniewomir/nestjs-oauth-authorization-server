@@ -15,6 +15,13 @@ export class IdentityValue {
     return new IdentityValue(identity);
   }
 
+  public static fromUnknown(identity: unknown): IdentityValue {
+    Assert(typeof identity === "string" || identity instanceof IdentityValue);
+    return typeof identity === "string"
+      ? IdentityValue.fromString(identity)
+      : identity;
+  }
+
   public toString() {
     return this.identity;
   }

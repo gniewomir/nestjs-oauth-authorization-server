@@ -18,6 +18,7 @@ import { IdTokenPayload } from "@domain/authentication/OAuth/User/Token/IdTokenP
 import { ScopeImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
+import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 
 export class AuthorizationFacade {
   public static async authorizationRequest(
@@ -133,8 +134,10 @@ export class AuthorizationFacade {
       jti: IdentityValue.create(),
       iss: authConfig.jwtIssuer,
       sub: user.identity,
-      iat: now,
-      exp: now + authConfig.jwtAccessTokenExpirationSeconds,
+      iat: NumericDateValue.fromNumber(now),
+      exp: NumericDateValue.fromNumber(
+        now + authConfig.jwtAccessTokenExpirationSeconds,
+      ),
       email: user.email,
       email_verified: user.emailVerified,
     });
@@ -147,8 +150,10 @@ export class AuthorizationFacade {
       jti: IdentityValue.create(),
       iss: authConfig.jwtIssuer,
       sub: user.identity,
-      iat: now,
-      exp: now + authConfig.jwtAccessTokenExpirationSeconds,
+      iat: NumericDateValue.fromNumber(now),
+      exp: NumericDateValue.fromNumber(
+        now + authConfig.jwtAccessTokenExpirationSeconds,
+      ),
       scope: request.scope
         .add(ScopeValue.TOKEN_AUTHENTICATE())
         .remove(ScopeValue.TOKEN_REFRESH()),
@@ -163,12 +168,13 @@ export class AuthorizationFacade {
       jti: IdentityValue.create(),
       iss: authConfig.jwtIssuer,
       sub: user.identity,
-      iat: now,
-      exp:
+      iat: NumericDateValue.fromNumber(now),
+      exp: NumericDateValue.fromNumber(
         now +
-        (request.scope.hasScope(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
-          ? authConfig.jwtLongTTLRefreshTokenExpirationSeconds
-          : authConfig.jwtRefreshTokenExpirationSeconds),
+          (request.scope.hasScope(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
+            ? authConfig.jwtLongTTLRefreshTokenExpirationSeconds
+            : authConfig.jwtRefreshTokenExpirationSeconds),
+      ),
       scope: request.scope
         .remove(ScopeValue.TOKEN_AUTHENTICATE())
         .add(ScopeValue.TOKEN_REFRESH()),

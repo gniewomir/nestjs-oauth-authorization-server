@@ -1,4 +1,5 @@
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { Assert } from "@domain/Assert";
 
 export class ScopeImmutableSet {
   private readonly scopes: Set<string>;
@@ -22,6 +23,22 @@ export class ScopeImmutableSet {
         .map((scope) => scope.trim())
         .filter((scope) => scope.length > 0),
     );
+  }
+
+  public static fromUnknown(scope: unknown): ScopeImmutableSet {
+    if (typeof scope === "string") {
+      return ScopeImmutableSet.fromString(scope);
+    }
+    Assert(Array.isArray(scope), "scope is not an array");
+    Assert(
+      scope.every(
+        (scope) =>
+          typeof scope === "string" ||
+          (typeof scope === "object" && scope instanceof ScopeValue),
+      ),
+      "scope is not an array of ScopeVale or strings",
+    );
+    return ScopeImmutableSet.fromArray(scope);
   }
 
   public toString(): string {

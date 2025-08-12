@@ -2,6 +2,7 @@ import { IdentityValue } from "@domain/IdentityValue";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/User/Token/TokenPayload.interface";
 import { EmailValue } from "@domain/authentication/OAuth/Credentials/EmailValue";
 import { Assert } from "@domain/Assert";
+import { NumericDateValue } from "@domain/authentication/OAuth/User/Token/NumericDateValue";
 
 export type TIdTokenPayloadConstructorArgs = ConstructorParameters<
   typeof IdTokenPayload
@@ -21,14 +22,14 @@ export class IdTokenPayload {
     jti: IdentityValue;
     iss: string;
     sub: IdentityValue;
-    exp: number;
-    iat: number;
+    exp: NumericDateValue;
+    iat: NumericDateValue;
     email: EmailValue;
     email_verified: boolean;
   }) {
     this.iss = payload.iss;
-    this.iat = payload.iat;
-    this.exp = payload.exp;
+    this.iat = payload.iat.toNumber();
+    this.exp = payload.exp.toNumber();
     this.sub = payload.sub.toString();
     this.jti = payload.jti.toString();
     this.email = payload.email.toString();
@@ -36,22 +37,13 @@ export class IdTokenPayload {
   }
 
   public static fromUnknown(payload: Record<string, unknown>) {
-    Assert(typeof payload.jti === "string", "Claim jti must be a string");
-    Assert(typeof payload.sub === "string", "Claim sub must be a string");
     Assert(typeof payload.iss === "string", "Claim iss must be a string");
+    const exp = NumericDateValue.fromUnknown(payload.exp);
+    const iat = NumericDateValue.fromUnknown(payload.iat);
     Assert(
-      typeof payload.iat === "number" && payload.iat > 0,
-      "Claim iat must be a timestamp",
+      exp.toNumber() > iat.toNumber(),
+      "jwt cannot expire before it was issued",
     );
-    Assert(
-      typeof payload.exp === "number" && payload.exp > 0,
-      "Claim exp must be a timestamp",
-    );
-    Assert(
-      payload.exp > payload.iat,
-      "JWT expiration cannot be before issuing",
-    );
-    Assert(typeof payload.email === "string", "email must be a string");
     Assert(
       typeof payload.email_verified === "boolean",
       "email_verified must be a boolean",
@@ -59,11 +51,11 @@ export class IdTokenPayload {
 
     return new IdTokenPayload({
       iss: payload.iss,
-      exp: payload.exp,
-      iat: payload.iat,
-      jti: IdentityValue.fromString(payload.jti),
-      sub: IdentityValue.fromString(payload.sub),
-      email: EmailValue.fromString(payload.email),
+      exp,
+      iat,
+      jti: IdentityValue.fromUnknown(payload.jti),
+      sub: IdentityValue.fromUnknown(payload.sub),
+      email: EmailValue.fromUnknown(payload.email),
       email_verified: payload.email_verified,
     });
   }
