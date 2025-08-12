@@ -50,6 +50,8 @@ export class AuthenticationFacade {
       "jwt does not contain required scope",
     );
 
+    Assert(payload.hasValidIssuer(authConfig), "jwt has invalid issuer");
+
     const idTokenPayload = IdTokenPayload.createIdToken({
       clock,
       authConfig,

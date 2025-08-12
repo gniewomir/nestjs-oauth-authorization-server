@@ -11,7 +11,7 @@ import { ScopeImmutableSet } from "@domain/authentication/OAuth/User/Token/Scope
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
 
 describe("AuthorizationFacade", () => {
-  describe("authorizationRequest", () => {
+  describe("request", () => {
     it("stores valid authorization request", async () => {
       const clients = new ClientDomainRepositoryInMemory();
       const client = clientMother();
@@ -21,7 +21,7 @@ describe("AuthorizationFacade", () => {
 
       assert(requests.requests.size === 0);
 
-      const request = await AuthorizationFacade.authorizationRequest(
+      const request = await AuthorizationFacade.request(
         { ...requestMother(), clientId: client.id },
         requests,
         clients,
@@ -32,7 +32,7 @@ describe("AuthorizationFacade", () => {
     });
     it("rejects request, if oauth client does not exist", async () => {
       await expect(() =>
-        AuthorizationFacade.authorizationRequest(
+        AuthorizationFacade.request(
           requestMother(),
           new RequestDomainRepositoryInMemory(),
           new ClientDomainRepositoryInMemory(),
@@ -40,7 +40,7 @@ describe("AuthorizationFacade", () => {
       ).rejects.toThrow("Not found");
     });
   });
-  describe("authorizationPrompt", () => {
+  describe("prompt", () => {
     it("accepts valid user credentials & creates authorization code", async () => {
       const {
         requests,
@@ -56,13 +56,13 @@ describe("AuthorizationFacade", () => {
         client,
       } = await createAuthorizationTestContext();
 
-      await AuthorizationFacade.authorizationRequest(
+      await AuthorizationFacade.request(
         { ...requestMother(), clientId: client.id, id: requestId },
         requests,
         clients,
       );
 
-      await AuthorizationFacade.authorizationPrompt(
+      await AuthorizationFacade.prompt(
         {
           requestId,
           credentials: {
@@ -100,14 +100,14 @@ describe("AuthorizationFacade", () => {
       const invalidPassword = "invalidPassword";
       assert(userPassword !== invalidPassword);
 
-      await AuthorizationFacade.authorizationRequest(
+      await AuthorizationFacade.request(
         { ...requestMother(), clientId: client.id, id: requestId },
         requests,
         clients,
       );
 
       await expect(() =>
-        AuthorizationFacade.authorizationPrompt(
+        AuthorizationFacade.prompt(
           {
             requestId,
             credentials: {
@@ -142,14 +142,14 @@ describe("AuthorizationFacade", () => {
       const unknownEmail = "unknown@unknown.com";
       assert(user.email.toString() !== unknownEmail);
 
-      await AuthorizationFacade.authorizationRequest(
+      await AuthorizationFacade.request(
         { ...requestMother(), clientId: client.id, id: requestId },
         requests,
         clients,
       );
 
       await expect(() =>
-        AuthorizationFacade.authorizationPrompt(
+        AuthorizationFacade.prompt(
           {
             requestId,
             credentials: {
@@ -168,7 +168,7 @@ describe("AuthorizationFacade", () => {
       ).rejects.toThrow("Not found");
     });
   });
-  describe("authorizationCodeExchange", () => {
+  describe("codeExchange", () => {
     it("allows exchange of authorization code for tokens", async () => {
       const {
         requests,
@@ -189,7 +189,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromString("customer:api");
-      const request = await AuthorizationFacade.authorizationRequest(
+      const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -201,26 +201,25 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } =
-        await AuthorizationFacade.authorizationPrompt(
-          {
-            requestId,
-            credentials: {
-              email: user.email,
-              rememberMe: false,
-              password: PasswordValue.fromString(userPassword),
-            },
+      const { authorizationCode } = await AuthorizationFacade.prompt(
+        {
+          requestId,
+          credentials: {
+            email: user.email,
+            rememberMe: false,
+            password: PasswordValue.fromString(userPassword),
           },
-          requests,
-          users,
-          passwords,
-          codes,
-          clock,
-          authConfig,
-        );
+        },
+        requests,
+        users,
+        passwords,
+        codes,
+        clock,
+        authConfig,
+      );
 
       const { idToken, accessToken, expiration, refreshToken } =
-        await AuthorizationFacade.authorizationCodeExchange(
+        await AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -279,7 +278,7 @@ describe("AuthorizationFacade", () => {
         "customer:api",
         "token:refresh:issue-large-ttl",
       ]);
-      const request = await AuthorizationFacade.authorizationRequest(
+      const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -291,26 +290,25 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } =
-        await AuthorizationFacade.authorizationPrompt(
-          {
-            requestId,
-            credentials: {
-              email: user.email,
-              rememberMe: false,
-              password: PasswordValue.fromString(userPassword),
-            },
+      const { authorizationCode } = await AuthorizationFacade.prompt(
+        {
+          requestId,
+          credentials: {
+            email: user.email,
+            rememberMe: false,
+            password: PasswordValue.fromString(userPassword),
           },
-          requests,
-          users,
-          passwords,
-          codes,
-          clock,
-          authConfig,
-        );
+        },
+        requests,
+        users,
+        passwords,
+        codes,
+        clock,
+        authConfig,
+      );
 
       const { idToken, accessToken, expiration, refreshToken } =
-        await AuthorizationFacade.authorizationCodeExchange(
+        await AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -368,7 +366,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromString("customer:api");
-      const request = await AuthorizationFacade.authorizationRequest(
+      const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -380,25 +378,24 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } =
-        await AuthorizationFacade.authorizationPrompt(
-          {
-            requestId,
-            credentials: {
-              email: user.email,
-              rememberMe: false,
-              password: PasswordValue.fromString(userPassword),
-            },
+      const { authorizationCode } = await AuthorizationFacade.prompt(
+        {
+          requestId,
+          credentials: {
+            email: user.email,
+            rememberMe: false,
+            password: PasswordValue.fromString(userPassword),
           },
-          requests,
-          users,
-          passwords,
-          codes,
-          clock,
-          authConfig,
-        );
+        },
+        requests,
+        users,
+        passwords,
+        codes,
+        clock,
+        authConfig,
+      );
 
-      await AuthorizationFacade.authorizationCodeExchange(
+      await AuthorizationFacade.codeExchange(
         {
           clientId: client.id,
           code: authorizationCode.toString(),
@@ -414,7 +411,7 @@ describe("AuthorizationFacade", () => {
       );
 
       await expect(
-        AuthorizationFacade.authorizationCodeExchange(
+        AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -449,7 +446,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const request = await AuthorizationFacade.authorizationRequest(
+      const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -460,28 +457,27 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } =
-        await AuthorizationFacade.authorizationPrompt(
-          {
-            requestId,
-            credentials: {
-              email: user.email,
-              rememberMe: false,
-              password: PasswordValue.fromString(userPassword),
-            },
+      const { authorizationCode } = await AuthorizationFacade.prompt(
+        {
+          requestId,
+          credentials: {
+            email: user.email,
+            rememberMe: false,
+            password: PasswordValue.fromString(userPassword),
           },
-          requests,
-          users,
-          passwords,
-          codes,
-          clock,
-          authConfig,
-        );
+        },
+        requests,
+        users,
+        passwords,
+        codes,
+        clock,
+        authConfig,
+      );
 
       clock.timeTravelSeconds(authorizationCode.expiration);
 
       await expect(
-        AuthorizationFacade.authorizationCodeExchange(
+        AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -517,7 +513,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeImmutableSet.fromString("customer:api");
-      const request = await AuthorizationFacade.authorizationRequest(
+      const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -529,26 +525,25 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } =
-        await AuthorizationFacade.authorizationPrompt(
-          {
-            requestId,
-            credentials: {
-              email: user.email,
-              rememberMe: false,
-              password: PasswordValue.fromString(userPassword),
-            },
+      const { authorizationCode } = await AuthorizationFacade.prompt(
+        {
+          requestId,
+          credentials: {
+            email: user.email,
+            rememberMe: false,
+            password: PasswordValue.fromString(userPassword),
           },
-          requests,
-          users,
-          passwords,
-          codes,
-          clock,
-          authConfig,
-        );
+        },
+        requests,
+        users,
+        passwords,
+        codes,
+        clock,
+        authConfig,
+      );
 
       await expect(
-        AuthorizationFacade.authorizationCodeExchange(
+        AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
             code: authorizationCode.toString(),

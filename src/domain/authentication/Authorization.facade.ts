@@ -19,7 +19,7 @@ import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
 
 export class AuthorizationFacade {
-  public static async authorizationRequest(
+  public static async request(
     params: {
       id: IdentityValue;
       clientId: IdentityValue;
@@ -36,7 +36,7 @@ export class AuthorizationFacade {
     return request;
   }
 
-  public static async authorizationPrompt(
+  public static async prompt(
     params: {
       requestId: IdentityValue;
       credentials: {
@@ -75,7 +75,7 @@ export class AuthorizationFacade {
     };
   }
 
-  public static async authorizationCodeExchange(
+  public static async codeExchange(
     {
       clientId,
       code,

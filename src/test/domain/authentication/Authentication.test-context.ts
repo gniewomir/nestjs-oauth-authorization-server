@@ -28,7 +28,7 @@ export const createAuthenticationTestContext = async ({
     codeVerifier,
   } = authenticationContext;
 
-  const request = await AuthorizationFacade.authorizationRequest(
+  const request = await AuthorizationFacade.request(
     {
       ...requestMother(),
       clientId: client.id,
@@ -40,7 +40,7 @@ export const createAuthenticationTestContext = async ({
     clients,
   );
 
-  const { authorizationCode } = await AuthorizationFacade.authorizationPrompt(
+  const { authorizationCode } = await AuthorizationFacade.prompt(
     {
       requestId,
       credentials: {
@@ -58,7 +58,7 @@ export const createAuthenticationTestContext = async ({
   );
 
   const { accessToken, refreshToken, idToken } =
-    await AuthorizationFacade.authorizationCodeExchange(
+    await AuthorizationFacade.codeExchange(
       {
         clientId: client.id,
         code: authorizationCode.toString(),
