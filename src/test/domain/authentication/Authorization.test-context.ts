@@ -25,7 +25,7 @@ export const createAuthorizationTestContext = async () => {
   const passwords = new PasswordService(authConfig);
   const userPassword = "abcdefghijklmnopqrstq";
   const user = userMother({
-    hashedPassword: await passwords.hashPlaintextPassword(userPassword),
+    password: await passwords.hashPlaintextPassword(userPassword),
   });
   await users.persist(user);
 

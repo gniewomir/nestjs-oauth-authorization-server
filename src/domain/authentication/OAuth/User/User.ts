@@ -10,20 +10,20 @@ export class User {
   public readonly identity: IdentityValue;
   public readonly email: EmailValue;
   public readonly emailVerified: boolean;
-  public readonly hashedPassword: string;
+  public readonly password: string;
   private _refreshTokens: RefreshTokenValue[];
 
   constructor(parameters: {
     identity: IdentityValue;
     email: EmailValue;
     emailVerified: boolean;
-    hashedPassword: string;
+    password: string;
     refreshTokens: RefreshTokenValue[];
   }) {
     this.identity = parameters.identity;
     this.email = parameters.email;
     this.emailVerified = parameters.emailVerified;
-    this.hashedPassword = parameters.hashedPassword;
+    this.password = parameters.password;
     this._refreshTokens = parameters.refreshTokens;
   }
 

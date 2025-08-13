@@ -59,7 +59,7 @@ export class AuthorizationFacade {
     Assert(params.credentials.email.isEqual(user.email), "Email mismatch");
     Assert(
       await params.credentials.password.isEqualHashedPassword(
-        user.hashedPassword,
+        user.password,
         passwords,
       ),
       "Password mismatch",

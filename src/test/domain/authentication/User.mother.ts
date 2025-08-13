@@ -13,7 +13,7 @@ export const userMother = (params: Partial<TUserConstructorParam> = {}) => {
       `${IdentityValue.create().toString()}@gmail.com`,
     ),
     refreshTokens: [],
-    hashedPassword: randomString(16),
+    password: randomString(16),
     emailVerified: false,
     ...params,
   });
