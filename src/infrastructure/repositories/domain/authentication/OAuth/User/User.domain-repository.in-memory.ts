@@ -20,7 +20,7 @@ export class UserDomainRepositoryInMemory implements UsersInterface {
         return Promise.resolve(user);
       }
     }
-    throw new Error("Not found");
+    throw new Error("User not found");
   }
 
   persist(user: User): Promise<void> {
@@ -30,7 +30,7 @@ export class UserDomainRepositoryInMemory implements UsersInterface {
 
   retrieve(identity: IdentityValue): Promise<User> {
     const user = this.users.get(identity.toString());
-    assert(user, "Not found");
+    assert(user, "User not found");
     return Promise.resolve(user);
   }
 }

@@ -166,7 +166,7 @@ describe("AuthorizationFacade", () => {
           clock,
           authConfig,
         ),
-      ).rejects.toThrow("Not found");
+      ).rejects.toThrow("User not found");
     });
   });
   describe("codeExchange", () => {

@@ -12,7 +12,7 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
         return Promise.resolve(request);
       }
     }
-    throw new Error("OAuth request not found");
+    throw new Error("Authorization request not found");
   }
 
   async persist(authorisationRequest: Request): Promise<void> {
@@ -22,7 +22,7 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
 
   async retrieve(id: IdentityValue): Promise<Request> {
     const request = this.requests.get(id.toString());
-    assert(request, "OAuth request not found");
+    assert(request, "Authorization request not found");
     return Promise.resolve(request);
   }
 }
