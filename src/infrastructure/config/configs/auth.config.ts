@@ -8,12 +8,12 @@ import {
 } from "@infrastructure/config/configs/utility";
 import { ConfigService } from "@nestjs/config";
 import { Algorithm } from "jsonwebtoken";
-import { randomString } from "@test/randomString";
-
-const ONE_SECOND = 1;
-const ONE_MINUTE_IN_SECONDS = ONE_SECOND * 60;
-const ONE_HOUR_IN_SECONDS = ONE_MINUTE_IN_SECONDS * 60;
-const ONE_DAY_IN_SECONDS = ONE_HOUR_IN_SECONDS * 24;
+import { randomString } from "@test/utility/randomString";
+import {
+  ONE_DAY_IN_SECONDS,
+  ONE_HOUR_IN_SECONDS,
+  ONE_MINUTE_IN_SECONDS,
+} from "@infrastructure/clock";
 
 export const authConfigDefaults = {
   passwordSaltingRounds: 10,

@@ -1,6 +1,6 @@
 import { createAuthenticationTestContext } from "@test/domain/authentication/Authentication.test-context";
 import { AuthenticationFacade } from "@domain/authentication/Authentication.facade";
-import { randomString } from "@test/randomString";
+import { randomString } from "@test/utility/randomString";
 import { plainToConfig } from "@infrastructure/config/configs/utility";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { JwtServiceFake } from "@infrastructure/authentication/jwt";

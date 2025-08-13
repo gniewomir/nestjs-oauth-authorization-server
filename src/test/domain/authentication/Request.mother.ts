@@ -6,7 +6,7 @@ import {
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
 import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
-import { randomString } from "@test/randomString";
+import { randomString } from "@test/utility/randomString";
 
 export const requestMother = (
   params: Partial<TRequestConstructorParam> = {},

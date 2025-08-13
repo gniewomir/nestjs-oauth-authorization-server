@@ -1,22 +1,71 @@
 import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { IdentityValue } from "@domain/IdentityValue";
-import { User } from "@domain/authentication/OAuth/User/User";
+import { User as DomainUser } from "@domain/authentication/OAuth/User/User";
+import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class UserDomainRepository implements UsersInterface {
-  getByEmail(_email: EmailValue): Promise<User> {
-    throw new Error("Not implemented.");
+  constructor(
+    @InjectRepository(DatabaseUser)
+    private readonly userRepository: Repository<DatabaseUser>,
+  ) {}
+
+  async getByEmail(email: EmailValue): Promise<DomainUser> {
+    const user = await this.userRepository.findOne({
+      where: { email: email.toString() },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return this.mapToDomain(user);
   }
 
-  persist(_user: User): Promise<void> {
-    throw new Error("Not implemented.");
+  async persist(user: DomainUser): Promise<void> {
+    const databaseUser = this.mapToDatabase(user);
+    await this.userRepository.save(databaseUser, {});
   }
 
-  retrieve(_identity: IdentityValue): Promise<User> {
-    throw new Error("Not implemented.");
+  async retrieve(identity: IdentityValue): Promise<DomainUser> {
+    const user = await this.userRepository.findOne({
+      where: { id: identity.toString() },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return this.mapToDomain(user);
   }
 
-  countByEmail(email: EmailValue): Promise<number> {
-    throw new Error("Not implemented.");
+  async countByEmail(email: EmailValue): Promise<number> {
+    return await this.userRepository.count({
+      where: { email: email.toString() },
+    });
+  }
+
+  private mapToDomain(databaseUser: DatabaseUser): DomainUser {
+    return new DomainUser({
+      identity: IdentityValue.fromString(databaseUser.id),
+      email: EmailValue.fromString(databaseUser.email),
+      emailVerified: databaseUser.emailVerified,
+      password: databaseUser.password,
+      refreshTokens: databaseUser.refreshTokens,
+    });
+  }
+
+  private mapToDatabase(domainUser: DomainUser): DatabaseUser {
+    const databaseUser = new DatabaseUser();
+    databaseUser.id = domainUser.identity.toString();
+    databaseUser.email = domainUser.email.toString();
+    databaseUser.emailVerified = domainUser.emailVerified;
+    databaseUser.password = domainUser.password;
+    databaseUser.refreshTokens = domainUser.refreshTokens;
+    return databaseUser;
   }
 }
