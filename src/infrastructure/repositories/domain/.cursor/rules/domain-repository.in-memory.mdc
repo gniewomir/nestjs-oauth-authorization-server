@@ -14,8 +14,8 @@ alwaysApply: false
 ## Import Patterns
 - Import domain entities and value objects from `@domain/` paths
 - Import `IdentityValue` from `@domain/IdentityValue`
-- Import `node:assert` for assertions
 - Import the domain interface that this repository implements
+- No need to import `node:assert` as we use `instanceof` checks instead
 
 ## Class Structure
 ```typescript
@@ -73,20 +73,22 @@ persist(entity: {Entity}): Promise<void> {
 
 ### Retrieve Methods (By Identity)
 - Return `Promise<Entity>`
-- Use `assert` from `node:assert` for existence check
-- Use descriptive error message
+- Use `instanceof` check for entity validation
+- Use `Promise.reject()` with descriptive error message when not found
 ```typescript
 retrieve(identity: IdentityValue): Promise<{Entity}> {
   const entity = this.{entities}.get(identity.toString());
-  assert(entity, "{Entity} not found");
-  return Promise.resolve(entity);
+  if (entity instanceof {Entity}) {
+    return Promise.resolve(entity);
+  }
+  return Promise.reject(new Error("{Entity} not found"));
 }
 ```
 
 ## Error Handling
 - Use descriptive error messages
 - Throw `Error` for not found cases in get methods
-- Use `assert` for existence checks in retrieve methods
+- Use `instanceof` check and `Promise.reject()` for retrieve methods
 - All methods return `Promise` even for synchronous operations
 
 ## Value Object Comparison
