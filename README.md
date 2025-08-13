@@ -36,12 +36,19 @@ $ npm run test
 ```
 
 # Database
+
+Setup or reset test database
 ```shell
-$ docker run -p 5432:5432 --name postgres -e POSTGRES_PASSWORD=test -e POSTGRES_USER=test -e POSTGRES_DB=test -d postgres
+$ ./bin/reset-test-db.sh
 ```
+It will: 
+* create or recreate container named `postgres_test` and run it on port 5432
+  * data will be removed 
+* build project and run migrations against it
 
 ## Migrations 
 ```shell
+$ npm run migration:run
 $ npm run migration:generate --name=test
 $ npm run migration:create --name=test
 ```
