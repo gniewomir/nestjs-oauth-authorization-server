@@ -15,9 +15,21 @@ export type TTokenPayloadConstructorArgs = ConstructorParameters<
 export type TTokenPayloadParam = TTokenPayloadConstructorArgs[0];
 
 export class TokenPayload {
+  /**
+   * aud jwt claim - in our case oauth client id
+   */
   public readonly aud: string;
+  /**
+   * jti jwt claim - jwt id
+   */
   public readonly jti: string;
+  /**
+   * iss jwt claim - arbitrary string identifying issuer
+   */
   public readonly iss: string;
+  /**
+   * sub jwt claim - user id
+   */
   public readonly sub: string;
   public readonly exp: number;
   public readonly iat: number;

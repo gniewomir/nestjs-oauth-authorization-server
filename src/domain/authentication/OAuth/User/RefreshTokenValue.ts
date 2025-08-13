@@ -7,20 +7,20 @@ import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue"
 export class RefreshTokenValue {
   public readonly jti: string;
   public readonly exp: number;
-  public readonly clientId: string;
+  public readonly aud: string;
 
   private constructor({
-    clientId,
+    aud,
     jti,
     exp,
   }: {
     jti: IdentityValue;
     exp: NumericDateValue;
-    clientId: IdentityValue;
+    aud: IdentityValue;
   }) {
     this.jti = jti.toString();
     this.exp = exp.toNumber();
-    this.clientId = clientId.toString();
+    this.aud = aud.toString();
   }
 
   public static fromUnknown(value: unknown): RefreshTokenValue {
@@ -28,14 +28,11 @@ export class RefreshTokenValue {
       !!value && typeof value === "object",
       "UserRefreshTokenValue must be an object",
     );
-    Assert(
-      "clientId" in value,
-      "UserRefreshTokenValue have to have a clientId property",
-    );
+    Assert("aud" in value, "UserRefreshTokenValue have to have a aud property");
     Assert("jti" in value, "UserRefreshTokenValue have to have jti property");
     Assert("exp" in value, "UserRefreshTokenValue have to have a exp property");
     return new RefreshTokenValue({
-      clientId: IdentityValue.fromUnknown(value.clientId),
+      aud: IdentityValue.fromUnknown(value.aud),
       jti: IdentityValue.fromUnknown(value.jti),
       exp: NumericDateValue.fromUnknown(value.exp),
     });
@@ -44,7 +41,7 @@ export class RefreshTokenValue {
   public static fromTokenPayload(payload: TokenPayload): RefreshTokenValue {
     Assert(payload.hasScope(ScopeValue.TOKEN_REFRESH()), "Not a refresh token");
     return new RefreshTokenValue({
-      clientId: IdentityValue.fromString(payload.aud),
+      aud: IdentityValue.fromString(payload.aud),
       exp: NumericDateValue.fromNumber(payload.exp),
       jti: IdentityValue.fromString(payload.jti),
     });

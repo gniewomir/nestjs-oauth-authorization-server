@@ -1,7 +1,6 @@
 import { IdentityValue } from "@domain/IdentityValue";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { ClockInterface } from "@domain/Clock.interface";
 
 export type TUserConstructorArgs = ConstructorParameters<typeof User>;
@@ -33,26 +32,26 @@ export class User {
   }
 
   public rotateRefreshToken(
-    payload: TokenPayload,
+    refreshToken: RefreshTokenValue,
     clock: ClockInterface,
   ): void {
-    const nonExpired = this.refreshTokens.filter(
-      (refreshToken) => refreshToken.exp > clock.nowAsSecondsSinceEpoch(),
+    const nonExpired = this._refreshTokens.filter(
+      (token) => token.exp > clock.nowAsSecondsSinceEpoch(),
     );
-    const refreshTokenPerClient = new Map(
-      nonExpired.map((token) => [token.clientId, token]),
+    const onlyOtherClients = nonExpired.filter(
+      (token) => refreshToken.aud !== token.aud,
     );
-    refreshTokenPerClient.set(
-      payload.aud,
-      RefreshTokenValue.fromTokenPayload(payload),
+    const clients = new Map(
+      onlyOtherClients.map((token) => [token.aud, token]),
     );
-    this._refreshTokens = Array.from(refreshTokenPerClient.values());
+    clients.set(refreshToken.aud, RefreshTokenValue.fromUnknown(refreshToken));
+    this._refreshTokens = Array.from(clients.values());
   }
 
   public hasRefreshToken(jti: IdentityValue, clock: ClockInterface): boolean {
     const validRefreshToken = this._refreshTokens.find(
       (refreshToken) =>
-        refreshToken.jti === jti.toString() &&
+        IdentityValue.fromString(refreshToken.jti).isEqual(jti) &&
         refreshToken.exp > clock.nowAsSecondsSinceEpoch(),
     );
     return validRefreshToken !== undefined;

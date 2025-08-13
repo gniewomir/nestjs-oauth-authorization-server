@@ -4,26 +4,16 @@ import {
 } from "@domain/authentication/OAuth/User/User";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { IdentityValue } from "@domain/IdentityValue";
-import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
+import { randomString } from "@test/randomString";
 
-export const userMother = async (
-  params: Partial<TUserConstructorParam> = {},
-  deps: {
-    plaintextPassword: string;
-    passwordInterface: PasswordInterface;
-  },
-) => {
-  const hashedPassword = await deps.passwordInterface.hashPlaintextPassword(
-    deps.plaintextPassword,
-  );
-
+export const userMother = (params: Partial<TUserConstructorParam> = {}) => {
   return new User({
     identity: IdentityValue.create(),
     email: EmailValue.fromString(
       `${IdentityValue.create().toString()}@gmail.com`,
     ),
     refreshTokens: [],
-    hashedPassword,
+    hashedPassword: randomString(16),
     emailVerified: false,
     ...params,
   });
