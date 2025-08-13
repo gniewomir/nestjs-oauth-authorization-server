@@ -57,6 +57,11 @@ export class AuthenticationFacade {
 
     Assert(payload.hasValidIssuer(authConfig), "jwt has invalid issuer");
 
+    Assert(
+      user.hasRefreshToken(IdentityValue.fromString(payload.jti), clock),
+      "unknown refresh token",
+    );
+
     const idTokenPayload = IdTokenPayload.createIdToken({
       clock,
       authConfig,

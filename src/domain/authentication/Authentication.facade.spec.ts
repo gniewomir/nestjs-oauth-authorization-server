@@ -524,9 +524,38 @@ describe("AuthenticationFacade", () => {
         ),
       ).rejects.toThrow("jwt does not contain required scope");
     });
-    it.todo("accepts only known refresh tokens");
+    it("rejects not known refresh tokens", async () => {
+      const requestedScopes = ScopeValueImmutableSet.fromString("customer:api");
+      const { tokenPayloads, clock, authConfig, users, clients, client, user } =
+        await createAuthenticationTestContext({
+          requestedScopes,
+        });
+
+      const notStoredRefreshToken = TokenPayload.createRefreshToken({
+        user,
+        authConfig,
+        scope: requestedScopes
+          .add(ScopeValue.TOKEN_REFRESH())
+          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
+        clock,
+        client,
+      });
+      const signedNotStoredRefreshToken =
+        await notStoredRefreshToken.sign(tokenPayloads);
+
+      await expect(
+        AuthenticationFacade.refresh(
+          signedNotStoredRefreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+          clients,
+        ),
+      ).rejects.toThrow("unknown refresh token");
+    });
     it.todo("removes used refresh token after use");
-    it.todo("has only one valid refresh token at any time");
+    it.todo("has only one valid refresh token per client at any time");
   });
   describe("logoutClient", () => {});
 });
