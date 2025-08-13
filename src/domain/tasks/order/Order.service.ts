@@ -12,7 +12,7 @@ export class OrderService<T extends OrderInterface> {
     const lowestOrdinalNumber =
       await this.entities.searchForLowestOrdinalNumber();
     return lowestOrdinalNumber === null
-      ? this.orderingConfig.maxOrdinalNumber
+      ? Math.floor(this.orderingConfig.maxOrdinalNumber / 2)
       : lowestOrdinalNumber - this.orderingConfig.ordinalNumbersSpacing;
   }
 

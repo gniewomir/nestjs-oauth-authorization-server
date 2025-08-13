@@ -6,8 +6,9 @@ import { plainToConfig } from "@infrastructure/config/configs/utility/plainToCon
 
 describe("OrderService", () => {
   describe("newOrdinalNumber", () => {
-    it("returns greatest safe integer if there is no tasks", async () => {
+    it("returns half of greatest safe integer if there is no tasks", async () => {
       const maxOrdinalNumber = Number.MAX_SAFE_INTEGER;
+      const halfOfMaxOrdinalNumber = Math.floor(maxOrdinalNumber / 2);
       const maxEntitiesPerAssigned = 100_000;
       const ordinalNumbersSpacing = Math.floor(
         maxOrdinalNumber / maxEntitiesPerAssigned,
@@ -23,7 +24,9 @@ describe("OrderService", () => {
         ),
         new TasksDomainRepositoryInMemory(),
       );
-      await expect(sut.newOrdinalNumber()).resolves.toEqual(maxOrdinalNumber);
+      await expect(sut.newOrdinalNumber()).resolves.toEqual(
+        halfOfMaxOrdinalNumber,
+      );
     });
     it("returns lowest task ordinal number minus ordinal number spacing", async () => {
       const maxOrdinalNumber = Number.MAX_SAFE_INTEGER;
