@@ -6,7 +6,7 @@
   ordered [as decided](DDD-tasks-order.md).
 * Order of `tasks` will often be changed, so
     * ideal solution won't require updating more than affected (moved) task
-    * ideal solution won't require additional queries to the backed to be rendered by frontend
+    * ideal solution won't require additional queries to the backend to be rendered by frontend
     * ideal solution won't require additional database tables
     * ideal solution won't create unlikely, but possible edge cases
     * ideal solution is not concerned with what filters are put on the task lists, therefore what is the content of the
