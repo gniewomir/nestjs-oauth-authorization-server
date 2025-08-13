@@ -1,0 +1,99 @@
+---
+description: Domain repository in-memory implementation rules
+globs: **/*/*domain-repository.in-memory.ts
+alwaysApply: false
+---
+
+# Domain Repository In-Memory Implementation Rules
+
+## File Structure and Naming
+- File should be named `{Entity}.domain-repository.in-memory.ts`
+- Class should be named `{Entity}DomainRepositoryInMemory`
+- Must implement the corresponding domain interface (`{Entities}Interface`)
+
+## Import Patterns
+- Import domain entities and value objects from `@domain/` paths
+- Import `IdentityValue` from `@domain/IdentityValue`
+- Import `node:assert` for assertions
+- Import the domain interface that this repository implements
+
+## Class Structure
+```typescript
+export class {Entity}DomainRepositoryInMemory implements {Entities}Interface {
+  public {entities} = new Map<string, {Entity}>();
+  
+  // Implementation methods
+}
+```
+
+## Storage Implementation
+- Use `Map<string, Entity>` for storing entities
+- Key should be the entity's identity as string: `entity.identity.toString()`
+- Make the storage public for testing access
+
+## Method Implementation Patterns
+
+### Count Methods
+- Return `Promise<number>`
+- Filter entities based on the criteria
+- Use `.length` property of filtered array
+```typescript
+count{Criteria}({criteria}: {CriteriaType}): Promise<number> {
+  const count = Array.from(this.{entities}.values()).filter((entity) =>
+    entity.{property}.isEqual({criteria}),
+  ).length;
+  return Promise.resolve(count);
+}
+```
+
+### Get Methods (Single Entity)
+- Return `Promise<Entity>`
+- Iterate through stored entities to find match
+- Throw `Error` with descriptive message if not found
+```typescript
+getBy{Criteria}({criteria}: {CriteriaType}): Promise<{Entity}> {
+  for (const entity of this.{entities}.values()) {
+    if (entity.{property}.isEqual({criteria})) {
+      return Promise.resolve(entity);
+    }
+  }
+  throw new Error("{Entity} not found");
+}
+```
+
+### Persist Methods
+- Return `Promise<void>`
+- Store entity using identity as key
+```typescript
+persist(entity: {Entity}): Promise<void> {
+  this.{entities}.set(entity.identity.toString(), entity);
+  return Promise.resolve();
+}
+```
+
+### Retrieve Methods (By Identity)
+- Return `Promise<Entity>`
+- Use `assert` from `node:assert` for existence check
+- Use descriptive error message
+```typescript
+retrieve(identity: IdentityValue): Promise<{Entity}> {
+  const entity = this.{entities}.get(identity.toString());
+  assert(entity, "{Entity} not found");
+  return Promise.resolve(entity);
+}
+```
+
+## Error Handling
+- Use descriptive error messages
+- Throw `Error` for not found cases in get methods
+- Use `assert` for existence checks in retrieve methods
+- All methods return `Promise` even for synchronous operations
+
+## Value Object Comparison
+- Use `.isEqual()` method for comparing value objects
+- Use direct comparison for primitive types
+
+## Async/Await Patterns
+- All methods return `Promise` types
+- Use `Promise.resolve()` for immediate resolution
+- Maintain async interface compatibility with real implementations

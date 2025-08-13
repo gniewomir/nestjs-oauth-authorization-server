@@ -1,0 +1,71 @@
+---
+description: Domain repository implementation rules
+globs: **/*/*domain-repository*.ts
+alwaysApply: false
+---
+
+# Domain Repository Implementation Rules
+
+## Structure and Dependencies
+- Use `@Injectable()` decorator for dependency injection
+- Implement the corresponding domain interface (e.g., `UsersInterface`)
+- Import domain entities with alias to avoid naming conflicts (e.g., `User as DomainUser`)
+- Import database entities with alias (e.g., `User as DatabaseUser`)
+- Use `@InjectRepository(DatabaseEntity)` for TypeORM repository injection
+- Import `Repository` from `typeorm` and `InjectRepository` from `@nestjs/typeorm`
+
+## Constructor Pattern
+```typescript
+constructor(
+  @InjectRepository(DatabaseEntity)
+  private readonly entityRepository: Repository<DatabaseEntity>,
+) {}
+```
+
+## Method Implementation Patterns
+
+### Query Methods
+- Use `findOne()` with `where` clause for single entity retrieval
+- Throw descriptive errors when entities are not found: `throw new Error("Entity not found")`
+- Use `count()` for counting operations
+- Always return domain entities, not database entities
+
+### Persistence Methods
+- Convert domain entities to database format before saving
+- Use `void` return type for persistence operations
+
+## Mapping Methods
+
+### Domain to Database Mapping
+- Create private `mapToDatabase()` method
+- Return type should omit timestamp fields: `Omit<DatabaseEntity, "createdAt" | "updatedAt">` if those fields are not present on domain object 
+- Convert domain value objects to primitive types using `.toString()`, `.toNumber()`, `.toArray()` etc. depending on database entity property type
+- Map all domain properties to corresponding database fields
+
+### Database to Domain Mapping  
+- Create private `mapToDomain()` method
+- Use domain entity constructor with object parameter
+- Convert database primitives to domain value objects using `.fromString(value: string)` or similar method, use `fromUnknown(value: unknown)` in case of object or array 
+- Preserve all database properties in domain entity
+
+## Value Object Handling
+- Use  `.toString()`, `.toNumber()`, `.toArray()` etc. depending on database entity property type when converting value objects to database primitives
+- Use `.fromString(value: string)` or `.fromUnknown(value: unknown)` when converting database primitives to value objects
+- Handle identity values with `IdentityValue.fromString()` and `.toString()`
+
+## Error Handling
+- Throw descriptive errors for not found scenarios
+- Use simple Error class with clear messages
+- Don't catch and rethrow unless adding context
+
+## Method Naming Conventions
+- `getByX()` for queries by specific fields
+- `retrieve()` for queries by identity
+- `persist()` for saving entities
+- `countByX()` for counting operations
+
+## Type Safety
+- Always use proper TypeScript types
+- Leverage TypeORM's Repository<T> generic typing
+- Use domain interfaces for implementation contracts
+- Maintain type safety through mapping methods

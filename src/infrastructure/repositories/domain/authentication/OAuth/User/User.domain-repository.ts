@@ -28,7 +28,7 @@ export class UserDomainRepository implements UsersInterface {
 
   async persist(user: DomainUser): Promise<void> {
     const databaseUser = this.mapToDatabase(user);
-    await this.userRepository.save(databaseUser, {});
+    await this.userRepository.save(databaseUser);
   }
 
   async retrieve(identity: IdentityValue): Promise<DomainUser> {

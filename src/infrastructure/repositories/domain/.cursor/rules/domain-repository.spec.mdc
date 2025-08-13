@@ -1,0 +1,249 @@
+---
+description: Domain repository testing rules
+globs: **/*/*domain-repository.spec.ts
+alwaysApply: false
+---
+
+# Domain Repository Testing Rules
+
+Follow these patterns when creating or maintaining domain repository test files:
+
+## File Structure and Imports
+
+1. **Import order and organization:**
+   - NestJS testing utilities first (`@nestjs/testing`, `@nestjs/typeorm`)
+   - Repository under test
+   - Database entities (aliased as `DatabaseEntity`)
+   - Domain entities (aliased as `DomainEntity`)
+   - Value objects and domain types
+   - Test utilities (mothers, test contexts)
+   - Infrastructure modules (ConfigModule, DatabaseModule)
+   - Fake services for testing
+
+2. **Aliasing convention:**
+   ```typescript
+   import { Entity as DatabaseEntity } from "@infrastructure/database/entities/entity.entity";
+   import { Entity as DomainEntity } from "@domain/path/Entity";
+   ```
+
+## Test Suite Structure
+
+1. **Main describe block:**
+   - Use the repository class name as the describe block title
+   - Declare repository and module variables at the top level
+
+2. **Setup and teardown:**
+   ```typescript
+   describe("EntityDomainRepository", () => {
+     let repository: EntityDomainRepository;
+     let module: TestingModule;
+
+     beforeAll(async () => {
+       module = await Test.createTestingModule({
+         imports: [
+           ConfigModule,
+           DatabaseModule,
+           TypeOrmModule.forFeature([DatabaseEntity]),
+         ],
+         providers: [EntityDomainRepository],
+       }).compile();
+
+       repository = module.get<EntityDomainRepository>(EntityDomainRepository);
+     });
+
+     afterAll(async () => {
+       if (module) {
+         await module.close();
+       }
+     });
+   });
+   ```
+
+## Test Methods Coverage
+
+Test all public repository methods with the following patterns:
+
+### 1. Retrieval Methods (get*, find*)
+
+For each retrieval method, test:
+- **Success case:** "should return entity when found"
+- **Not found case:** "should throw error when entity not found"
+- **Complex data case:** If applicable, test with related data/collections
+
+Example patterns:
+```typescript
+describe("getByProperty", () => {
+  it("should return entity when found by property", async () => {
+    // Arrange
+    const property = PropertyValue.fromString("test-value");
+    const domainEntity = entityMother({ property });
+    await repository.persist(domainEntity);
+
+    // Act
+    const result = await repository.getByProperty(property);
+
+    // Assert
+    expect(result).toBeInstanceOf(DomainEntity);
+    expect(result.identity.toString()).toBe(domainEntity.identity.toString());
+    expect(result.property.toString()).toBe(domainEntity.property.toString());
+    // Assert all important properties
+  });
+
+  it("should throw error when entity not found by property", async () => {
+    // Arrange
+    const nonExistentProperty = PropertyValue.fromString("nonexistent");
+
+    // Act & Assert
+    await expect(repository.getByProperty(nonExistentProperty)).rejects.toThrow(
+      "Entity not found"
+    );
+  });
+});
+```
+
+### 2. Persistence Methods (persist, save)
+
+Test scenarios:
+- **Create new:** "should save a new entity to database"
+- **Update existing:** "should update existing entity when persisting with same identity"
+
+Example:
+```typescript
+describe("persist", () => {
+  it("should save a new entity to database", async () => {
+    // Arrange
+    const domainEntity = entityMother({
+      property: PropertyValue.fromString("new.entity"),
+    });
+
+    // Act
+    await repository.persist(domainEntity);
+
+    // Assert - verify entity was saved by retrieving it
+    const savedEntity = await repository.retrieve(domainEntity.identity);
+    expect(savedEntity.identity.toString()).toBe(domainEntity.identity.toString());
+    // Assert all properties match
+  });
+
+  it("should update existing entity when persisting with same identity", async () => {
+    // Arrange
+    const originalEntity = entityMother({ /* initial state */ });
+    await repository.persist(originalEntity);
+
+    // Act - create updated entity with same identity
+    const updatedEntity = new DomainEntity({
+      identity: originalEntity.identity, // Same identity
+      // Updated properties
+    });
+    await repository.persist(updatedEntity);
+
+    // Assert
+    const retrievedEntity = await repository.retrieve(originalEntity.identity);
+    // Assert updated properties
+  });
+});
+```
+
+### 3. Count Methods
+
+Test scenarios:
+- **Zero count:** "should return 0 when no entities exist"
+- **Positive count:** "should return correct count when entities exist"
+
+Example:
+```typescript
+describe("countByProperty", () => {
+  it("should return 0 when no entities exist with property", async () => {
+    // Arrange
+    const property = PropertyValue.fromString("nonexistent");
+
+    // Act
+    const count = await repository.countByProperty(property);
+
+    // Assert
+    expect(count).toBe(0);
+  });
+
+  it("should return correct count when entities exist with property", async () => {
+    // Arrange
+    const property = PropertyValue.fromString("test.property");
+    const domainEntity = entityMother({ property });
+    await repository.persist(domainEntity);
+
+    // Act
+    const count = await repository.countByProperty(property);
+
+    // Assert
+    expect(count).toBe(1);
+  });
+});
+```
+
+## Test Data Management
+
+1. **Use Mother objects** for creating test data:
+   ```typescript
+   const domainEntity = entityMother({
+     property: PropertyValue.fromString("test-value"),
+     otherProperty: true,
+   });
+   ```
+
+2. **Use descriptive test data** that clearly indicates the test purpose:
+   ```typescript
+   const email = EmailValue.fromString("retrieve.test@example.com");
+   const email = EmailValue.fromString("count.test@example.com");
+   ```
+
+3. **Test with realistic complex data** when applicable:
+   - Collections/arrays
+   - Related entities
+   - Value objects with validation
+
+## Assertion Patterns
+
+1. **Identity assertions:**
+   ```typescript
+   expect(result.identity.toString()).toBe(expected.identity.toString());
+   ```
+
+2. **Value object assertions:**
+   ```typescript
+   expect(result.property.toString()).toBe(expected.property.toString());
+   ```
+
+3. **Boolean and primitive assertions:**
+   ```typescript
+   expect(result.booleanProperty).toBe(expected.booleanProperty);
+   expect(result.stringProperty).toBe(expected.stringProperty);
+   ```
+
+4. **Collection assertions:**
+   ```typescript
+   expect(result.collection).toHaveLength(expectedLength);
+   expect(result.collection).toEqual(expected.collection);
+   ```
+
+## Error Testing
+
+1. **Use descriptive error messages** in expectations:
+   ```typescript
+   await expect(repository.getById(nonExistentId)).rejects.toThrow("Entity not found");
+   ```
+
+2. **Test all error scenarios** for each method that can fail
+
+## Test Organization
+
+1. **Group tests by method** using nested describe blocks
+2. **Use clear test descriptions** that explain the scenario
+3. **Follow Arrange-Act-Assert pattern** consistently
+4. **Use comments** to clearly separate test phases
+5. **Test one thing per test** - avoid testing multiple methods in one test
+
+## Naming Conventions
+
+- Test files: `EntityName.domain-repository.spec.ts`
+- Test suite: `"EntityNameDomainRepository"`
+- Test cases: Use descriptive "should..." statements
+- Variables: Use clear, descriptive names that indicate purpose
