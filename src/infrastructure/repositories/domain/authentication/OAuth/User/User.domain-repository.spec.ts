@@ -6,7 +6,7 @@ import { User as DomainUser } from "@domain/authentication/OAuth/User/User";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
-import { NumericDateValue } from "@domain/authentication/OAuth/User/NumericDateValue";
+import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { userMother } from "@test/domain/authentication/User.mother";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";

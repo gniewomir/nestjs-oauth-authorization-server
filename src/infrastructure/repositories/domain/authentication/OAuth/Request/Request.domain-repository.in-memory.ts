@@ -6,23 +6,23 @@ import * as assert from "node:assert";
 export class RequestDomainRepositoryInMemory implements RequestInterface {
   public requests = new Map<string, Request>();
 
-  persist(request: Request): Promise<void> {
-    this.requests.set(request.id.toString(), request);
-    return Promise.resolve();
-  }
-
-  retrieve(id: IdentityValue): Promise<Request> {
-    const request = this.requests.get(id.toString());
-    assert(request, "Not found");
-    return Promise.resolve(request);
-  }
-
-  getByAuthorizationCode(authorizationCode: string): Promise<Request> {
+  async getByAuthorizationCode(authorizationCode: string): Promise<Request> {
     for (const request of this.requests.values()) {
-      if (request.authorizationCode?.authorizationCode === authorizationCode) {
+      if (request.authorizationCode?.code === authorizationCode) {
         return Promise.resolve(request);
       }
     }
-    throw new Error(`Not found`);
+    throw new Error("OAuth request not found");
+  }
+
+  async persist(authorisationRequest: Request): Promise<void> {
+    this.requests.set(authorisationRequest.id.toString(), authorisationRequest);
+    return Promise.resolve();
+  }
+
+  async retrieve(id: IdentityValue): Promise<Request> {
+    const request = this.requests.get(id.toString());
+    assert(request, "OAuth request not found");
+    return Promise.resolve(request);
   }
 }

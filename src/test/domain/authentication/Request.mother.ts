@@ -3,8 +3,8 @@ import {
   Request,
   TRequestConstructorParam,
 } from "@domain/authentication/OAuth/Authorization/Request";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
-import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { randomString } from "@test/utility/randomString";
 

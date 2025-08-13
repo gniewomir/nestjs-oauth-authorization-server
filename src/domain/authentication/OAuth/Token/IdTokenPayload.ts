@@ -2,7 +2,7 @@ import { IdentityValue } from "@domain/IdentityValue";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { Assert } from "@domain/Assert";
-import { NumericDateValue } from "@domain/authentication/OAuth/User/NumericDateValue";
+import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { User } from "@domain/authentication/OAuth/User/User";
 import { ClockInterface } from "@domain/Clock.interface";

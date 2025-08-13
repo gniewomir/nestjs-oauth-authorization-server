@@ -13,7 +13,6 @@ export class User {
   public readonly email: EmailValue;
   public readonly emailVerified: boolean;
   public readonly password: string;
-  private _refreshTokens: RefreshTokenValue[];
 
   constructor(parameters: {
     identity: IdentityValue;
@@ -29,6 +28,12 @@ export class User {
     this._refreshTokens = parameters.refreshTokens;
   }
 
+  private _refreshTokens: RefreshTokenValue[];
+
+  public get refreshTokens() {
+    return this._refreshTokens;
+  }
+
   public static async create(
     params: TUserConstructorParam,
     uniqueEmailSpecification: UniqueEmailSpecification,
@@ -38,10 +43,6 @@ export class User {
       "User email have to be unique",
     );
     return new User(params);
-  }
-
-  public get refreshTokens() {
-    return this._refreshTokens;
   }
 
   public rotateRefreshToken(

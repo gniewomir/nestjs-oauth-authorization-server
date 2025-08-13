@@ -6,7 +6,7 @@ import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { Assert } from "@domain/Assert";
 
 export type TRequestConstructorArgs = ConstructorParameters<typeof Request>;

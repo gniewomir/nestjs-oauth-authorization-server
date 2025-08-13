@@ -2,12 +2,12 @@ import { AuthConfig } from "@infrastructure/config/configs";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
 import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
 
 export class AuthenticationFacade {

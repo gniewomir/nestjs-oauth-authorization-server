@@ -14,10 +14,10 @@ import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.i
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Assert } from "@domain/Assert";
-import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 
 export class AuthorizationFacade {
   public static async request(
@@ -121,7 +121,9 @@ export class AuthorizationFacade {
     );
 
     Assert(request.authorizationCode instanceof Code);
-    const user = await users.retrieve(request.authorizationCode.userId);
+    const user = await users.retrieve(
+      IdentityValue.fromString(request.authorizationCode.sub),
+    );
     const client = await clients.retrieve(clientId);
 
     /**

@@ -1,4 +1,4 @@
-import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 
 describe("ScopeValue", () => {
   it("can be created from valid scope string", () => {

@@ -7,7 +7,7 @@ import * as assert from "node:assert";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
 import { IdentityValue } from "@domain/IdentityValue";
 
@@ -479,7 +479,7 @@ describe("AuthorizationFacade", () => {
         authConfig,
       );
 
-      clock.timeTravelSeconds(authorizationCode.expiration);
+      clock.timeTravelSeconds(authorizationCode.exp);
 
       await expect(
         AuthorizationFacade.codeExchange(

@@ -59,13 +59,15 @@ export class UserDomainRepository implements UsersInterface {
     });
   }
 
-  private mapToDatabase(domainUser: DomainUser): DatabaseUser {
-    const databaseUser = new DatabaseUser();
-    databaseUser.id = domainUser.identity.toString();
-    databaseUser.email = domainUser.email.toString();
-    databaseUser.emailVerified = domainUser.emailVerified;
-    databaseUser.password = domainUser.password;
-    databaseUser.refreshTokens = domainUser.refreshTokens;
-    return databaseUser;
+  private mapToDatabase(
+    domainUser: DomainUser,
+  ): Omit<DatabaseUser, "createdAt" | "updatedAt"> {
+    return {
+      id: domainUser.identity.toString(),
+      email: domainUser.email.toString(),
+      emailVerified: domainUser.emailVerified,
+      password: domainUser.password,
+      refreshTokens: domainUser.refreshTokens,
+    };
   }
 }
