@@ -136,6 +136,7 @@ export class AuthorizationFacade {
       user,
       client,
     });
+    const signedIdToken = await idTokenPayload.sign(tokenPayloads);
 
     /**
      * accessToken is intended to authenticate api calls.
@@ -150,6 +151,7 @@ export class AuthorizationFacade {
       clock,
       client,
     });
+    const signedAccessToken = await accessTokenPayload.sign(tokenPayloads);
 
     /**
      * refreshToken is intended to obtain new access token before or after previous expired.
@@ -165,6 +167,7 @@ export class AuthorizationFacade {
       clock,
       client,
     });
+    const signedRefreshToken = await refreshTokenPayload.sign(tokenPayloads);
 
     await requests.persist(request);
 
@@ -172,10 +175,10 @@ export class AuthorizationFacade {
     await users.persist(user);
 
     return {
-      idToken: await idTokenPayload.sign(tokenPayloads),
-      accessToken: await accessTokenPayload.sign(tokenPayloads),
+      idToken: signedIdToken,
+      accessToken: signedAccessToken,
       expiration: accessTokenPayload.exp,
-      refreshToken: await refreshTokenPayload.sign(tokenPayloads),
+      refreshToken: signedRefreshToken,
     };
   }
 }

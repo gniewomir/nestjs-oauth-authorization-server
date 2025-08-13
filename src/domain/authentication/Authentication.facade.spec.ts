@@ -7,6 +7,7 @@ import { JwtServiceFake } from "@infrastructure/authentication/jwt";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Token/Scope/ScopeValueImmutableSet";
 import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue";
+import { IdentityValue } from "@domain/IdentityValue";
 
 describe("AuthenticationFacade", () => {
   describe("authenticate", () => {
@@ -554,8 +555,48 @@ describe("AuthenticationFacade", () => {
         ),
       ).rejects.toThrow("unknown refresh token");
     });
-    it.todo("removes used refresh token after use");
-    it.todo("has only one valid refresh token per client at any time");
+    it("rotates spent refresh token", async () => {
+      const {
+        tokenPayloads,
+        clock,
+        authConfig,
+        refreshToken: spentRefreshToken,
+        users,
+        clients,
+        user,
+      } = await createAuthenticationTestContext({
+        requestedScopes: ScopeValueImmutableSet.fromString("customer:api"),
+      });
+
+      const { refreshToken: issuedRefreshToken } =
+        await AuthenticationFacade.refresh(
+          spentRefreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+          clients,
+        );
+
+      const decodedUsedRefreshToken =
+        await tokenPayloads.decode(spentRefreshToken);
+      const decodedIssuedRefreshToken =
+        await tokenPayloads.decode(issuedRefreshToken);
+      const freshUser = await users.retrieve(user.identity);
+
+      expect(
+        freshUser.hasRefreshToken(
+          IdentityValue.fromString(decodedUsedRefreshToken.jti),
+          clock,
+        ),
+      ).toEqual(false);
+      expect(
+        freshUser.hasRefreshToken(
+          IdentityValue.fromString(decodedIssuedRefreshToken.jti),
+          clock,
+        ),
+      ).toEqual(true);
+    });
   });
   describe("logoutClient", () => {});
 });

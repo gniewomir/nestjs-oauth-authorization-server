@@ -62,12 +62,15 @@ export class AuthenticationFacade {
       "unknown refresh token",
     );
 
+    user.spendRefreshToken(IdentityValue.fromString(payload.jti));
+
     const idTokenPayload = IdTokenPayload.createIdToken({
       clock,
       authConfig,
       user,
       client,
     });
+    const signedIdToken = await idTokenPayload.sign(tokenPayloads);
 
     const accessTokenPayload = TokenPayload.createAccessToken({
       authConfig,
@@ -78,6 +81,7 @@ export class AuthenticationFacade {
       clock,
       client,
     });
+    const signedAccessToken = await accessTokenPayload.sign(tokenPayloads);
 
     const refreshTokenPayload = TokenPayload.createRefreshToken({
       authConfig,
@@ -88,12 +92,16 @@ export class AuthenticationFacade {
       clock,
       client,
     });
+    const signedRefreshToken = await refreshTokenPayload.sign(tokenPayloads);
+
+    user.rotateRefreshToken(refreshTokenPayload, clock);
+    await users.persist(user);
 
     return {
-      idToken: await idTokenPayload.sign(tokenPayloads),
-      accessToken: await accessTokenPayload.sign(tokenPayloads),
+      idToken: signedIdToken,
+      accessToken: signedAccessToken,
       expiration: accessTokenPayload.exp,
-      refreshToken: await refreshTokenPayload.sign(tokenPayloads),
+      refreshToken: signedRefreshToken,
     };
   }
 
