@@ -2,7 +2,7 @@ import { ScopeValue } from "@domain/authentication/OAuth/Token/Scope/ScopeValue"
 
 describe("ScopeValue", () => {
   it("can be created from valid scope string", () => {
-    expect(() => ScopeValue.CUSTOMER_API().toString()).not.toThrow();
+    expect(() => ScopeValue.TASK_API().toString()).not.toThrow();
   });
   it("can be created from valid enum value", () => {
     expect(() => ScopeValue.ADMIN_API()).not.toThrow();

@@ -1,7 +1,7 @@
 import { Assert } from "@domain/Assert";
 
 enum ScopeEnum {
-  CUSTOMER_API = "customer:api",
+  TASK_API = "task:api",
   ADMIN_API = "admin:api",
   TOKEN_AUTHENTICATE = "token:authenticate",
   TOKEN_REFRESH = "token:refresh",
@@ -13,8 +13,8 @@ export class ScopeValue {
     Assert(Object.values(ScopeEnum).includes(scope), `Unknown scope`);
   }
 
-  public static CUSTOMER_API() {
-    return ScopeValue.fromEnum(ScopeEnum.CUSTOMER_API);
+  public static TASK_API() {
+    return ScopeValue.fromEnum(ScopeEnum.TASK_API);
   }
 
   public static ADMIN_API() {
@@ -43,13 +43,5 @@ export class ScopeValue {
 
   public toString(): string {
     return this.scope.toString();
-  }
-
-  public toEnum(): ScopeEnum {
-    return this.scope;
-  }
-
-  public isEqual(tested: ScopeValue): boolean {
-    return tested.toString() === this.scope.toString();
   }
 }

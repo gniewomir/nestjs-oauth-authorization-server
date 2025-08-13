@@ -189,7 +189,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeValueImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("task:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -241,7 +241,7 @@ describe("AuthorizationFacade", () => {
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
         scope: ScopeValueImmutableSet.fromArray([
-          "customer:api",
+          "task:api",
           "token:authenticate",
         ]).toString(),
       });
@@ -252,7 +252,7 @@ describe("AuthorizationFacade", () => {
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
         scope: ScopeValueImmutableSet.fromArray([
-          "customer:api",
+          "task:api",
           "token:refresh",
         ]).toString(),
       });
@@ -277,7 +277,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeValueImmutableSet.fromArray([
-        "customer:api",
+        "task:api",
         "token:refresh:issue-large-ttl",
       ]);
       const request = await AuthorizationFacade.request(
@@ -331,7 +331,7 @@ describe("AuthorizationFacade", () => {
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
         scope: ScopeValueImmutableSet.fromArray([
-          "customer:api",
+          "task:api",
           "token:authenticate",
           "token:refresh:issue-large-ttl",
         ]).toString(),
@@ -343,7 +343,7 @@ describe("AuthorizationFacade", () => {
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
         scope: ScopeValueImmutableSet.fromArray([
-          "customer:api",
+          "task:api",
           "token:refresh",
           "token:refresh:issue-large-ttl",
         ]).toString(),
@@ -368,7 +368,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeValueImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("task:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -518,7 +518,7 @@ describe("AuthorizationFacade", () => {
         codeChallenge,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeValueImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("task:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -586,7 +586,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeValueImmutableSet.fromString("customer:api");
+      const scope = ScopeValueImmutableSet.fromString("task:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),

@@ -15,7 +15,7 @@ export const requestMother = (
     id: IdentityValue.create(),
     clientId: IdentityValue.create(),
     redirectUri: HttpUrlValue.fromString("https://client-website.com/callback"),
-    scope: ScopeValueImmutableSet.fromArray([ScopeValue.CUSTOMER_API()]),
+    scope: ScopeValueImmutableSet.fromArray([ScopeValue.TASK_API()]),
     state: randomString(),
     codeChallenge: randomString(),
     authorizationCode: null,
