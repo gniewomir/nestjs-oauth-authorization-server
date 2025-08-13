@@ -2,8 +2,10 @@ import { IdentityValue } from "@domain/IdentityValue";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
 import { ClockInterface } from "@domain/Clock.interface";
+import { UniqueEmailSpecification } from "@domain/authentication/OAuth/User/UniqueEmail.specification";
+import { Assert } from "@domain/Assert";
 
-export type TUserConstructorArgs = ConstructorParameters<typeof User>;
+type TUserConstructorArgs = ConstructorParameters<typeof User>;
 export type TUserConstructorParam = TUserConstructorArgs[0];
 
 export class User {
@@ -25,6 +27,17 @@ export class User {
     this.emailVerified = parameters.emailVerified;
     this.password = parameters.password;
     this._refreshTokens = parameters.refreshTokens;
+  }
+
+  public static async create(
+    params: TUserConstructorParam,
+    uniqueEmailSpecification: UniqueEmailSpecification,
+  ): Promise<User> {
+    Assert(
+      await uniqueEmailSpecification.isSatisfied(params.email),
+      "User email have to be unique",
+    );
+    return new User(params);
   }
 
   public get refreshTokens() {

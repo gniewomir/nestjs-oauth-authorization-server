@@ -1,25 +1,20 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Initial1754550908202 implements MigrationInterface {
-  name = "Initial1754550908202";
+export class Initial1755079638525 implements MigrationInterface {
+  name = "Initial1755079638525";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE TABLE "user"
                              (
-                               "id"        uuid      NOT NULL,
-                               "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-                               "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+                               "id"            uuid                   NOT NULL,
+                               "email"         character varying(254) NOT NULL,
+                               "emailVerified" boolean                NOT NULL DEFAULT false,
+                               "password"      character varying(60)  NOT NULL,
+                               "refreshTokens" jsonb                  NOT NULL DEFAULT '[]'::jsonb,
+                               "createdAt"     TIMESTAMP              NOT NULL DEFAULT now(),
+                               "updatedAt"     TIMESTAMP              NOT NULL DEFAULT now(),
+                               CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"),
                                CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id")
-                             )`);
-    await queryRunner.query(`CREATE TABLE "goal"
-                             (
-                               "id"            uuid      NOT NULL,
-                               "ordinalNumber" bigint    NOT NULL,
-                               "description"   text      NOT NULL,
-                               "createdAt"     TIMESTAMP NOT NULL DEFAULT now(),
-                               "updatedAt"     TIMESTAMP NOT NULL DEFAULT now(),
-                               CONSTRAINT "UQ_fea8eabb844124b981085876881" UNIQUE ("ordinalNumber"),
-                               CONSTRAINT "PK_88c8e2b461b711336c836b1e130" PRIMARY KEY ("id")
                              )`);
     await queryRunner.query(`CREATE TABLE "context"
                              (
@@ -44,6 +39,16 @@ export class Initial1754550908202 implements MigrationInterface {
                                CONSTRAINT "UQ_ee31038ea78470491f3b3f8382b" UNIQUE ("ordinalNumber"),
                                CONSTRAINT "PK_fb213f79ee45060ba925ecd576e" PRIMARY KEY ("id")
                              )`);
+    await queryRunner.query(`CREATE TABLE "goal"
+                             (
+                               "id"            uuid      NOT NULL,
+                               "ordinalNumber" bigint    NOT NULL,
+                               "description"   text      NOT NULL,
+                               "createdAt"     TIMESTAMP NOT NULL DEFAULT now(),
+                               "updatedAt"     TIMESTAMP NOT NULL DEFAULT now(),
+                               CONSTRAINT "UQ_fea8eabb844124b981085876881" UNIQUE ("ordinalNumber"),
+                               CONSTRAINT "PK_88c8e2b461b711336c836b1e130" PRIMARY KEY ("id")
+                             )`);
     await queryRunner.query(`ALTER TABLE "task"
       ADD CONSTRAINT "FK_266bc4eb256aee41118272eccf3" FOREIGN KEY ("goalId") REFERENCES "goal" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
     await queryRunner.query(`ALTER TABLE "task"
@@ -59,9 +64,9 @@ export class Initial1754550908202 implements MigrationInterface {
       DROP CONSTRAINT "FK_3cfe74a87c3c74b320ca95574e4"`);
     await queryRunner.query(`ALTER TABLE "task"
       DROP CONSTRAINT "FK_266bc4eb256aee41118272eccf3"`);
+    await queryRunner.query(`DROP TABLE "goal"`);
     await queryRunner.query(`DROP TABLE "task"`);
     await queryRunner.query(`DROP TABLE "context"`);
-    await queryRunner.query(`DROP TABLE "goal"`);
     await queryRunner.query(`DROP TABLE "user"`);
   }
 }

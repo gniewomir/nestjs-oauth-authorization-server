@@ -4,7 +4,7 @@ import { IdentityValue } from "@domain/IdentityValue";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { UserInterface } from "@domain/authentication/OAuth/User/User.interface";
+import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
@@ -47,7 +47,7 @@ export class AuthorizationFacade {
       };
     },
     requests: RequestInterface,
-    users: UserInterface,
+    users: UsersInterface,
     passwords: PasswordInterface,
     codes: CodeInterface,
     clock: ClockInterface,
@@ -92,7 +92,7 @@ export class AuthorizationFacade {
     PKCE: PKCEInterface,
     clock: ClockInterface,
     authConfig: AuthConfig,
-    users: UserInterface,
+    users: UsersInterface,
     tokenPayloads: TokenPayloadInterface,
     clients: ClientInterface,
   ): Promise<{
