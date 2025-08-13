@@ -38,7 +38,7 @@ describe("AuthorizationFacade", () => {
           new RequestDomainRepositoryInMemory(),
           new ClientDomainRepositoryInMemory(),
         ),
-      ).rejects.toThrow("Not found");
+      ).rejects.toThrow("Client not found");
     });
   });
   describe("prompt", () => {
