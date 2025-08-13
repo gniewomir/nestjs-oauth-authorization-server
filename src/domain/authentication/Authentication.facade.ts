@@ -62,8 +62,6 @@ export class AuthenticationFacade {
       "unknown refresh token",
     );
 
-    user.spendRefreshToken(IdentityValue.fromString(payload.jti));
-
     const idTokenPayload = IdTokenPayload.createIdToken({
       clock,
       authConfig,

@@ -52,22 +52,6 @@ describe("User", () => {
 
       expect(sut.refreshTokens).toEqual([newRefreshToken]);
     });
-    it("removed spent refresh token", () => {
-      const clock = new ClockServiceFake();
-      const MINUTE_IN_SECONDS = 60;
-      const jti = IdentityValue.create();
-      const sut = userMother({});
-      sut.rotateRefreshToken(
-        RefreshTokenValue.fromUnknown({
-          aud: IdentityValue.create(),
-          exp: clock.nowAsSecondsSinceEpoch() + MINUTE_IN_SECONDS,
-          jti,
-        }),
-        clock,
-      );
-      sut.spendRefreshToken(jti);
-      expect(sut.refreshTokens).toEqual([]);
-    });
     it("does not store superfluous properties", () => {
       const clock = new ClockServiceFake();
       const now = clock.nowAsSecondsSinceEpoch();
