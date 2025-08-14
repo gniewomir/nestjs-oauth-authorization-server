@@ -1,0 +1,34 @@
+---
+description: Rules for generating mother objects tests 
+globs:  **/*.mother.spec.ts
+alwaysApply: false
+---
+
+# Domain Object Mother Test Rules
+
+## Purpose
+Mother object tests should provide a single, minimal test that proves the mother function creates a valid domain object instance. Nothing more, nothing less.
+
+## Test Structure Template
+
+```typescript
+import { {domainObject}Mother } from "./{DomainObject}.mother";
+import { {DomainObject} } from "@domain/path/to/{DomainObject}";
+
+describe("{DomainObject}.mothers", () => {
+  it("has working mother", () => {
+    expect({domainObject}Mother()).toBeInstanceOf({DomainObject});
+  });
+});
+```
+
+## Rules
+1. **Single Test**: Each mother spec file contains exactly one test
+2. **Instance Check**: The test only verifies the mother creates an instance of the correct domain class
+3. **No Parameter Testing**: Don't test parameter overrides or edge cases - that's the domain object's responsibility
+4. **Naming Convention**: 
+   - File: `{DomainObject}.mother.spec.ts`
+   - Describe block: `"{DomainObject}.mothers"`
+   - Test: `"has working mother"`
+5. **Imports**: Import the mother function and the domain class only
+6. **Location**: Place in same directory as the corresponding mother file

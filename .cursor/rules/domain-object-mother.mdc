@@ -32,7 +32,6 @@ export const {domainObject}Mother = (
 - Always import the domain class and its constructor parameter type
 - Import `IdentityValue` from `@domain/IdentityValue` for identity fields
 - Import utility functions like `randomString` from `@test/utility/randomString`
-- Import `v4` from `uuid` when creating deterministic IDs
 - Import related mother objects for complex object composition
 
 ### 3. Default Value Strategies
