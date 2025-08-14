@@ -1,8 +1,9 @@
 # What and why? 
 
-I want to test some of my ideas on how to apply DDD to TS based backends.
-
-Possibly have a template/reference for future projects. 
+I want to:
+- test some of my ideas on how to apply DDD to TS based backends.
+- test how well coding LLMs can follow patterns
+- have a base for future projects 
 
 Repo will be intentionally heavily overengineered for what it actually does.
 
