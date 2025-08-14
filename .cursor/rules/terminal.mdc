@@ -2,9 +2,11 @@
 description: Rules for using terminal commands, build scripts etc. 
 globs:
 alwaysApply: true
+
 ---
 
-- Before running any commands in this project, run `nvm use` to ensure the correct Node and npm version is available.
+## General rules
+- before running ecach command run `nvm use` to ensure correct node and npm version
 
 ## Scripts 
 - run `npm build` to build project
