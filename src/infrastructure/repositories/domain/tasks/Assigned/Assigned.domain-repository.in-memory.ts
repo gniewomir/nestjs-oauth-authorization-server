@@ -7,7 +7,7 @@ export class AssignedDomainRepositoryInMemory implements AssignedInterface {
 
   persist(entity: Assigned): Promise<void> {
     this.assigned.set(entity.identity.toString(), entity);
-    return Promise.resolve(undefined);
+    return Promise.resolve();
   }
 
   retrieve(identity: IdentityValue): Promise<Assigned> {
