@@ -1,46 +1,134 @@
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
 import { IdentityValue } from "@domain/IdentityValue";
-import { Context } from "@domain/tasks/context/Context";
+import { Context as DomainContext } from "@domain/tasks/context/Context";
 import { ContextsInterface } from "@domain/tasks/context/Contexts.interface";
+import { DescriptionValue } from "@domain/tasks/DescriptionValue";
+import { Context as DatabaseContext } from "@infrastructure/database/entities/context.entity";
 
+@Injectable()
 export class ContextsDomainRepository implements ContextsInterface {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  persist(_context: Context): Promise<void> {
-    throw new Error("Method not implemented.");
+  constructor(
+    @InjectRepository(DatabaseContext)
+    private readonly contextRepository: Repository<DatabaseContext>,
+  ) {}
+
+  async persist(context: DomainContext): Promise<void> {
+    const databaseContext = this.mapToDatabase(context);
+    await this.contextRepository.save(databaseContext);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  retrieve(_identity: IdentityValue): Promise<Context> {
-    throw new Error("Method not implemented.");
+  async retrieve(identity: IdentityValue): Promise<DomainContext> {
+    const context = await this.contextRepository.findOne({
+      where: { id: identity.toString() },
+    });
+    if (!context) {
+      throw new Error("Context not found");
+    }
+
+    return this.mapToDomain(context);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getOrderKey(_identity: IdentityValue): Promise<string> {
-    throw new Error("Method not implemented.");
+  async getOrderKey(identity: IdentityValue): Promise<string> {
+    const context = await this.contextRepository.findOne({
+      where: { id: identity.toString() },
+      select: ["orderKey"],
+    });
+
+    if (!context) {
+      throw new Error("Context not found");
+    }
+
+    return context.orderKey;
   }
 
-  searchForLowerOrderKey(
+  async searchForLowerOrderKey(
     assignedIdentity: IdentityValue,
-    _orderKey: string,
+    orderKey: string,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const context = await this.contextRepository
+      .createQueryBuilder("context")
+      .select("context.orderKey")
+      .where("context.userId = :userId", {
+        userId: assignedIdentity.toString(),
+      })
+      .andWhere("context.orderKey < :orderKey", { orderKey })
+      .orderBy("context.orderKey", "DESC")
+      .limit(1)
+      .getOne();
+
+    return context?.orderKey || null;
   }
 
-  searchForHighestOrderKey(
+  async searchForHighestOrderKey(
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
-    return Promise.resolve(null);
+    const context = await this.contextRepository
+      .createQueryBuilder("context")
+      .select("context.orderKey")
+      .where("context.userId = :userId", {
+        userId: assignedIdentity.toString(),
+      })
+      .orderBy("context.orderKey", "DESC")
+      .limit(1)
+      .getOne();
+
+    return context?.orderKey || null;
   }
 
-  searchForHigherOrderKey(
+  async searchForHigherOrderKey(
     assignedIdentity: IdentityValue,
-    _orderKey: string,
+    orderKey: string,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const context = await this.contextRepository
+      .createQueryBuilder("context")
+      .select("context.orderKey")
+      .where("context.userId = :userId", {
+        userId: assignedIdentity.toString(),
+      })
+      .andWhere("context.orderKey > :orderKey", { orderKey })
+      .orderBy("context.orderKey", "ASC")
+      .limit(1)
+      .getOne();
+
+    return context?.orderKey || null;
   }
 
-  searchForLowestOrderKey(
+  async searchForLowestOrderKey(
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
-    return Promise.resolve(null);
+    const context = await this.contextRepository
+      .createQueryBuilder("context")
+      .select("context.orderKey")
+      .where("context.userId = :userId", {
+        userId: assignedIdentity.toString(),
+      })
+      .orderBy("context.orderKey", "ASC")
+      .limit(1)
+      .getOne();
+
+    return context?.orderKey || null;
+  }
+
+  private mapToDomain(databaseContext: DatabaseContext): DomainContext {
+    return new DomainContext({
+      identity: IdentityValue.fromString(databaseContext.id),
+      description: DescriptionValue.fromString(databaseContext.description),
+      assigned: IdentityValue.fromString(databaseContext.userId),
+      orderKey: databaseContext.orderKey,
+    });
+  }
+
+  private mapToDatabase(
+    domainContext: DomainContext,
+  ): Omit<DatabaseContext, "createdAt" | "updatedAt" | "user" | "tasks"> {
+    return {
+      id: domainContext.identity.toString(),
+      description: domainContext.description.toString(),
+      orderKey: domainContext.orderKey,
+      userId: domainContext.assigned.toString(),
+    };
   }
 }

@@ -5,7 +5,7 @@ import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/doma
 
 describe("TasksDomainRepositoryInMemory", () => {
   describe("persist", () => {
-    it("persists", async () => {
+    it("should save a task to memory", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const task = taskMother();
       await sut.persist(task);
@@ -14,7 +14,7 @@ describe("TasksDomainRepositoryInMemory", () => {
     });
   });
   describe("retrieve", () => {
-    it("retrieves", async () => {
+    it("should return task when found by identity", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const task = taskMother();
       await sut.persist(task);
@@ -22,7 +22,7 @@ describe("TasksDomainRepositoryInMemory", () => {
       await expect(sut.retrieve(task.identity)).resolves.toBe(task);
     });
 
-    it("rejects when task not found", async () => {
+    it("should throw error when task not found by identity", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const nonExistentId = taskMother().identity;
 
@@ -31,8 +31,8 @@ describe("TasksDomainRepositoryInMemory", () => {
       );
     });
   });
-  describe("getOrdinalNumber", () => {
-    it("returns order key of task", async () => {
+  describe("getOrderKey", () => {
+    it("should return order key when task found by identity", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const orderKey = "M";
       const task = taskMother({ orderKey });
@@ -42,7 +42,7 @@ describe("TasksDomainRepositoryInMemory", () => {
   });
 
   describe("searchForHighestOrderKey", () => {
-    it("returns highest existing order key", async () => {
+    it("should return highest existing order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const assigned = assignedMother();
       const lower = "A";
@@ -73,13 +73,13 @@ describe("TasksDomainRepositoryInMemory", () => {
   });
 
   describe("searchForLowerOrderKey", () => {
-    it("returns null if there is no tasks", async () => {
+    it("should return null when no tasks exist for user", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       await expect(
         sut.searchForLowerOrderKey(taskMother().assigned, "M"),
       ).resolves.toBe(null);
     });
-    it("returns null if there is no lower order key", async () => {
+    it("should return null when no lower order key exists", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const orderKey = "M";
       const assigned = assignedMother();
@@ -92,7 +92,7 @@ describe("TasksDomainRepositoryInMemory", () => {
         sut.searchForLowerOrderKey(assigned.identity, orderKey),
       ).resolves.toBe(null);
     });
-    it("returns order key of the next task with lower order key", async () => {
+    it("should return order key of the next task with lower order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const assigned = assignedMother();
       const lower = "A";
@@ -125,14 +125,64 @@ describe("TasksDomainRepositoryInMemory", () => {
     });
   });
 
+  describe("searchForHigherOrderKey", () => {
+    it("should return null when no tasks exist for user", async () => {
+      const sut = new TasksDomainRepositoryInMemory();
+      await expect(
+        sut.searchForHigherOrderKey(taskMother().assigned, "M"),
+      ).resolves.toBe(null);
+    });
+    it("should return null when no higher order key exists", async () => {
+      const sut = new TasksDomainRepositoryInMemory();
+      const orderKey = "z";
+      const assigned = assignedMother();
+      const task = taskMother({
+        orderKey,
+        assigned: assigned.identity,
+      });
+      await sut.persist(task);
+      await expect(
+        sut.searchForHigherOrderKey(assigned.identity, orderKey),
+      ).resolves.toBe(null);
+    });
+    it("should return order key of the next task with higher order key", async () => {
+      const sut = new TasksDomainRepositoryInMemory();
+      const assigned = assignedMother();
+      const lower = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(
+        taskMother({
+          orderKey: lower,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: higher,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: highest,
+          assigned: assigned.identity,
+        }),
+      );
+      await expect(
+        sut.searchForHigherOrderKey(assigned.identity, lower),
+      ).resolves.toBe(higher);
+    });
+  });
+
   describe("searchForLowestOrderKey", () => {
-    it("returns null if there are no tasks", async () => {
+    it("should return null when no tasks exist for user", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       await expect(
         sut.searchForLowestOrderKey(taskMother().assigned),
       ).resolves.toBe(null);
     });
-    it("returns the lowest existing order key", async () => {
+    it("should return lowest order key when tasks exist", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const assigned = assignedMother();
       const lowest = "A";

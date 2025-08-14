@@ -1,7 +1,4 @@
 ---
-description: Project specific rules 
-globs:
-alwaysApply: always
+alwaysApply: true
 ---
-
 * Do not attempt to import transactional tests setup from `src/test/infrastructure/database` anywhere. It is already included via jest configuration files. 

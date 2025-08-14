@@ -1,17 +1,13 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { getRepositoryToken, TypeOrmModule } from "@nestjs/typeorm";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { userMother } from "@test/domain/authentication";
 import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { contextMother } from "@test/domain/tasks/Context.mother";
 import { goalMother } from "@test/domain/tasks/Goal.mother";
 import { taskMother } from "@test/domain/tasks/Task.mother";
-import { Repository } from "typeorm";
 
-import { User } from "@domain/authentication/OAuth/User/User";
 import { IdentityValue } from "@domain/IdentityValue";
-import { Context } from "@domain/tasks/context/Context";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
-import { Goal } from "@domain/tasks/goal/Goal";
 import { Task as DomainTask } from "@domain/tasks/task/Task";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
@@ -19,15 +15,21 @@ import { User as DatabaseUser } from "@infrastructure/database/entities";
 import { Context as DatabaseContext } from "@infrastructure/database/entities/context.entity";
 import { Goal as DatabaseGoal } from "@infrastructure/database/entities/goal.entity";
 import { Task as DatabaseTask } from "@infrastructure/database/entities/task.entity";
+import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository";
+import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
+import { ContextsDomainRepository } from "@infrastructure/repositories/domain/tasks/Contexts/Contexts.domain-repository";
+import { ContextsDomainRepositoryModule } from "@infrastructure/repositories/domain/tasks/Contexts/Contexts.domain-repository.module";
+import { GoalsDomainRepository } from "@infrastructure/repositories/domain/tasks/Goals/Goals.domain-repository";
+import { GoalsDomainRepositoryModule } from "@infrastructure/repositories/domain/tasks/Goals/Goals.domain-repository.module";
 
 import { TasksDomainRepository } from "./Tasks.domain-repository";
 
 describe("TasksDomainRepository", () => {
   let repository: TasksDomainRepository;
   let module: TestingModule;
-  let userRepository: Repository<DatabaseUser>;
-  let goalRepository: Repository<DatabaseGoal>;
-  let contextRepository: Repository<DatabaseContext>;
+  let userDomainRepository: UserDomainRepository;
+  let goalsDomainRepository: GoalsDomainRepository;
+  let contextsDomainRepository: ContextsDomainRepository;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -40,19 +42,26 @@ describe("TasksDomainRepository", () => {
           DatabaseContext,
           DatabaseUser,
         ]),
+        UserDomainRepositoryModule,
+        GoalsDomainRepositoryModule,
+        ContextsDomainRepositoryModule,
       ],
-      providers: [TasksDomainRepository],
+      providers: [
+        TasksDomainRepository,
+        UserDomainRepository,
+        GoalsDomainRepository,
+        ContextsDomainRepository,
+      ],
     }).compile();
 
     repository = module.get<TasksDomainRepository>(TasksDomainRepository);
-    userRepository = module.get<Repository<DatabaseUser>>(
-      getRepositoryToken(DatabaseUser),
+    userDomainRepository =
+      module.get<UserDomainRepository>(UserDomainRepository);
+    goalsDomainRepository = module.get<GoalsDomainRepository>(
+      GoalsDomainRepository,
     );
-    goalRepository = module.get<Repository<DatabaseGoal>>(
-      getRepositoryToken(DatabaseGoal),
-    );
-    contextRepository = module.get<Repository<DatabaseContext>>(
-      getRepositoryToken(DatabaseContext),
+    contextsDomainRepository = module.get<ContextsDomainRepository>(
+      ContextsDomainRepository,
     );
   });
 
@@ -65,23 +74,20 @@ describe("TasksDomainRepository", () => {
   describe("persist", () => {
     it("should save a new task to database", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
       const task = taskMother({
         goal: goal.identity,
         context: context.identity,
         assigned: assigned.identity,
-        description: DescriptionValue.fromString("Test task persistence"),
+        description: DescriptionValue.fromString("persist.test.task"),
       });
 
-      // First persist the related entities (Goal, Context and User(Assigned))
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
 
       // Act
       await repository.persist(task);
@@ -101,21 +107,21 @@ describe("TasksDomainRepository", () => {
 
     it("should update existing task when persisting with same identity", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
       const originalTask = taskMother({
         goal: goal.identity,
         context: context.identity,
         assigned: assigned.identity,
-        description: DescriptionValue.fromString("Original description"),
+        description: DescriptionValue.fromString("original.description"),
         orderKey: "A",
       });
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
       await repository.persist(originalTask);
 
       // Act - create updated task with same identity
@@ -124,35 +130,45 @@ describe("TasksDomainRepository", () => {
         goal: originalTask.goal,
         context: originalTask.context,
         assigned: originalTask.assigned,
-        description: DescriptionValue.fromString("Updated description"),
+        description: DescriptionValue.fromString("updated.description"),
         orderKey: "B", // Changed order key
       });
       await repository.persist(updatedTask);
 
       // Assert
       const retrievedTask = await repository.retrieve(originalTask.identity);
-      expect(retrievedTask.description.toString()).toBe("Updated description");
+      expect(retrievedTask.description.toString()).toBe("updated.description");
       expect(retrievedTask.orderKey).toBe("B");
+      expect(retrievedTask.identity.toString()).toBe(
+        originalTask.identity.toString(),
+      );
+      expect(retrievedTask.assigned.toString()).toBe(
+        originalTask.assigned.toString(),
+      );
+      expect(retrievedTask.goal.toString()).toBe(originalTask.goal.toString());
+      expect(retrievedTask.context.toString()).toBe(
+        originalTask.context.toString(),
+      );
     });
   });
 
   describe("retrieve", () => {
     it("should retrieve task by identity with all related entities", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
       const task = taskMother({
         goal: goal.identity,
         context: context.identity,
         assigned: assigned.identity,
-        description: DescriptionValue.fromString("Retrieve test task"),
+        description: DescriptionValue.fromString("retrieve.test.task"),
       });
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
       await repository.persist(task);
 
       // Act
@@ -164,8 +180,6 @@ describe("TasksDomainRepository", () => {
       expect(result.description.toString()).toBe(task.description.toString());
       expect(result.assigned.toString()).toBe(task.assigned.toString());
       expect(result.orderKey).toBe(task.orderKey);
-
-      // Verify related entities are properly mapped
       expect(result.goal.toString()).toBe(goal.identity.toString());
       expect(result.context.toString()).toBe(context.identity.toString());
     });
@@ -184,11 +198,11 @@ describe("TasksDomainRepository", () => {
   describe("getOrderKey", () => {
     it("should return order key for existing task", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
-      const orderKey = "TEST_ORDER_KEY";
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
+      const orderKey = "getOrderKey.test.key";
       const task = taskMother({
         goal: goal.identity,
         context: context.identity,
@@ -196,9 +210,9 @@ describe("TasksDomainRepository", () => {
         assigned: assigned.identity,
       });
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
       await repository.persist(task);
 
       // Act
@@ -236,10 +250,10 @@ describe("TasksDomainRepository", () => {
 
     it("should return null when no lower order key exists", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
       const orderKey = "A"; // Lowest possible
       const task = taskMother({
         goal: goal.identity,
@@ -248,9 +262,9 @@ describe("TasksDomainRepository", () => {
         orderKey,
       });
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
       await repository.persist(task);
 
       // Act
@@ -265,17 +279,17 @@ describe("TasksDomainRepository", () => {
 
     it("should return highest lower order key", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
-      const lowerKey = "A";
-      const middleKey = "M";
-      const higherKey = "Z";
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
+      const lowerKey = "searchLower.a";
+      const middleKey = "searchLower.m";
+      const higherKey = "searchLower.z";
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
 
       await repository.persist(
         taskMother({
@@ -314,21 +328,21 @@ describe("TasksDomainRepository", () => {
 
     it("should only consider tasks for the specified assigned identity", async () => {
       // Arrange
-      const goal1 = goalMother();
-      const context1 = contextMother();
-      const goal2 = goalMother();
-      const context2 = contextMother();
-      const assigned1 = assignedMother();
-      const user1 = userMother({ identity: assigned1.identity });
-      const assigned2 = assignedMother();
-      const user2 = userMother({ identity: assigned2.identity });
+      const user1 = userMother();
+      const assigned1 = assignedMother({ identity: user1.identity });
+      const goal1 = goalMother({ assigned: assigned1.identity });
+      const context1 = contextMother({ assigned: assigned1.identity });
+      const user2 = userMother();
+      const assigned2 = assignedMother({ identity: user2.identity });
+      const goal2 = goalMother({ assigned: assigned2.identity });
+      const context2 = contextMother({ assigned: assigned2.identity });
 
-      await persistUserDirectly(user1);
-      await persistUserDirectly(user2);
-      await persistGoalDirectly(goal1);
-      await persistContextDirectly(context1);
-      await persistGoalDirectly(goal2);
-      await persistContextDirectly(context2);
+      await userDomainRepository.persist(user1);
+      await userDomainRepository.persist(user2);
+      await goalsDomainRepository.persist(goal1);
+      await contextsDomainRepository.persist(context1);
+      await goalsDomainRepository.persist(goal2);
+      await contextsDomainRepository.persist(context2);
 
       await repository.persist(
         taskMother({
@@ -375,10 +389,10 @@ describe("TasksDomainRepository", () => {
 
     it("should return null when no higher order key exists", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
       const orderKey = "Z"; // Highest possible
       const task = taskMother({
         goal: goal.identity,
@@ -387,9 +401,9 @@ describe("TasksDomainRepository", () => {
         orderKey,
       });
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
       await repository.persist(task);
 
       // Act
@@ -404,17 +418,17 @@ describe("TasksDomainRepository", () => {
 
     it("should return lowest higher order key", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
-      const lowerKey = "A";
-      const middleKey = "M";
-      const higherKey = "Z";
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
+      const lowerKey = "searchHigher.a";
+      const middleKey = "searchHigher.m";
+      const higherKey = "searchHigher.z";
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
 
       await repository.persist(
         taskMother({
@@ -468,17 +482,17 @@ describe("TasksDomainRepository", () => {
 
     it("should return highest order key for assigned identity", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
-      const lowerKey = "A";
-      const middleKey = "M";
-      const highestKey = "Z";
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
+      const lowerKey = "searchHighest.a";
+      const middleKey = "searchHighest.m";
+      const highestKey = "searchHighest.z";
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
 
       await repository.persist(
         taskMother({
@@ -516,21 +530,21 @@ describe("TasksDomainRepository", () => {
 
     it("should only consider tasks for the specified assigned identity", async () => {
       // Arrange
-      const goal1 = goalMother();
-      const context1 = contextMother();
-      const goal2 = goalMother();
-      const context2 = contextMother();
-      const assigned1 = assignedMother();
-      const user1 = userMother({ identity: assigned1.identity });
-      const assigned2 = assignedMother();
-      const user2 = userMother({ identity: assigned2.identity });
+      const user1 = userMother();
+      const assigned1 = assignedMother({ identity: user1.identity });
+      const goal1 = goalMother({ assigned: assigned1.identity });
+      const context1 = contextMother({ assigned: assigned1.identity });
+      const user2 = userMother();
+      const assigned2 = assignedMother({ identity: user2.identity });
+      const goal2 = goalMother({ assigned: assigned2.identity });
+      const context2 = contextMother({ assigned: assigned2.identity });
 
-      await persistUserDirectly(user1);
-      await persistUserDirectly(user2);
-      await persistGoalDirectly(goal1);
-      await persistContextDirectly(context1);
-      await persistGoalDirectly(goal2);
-      await persistContextDirectly(context2);
+      await userDomainRepository.persist(user1);
+      await userDomainRepository.persist(user2);
+      await goalsDomainRepository.persist(goal1);
+      await contextsDomainRepository.persist(context1);
+      await goalsDomainRepository.persist(goal2);
+      await contextsDomainRepository.persist(context2);
 
       await repository.persist(
         taskMother({
@@ -575,17 +589,17 @@ describe("TasksDomainRepository", () => {
 
     it("should return lowest order key for assigned identity", async () => {
       // Arrange
-      const goal = goalMother();
-      const context = contextMother();
-      const assigned = assignedMother();
-      const user = userMother({ identity: assigned.identity });
-      const lowestKey = "A";
-      const middleKey = "M";
-      const higherKey = "Z";
+      const user = userMother();
+      const assigned = assignedMother({ identity: user.identity });
+      const goal = goalMother({ assigned: assigned.identity });
+      const context = contextMother({ assigned: assigned.identity });
+      const lowestKey = "searchLowest.a";
+      const middleKey = "searchLowest.m";
+      const higherKey = "searchLowest.z";
 
-      await persistUserDirectly(user);
-      await persistGoalDirectly(goal);
-      await persistContextDirectly(context);
+      await userDomainRepository.persist(user);
+      await goalsDomainRepository.persist(goal);
+      await contextsDomainRepository.persist(context);
 
       await repository.persist(
         taskMother({
@@ -623,21 +637,21 @@ describe("TasksDomainRepository", () => {
 
     it("should only consider tasks for the specified assigned identity", async () => {
       // Arrange
-      const goal1 = goalMother();
-      const context1 = contextMother();
-      const goal2 = goalMother();
-      const context2 = contextMother();
-      const assigned1 = assignedMother();
-      const user1 = userMother({ identity: assigned1.identity });
-      const assigned2 = assignedMother();
-      const user2 = userMother({ identity: assigned2.identity });
+      const user1 = userMother();
+      const assigned1 = assignedMother({ identity: user1.identity });
+      const goal1 = goalMother({ assigned: assigned1.identity });
+      const context1 = contextMother({ assigned: assigned1.identity });
+      const user2 = userMother();
+      const assigned2 = assignedMother({ identity: user2.identity });
+      const goal2 = goalMother({ assigned: assigned2.identity });
+      const context2 = contextMother({ assigned: assigned2.identity });
 
-      await persistUserDirectly(user1);
-      await persistUserDirectly(user2);
-      await persistGoalDirectly(goal1);
-      await persistContextDirectly(context1);
-      await persistGoalDirectly(goal2);
-      await persistContextDirectly(context2);
+      await userDomainRepository.persist(user1);
+      await userDomainRepository.persist(user2);
+      await goalsDomainRepository.persist(goal1);
+      await contextsDomainRepository.persist(context1);
+      await goalsDomainRepository.persist(goal2);
+      await contextsDomainRepository.persist(context2);
 
       await repository.persist(
         taskMother({
@@ -665,33 +679,4 @@ describe("TasksDomainRepository", () => {
       expect(result).toBe("M");
     });
   });
-
-  // Helper functions to persist related entities directly
-  async function persistGoalDirectly(goal: Goal) {
-    await goalRepository.save({
-      id: goal.identity.toString(),
-      description: goal.description.toString(),
-      orderKey: goal.orderKey,
-      userId: goal.assigned.toString(),
-    });
-  }
-
-  async function persistContextDirectly(context: Context) {
-    await contextRepository.save({
-      id: context.identity.toString(),
-      description: context.description.toString(),
-      orderKey: context.orderKey,
-      userId: context.assigned.toString(),
-    });
-  }
-
-  async function persistUserDirectly(user: User) {
-    await userRepository.save({
-      id: user.identity.toString(),
-      email: user.email.toString(),
-      password: user.password,
-      refreshTokens: user.refreshTokens,
-      emailVerified: user.emailVerified,
-    });
-  }
 });
