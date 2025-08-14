@@ -7,5 +7,5 @@ alwaysApply: always
 ## What is test infrastructure? 
 - All classes contained in files matching globs `**/*/*in-memory.ts`, `**/*/*fake.ts`, `**/*/*double.ts`, `**/*/*mother.ts`
 
-## Rules the need to adhere to
+## Rules they need to adhere to
 - They MUST NOT be decorated with `@Injectable()` decorator. (Regardles of where they are placed, they are not part of production code, and should not be available via dependancy injection container outside testing suites.) 
