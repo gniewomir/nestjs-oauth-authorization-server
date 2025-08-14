@@ -7,3 +7,5 @@ export interface OrderInterface {
 
   getOrdinalNumber(identity: IdentityValue): Promise<number>;
 }
+
+export const OrderInterfaceSymbol = Symbol.for("OrderInterface");

@@ -7,3 +7,5 @@ export interface GoalsInterface extends OrderInterface {
 
   persist(goal: Goal): Promise<void>;
 }
+
+export const GoalsInterfaceSymbol = Symbol.for("GoalsInterface");

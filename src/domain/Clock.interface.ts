@@ -3,3 +3,5 @@ export interface ClockInterface {
 
   nowAsSecondsSinceEpoch(): number;
 }
+
+export const ClockInterfaceSymbol = Symbol.for("ClockInterface");

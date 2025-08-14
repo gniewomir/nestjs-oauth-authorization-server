@@ -6,3 +6,5 @@ export interface ClientInterface {
 
   retrieve(id: IdentityValue): Promise<Client>;
 }
+
+export const ClientInterfaceSymbol = Symbol.for("ClientInterface");

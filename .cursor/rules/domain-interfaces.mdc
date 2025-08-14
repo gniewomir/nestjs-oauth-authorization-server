@@ -1,0 +1,41 @@
+---
+description: Rules for domain interfaces
+globs: src/domain/**/*/*.interface.ts
+alwaysApply: false
+---
+
+## Rules 
+- every interface in domain mus export both the interface itself and the symbol for the interface
+- symbol should be named `{InterfaceName}Symbol`
+- if module implements created interface it should provide symbol not concreate implementatation 
+
+
+## Example
+
+
+### How to provide symbol
+
+```
+@Module({
+  providers: [
+    {
+      provide: PKCEInterfaceSymbol,
+      useClass: PKCEService,
+    },
+  ],
+  exports: [PKCEInterfaceSymbol],
+})
+export class PKCEModule {}
+```
+
+### How to inject symbol
+```
+  constructor(
+    @Inject(PasswordInterfaceSymbol)
+    private readonly passwords: PasswordInterface,
+    @Inject(PKCEInterfaceSymbol)
+    private readonly pkce: PKCEInterface,
+    @Inject(TokenPayloadInterfaceSymbol)
+    private readonly tokenPayloads: TokenPayloadInterface,
+  ) {}
+```

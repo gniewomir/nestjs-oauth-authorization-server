@@ -7,3 +7,5 @@ export interface TasksInterface extends OrderInterface {
 
   persist(task: Task): Promise<void>;
 }
+
+export const TasksInterfaceSymbol = Symbol.for("TasksInterface");

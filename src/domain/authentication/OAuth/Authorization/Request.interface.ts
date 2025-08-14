@@ -8,3 +8,5 @@ export interface RequestInterface {
 
   getByAuthorizationCode(authorizationCode: string): Promise<Request>;
 }
+
+export const RequestInterfaceSymbol = Symbol.for("RequestInterface");

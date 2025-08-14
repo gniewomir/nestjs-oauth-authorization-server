@@ -7,3 +7,5 @@ export interface ContextsInterface extends OrderInterface {
 
   persist(context: Context): Promise<void>;
 }
+
+export const ContextsInterfaceSymbol = Symbol.for("ContextsInterface");

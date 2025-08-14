@@ -11,3 +11,5 @@ export interface UsersInterface {
 
   countByEmail(email: EmailValue): Promise<number>;
 }
+
+export const UsersInterfaceSymbol = Symbol.for("UsersInterface");

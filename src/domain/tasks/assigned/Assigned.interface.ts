@@ -4,3 +4,5 @@ import { Assigned } from "./Assigned";
 export interface AssignedInterface {
   retrieve(identity: IdentityValue): Promise<Assigned>;
 }
+
+export const AssignedInterfaceSymbol = Symbol.for("AssignedInterface");
