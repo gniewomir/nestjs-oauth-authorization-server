@@ -70,10 +70,4 @@ export class User {
     );
     return validRefreshToken !== undefined;
   }
-
-  public spendRefreshToken(jti: IdentityValue) {
-    this._refreshTokens = this._refreshTokens.filter(
-      (token) => token.jti !== jti.toString(),
-    );
-  }
 }
