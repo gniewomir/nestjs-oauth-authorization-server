@@ -3,7 +3,7 @@ import { Context } from "@domain/tasks/context/Context";
 import { ContextsInterface } from "@domain/tasks/context/Contexts.interface";
 
 export class ContextsDomainRepositoryInMemory implements ContextsInterface {
-  public contexts: Context[] = [];
+  public contexts = new Map<string, Context>();
 
   async getOrdinalNumber(identity: IdentityValue): Promise<number> {
     const goal = await this.retrieve(identity);
@@ -11,21 +11,20 @@ export class ContextsDomainRepositoryInMemory implements ContextsInterface {
   }
 
   persist(context: Context): Promise<void> {
-    this.contexts.push(context);
+    this.contexts.set(context.identity.toString(), context);
     return Promise.resolve(undefined);
   }
 
   retrieve(identity: IdentityValue): Promise<Context> {
-    for (const context of this.contexts) {
-      if (identity.isEqual(context.identity)) {
-        return Promise.resolve(context);
-      }
+    const context = this.contexts.get(identity.toString());
+    if (context instanceof Context) {
+      return Promise.resolve(context);
     }
-    throw new Error("Not found.");
+    return Promise.reject(new Error("Context not found"));
   }
 
   searchForLowerOrdinalNumber(ordinalNumber: number): Promise<number | null> {
-    const sorted = this.contexts.toSorted(
+    const sorted = Array.from(this.contexts.values()).toSorted(
       (a, b) => b.ordinalNumber - a.ordinalNumber,
     );
 
@@ -39,7 +38,7 @@ export class ContextsDomainRepositoryInMemory implements ContextsInterface {
   }
 
   async searchForLowestOrdinalNumber(): Promise<number | null> {
-    const sorted = this.contexts.toSorted(
+    const sorted = Array.from(this.contexts.values()).toSorted(
       (a, b) => b.ordinalNumber - a.ordinalNumber,
     );
 

@@ -19,6 +19,15 @@ describe("GoalsDomainRepositoryInMemory", () => {
 
       await expect(sut.retrieve(goal.identity)).resolves.toBe(goal);
     });
+
+    it("rejects when goal not found", async () => {
+      const sut = new GoalsDomainRepositoryInMemory();
+      const nonExistentId = goalMother().identity;
+
+      await expect(sut.retrieve(nonExistentId)).rejects.toThrow(
+        "Goal not found",
+      );
+    });
   });
   describe("getOrdinalNumber", () => {
     it("returns ordinal number of goal", async () => {

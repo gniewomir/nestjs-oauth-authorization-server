@@ -1,7 +1,6 @@
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
-import * as assert from "node:assert";
 
 export class RequestDomainRepositoryInMemory implements RequestInterface {
   public requests = new Map<string, Request>();
@@ -22,7 +21,9 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
 
   async retrieve(id: IdentityValue): Promise<Request> {
     const request = this.requests.get(id.toString());
-    assert(request, "Authorization request not found");
-    return Promise.resolve(request);
+    if (request instanceof Request) {
+      return Promise.resolve(request);
+    }
+    return Promise.reject(new Error("Authorization request not found"));
   }
 }

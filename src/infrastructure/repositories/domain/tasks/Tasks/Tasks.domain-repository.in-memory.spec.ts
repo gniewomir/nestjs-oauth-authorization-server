@@ -19,6 +19,15 @@ describe("TasksDomainRepositoryInMemory", () => {
 
       await expect(sut.retrieve(task.identity)).resolves.toBe(task);
     });
+
+    it("rejects when task not found", async () => {
+      const sut = new TasksDomainRepositoryInMemory();
+      const nonExistentId = taskMother().identity;
+
+      await expect(sut.retrieve(nonExistentId)).rejects.toThrow(
+        "Task not found",
+      );
+    });
   });
   describe("getOrdinalNumber", () => {
     it("returns ordinal number of task", async () => {

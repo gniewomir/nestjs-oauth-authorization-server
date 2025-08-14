@@ -3,20 +3,19 @@ import { Task } from "@domain/tasks/task/Task";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export class TasksDomainRepositoryInMemory implements TasksInterface {
-  public tasks: Task[] = [];
+  public tasks = new Map<string, Task>();
 
   persist(task: Task): Promise<void> {
-    this.tasks.push(task);
+    this.tasks.set(task.identity.toString(), task);
     return Promise.resolve(undefined);
   }
 
   retrieve(identity: IdentityValue): Promise<Task> {
-    for (const task of this.tasks) {
-      if (identity.isEqual(task.identity)) {
-        return Promise.resolve(task);
-      }
+    const task = this.tasks.get(identity.toString());
+    if (task instanceof Task) {
+      return Promise.resolve(task);
     }
-    throw new Error("Not found.");
+    return Promise.reject(new Error("Task not found"));
   }
 
   async getOrdinalNumber(identity: IdentityValue): Promise<number> {
@@ -25,7 +24,7 @@ export class TasksDomainRepositoryInMemory implements TasksInterface {
   }
 
   searchForLowerOrdinalNumber(ordinalNumber: number): Promise<number | null> {
-    const sorted = this.tasks.toSorted(
+    const sorted = Array.from(this.tasks.values()).toSorted(
       (a, b) => b.ordinalNumber - a.ordinalNumber,
     );
 
@@ -39,7 +38,7 @@ export class TasksDomainRepositoryInMemory implements TasksInterface {
   }
 
   async searchForLowestOrdinalNumber(): Promise<number | null> {
-    const sorted = this.tasks.toSorted(
+    const sorted = Array.from(this.tasks.values()).toSorted(
       (a, b) => b.ordinalNumber - a.ordinalNumber,
     );
 

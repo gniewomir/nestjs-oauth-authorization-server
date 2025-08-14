@@ -19,6 +19,15 @@ describe("ContextsDomainRepositoryInMemory", () => {
 
       await expect(sut.retrieve(context.identity)).resolves.toBe(context);
     });
+
+    it("rejects when context not found", async () => {
+      const sut = new ContextsDomainRepositoryInMemory();
+      const nonExistentId = contextMother().identity;
+
+      await expect(sut.retrieve(nonExistentId)).rejects.toThrow(
+        "Context not found",
+      );
+    });
   });
   describe("getOrdinalNumber", () => {
     it("returns ordinal number of entity", async () => {

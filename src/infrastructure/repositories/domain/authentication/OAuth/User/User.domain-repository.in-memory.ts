@@ -2,7 +2,6 @@ import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interfac
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { User } from "@domain/authentication/OAuth/User/User";
-import * as assert from "node:assert";
 
 export class UserDomainRepositoryInMemory implements UsersInterface {
   public users = new Map<string, User>();
@@ -14,13 +13,13 @@ export class UserDomainRepositoryInMemory implements UsersInterface {
     return Promise.resolve(count);
   }
 
-  getByEmail(email: EmailValue): Promise<User> {
+  async getByEmail(email: EmailValue): Promise<User> {
     for (const user of this.users.values()) {
       if (user.email.isEqual(email)) {
         return Promise.resolve(user);
       }
     }
-    throw new Error("User not found");
+    return Promise.reject(new Error("User not found"));
   }
 
   persist(user: User): Promise<void> {
@@ -30,7 +29,9 @@ export class UserDomainRepositoryInMemory implements UsersInterface {
 
   retrieve(identity: IdentityValue): Promise<User> {
     const user = this.users.get(identity.toString());
-    assert(user, "User not found");
-    return Promise.resolve(user);
+    if (user instanceof User) {
+      return Promise.resolve(user);
+    }
+    return Promise.reject(new Error("User not found"));
   }
 }

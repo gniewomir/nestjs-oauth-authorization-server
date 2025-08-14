@@ -3,7 +3,7 @@ import { Goal } from "@domain/tasks/goal/Goal";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export class GoalsDomainRepositoryInMemory implements GoalsInterface {
-  public goals: Goal[] = [];
+  public goals = new Map<string, Goal>();
 
   async getOrdinalNumber(identity: IdentityValue): Promise<number> {
     const goal = await this.retrieve(identity);
@@ -11,21 +11,20 @@ export class GoalsDomainRepositoryInMemory implements GoalsInterface {
   }
 
   persist(goal: Goal): Promise<void> {
-    this.goals.push(goal);
+    this.goals.set(goal.identity.toString(), goal);
     return Promise.resolve(undefined);
   }
 
   retrieve(identity: IdentityValue): Promise<Goal> {
-    for (const goal of this.goals) {
-      if (identity.isEqual(goal.identity)) {
-        return Promise.resolve(goal);
-      }
+    const goal = this.goals.get(identity.toString());
+    if (goal instanceof Goal) {
+      return Promise.resolve(goal);
     }
-    throw new Error("Not found.");
+    return Promise.reject(new Error("Goal not found"));
   }
 
   searchForLowerOrdinalNumber(ordinalNumber: number): Promise<number | null> {
-    const sorted = this.goals.toSorted(
+    const sorted = Array.from(this.goals.values()).toSorted(
       (a, b) => b.ordinalNumber - a.ordinalNumber,
     );
 
@@ -39,7 +38,7 @@ export class GoalsDomainRepositoryInMemory implements GoalsInterface {
   }
 
   async searchForLowestOrdinalNumber(): Promise<number | null> {
-    const sorted = this.goals.toSorted(
+    const sorted = Array.from(this.goals.values()).toSorted(
       (a, b) => b.ordinalNumber - a.ordinalNumber,
     );
 
