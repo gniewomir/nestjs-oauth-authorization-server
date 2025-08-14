@@ -1,8 +1,9 @@
-import { OrderService } from "@domain/tasks/order/Order.service";
-import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
 import { taskMother } from "@test/domain/tasks/Task.mother";
+
+import { OrderService } from "@domain/tasks/order/Order.service";
 import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
 import { plainToConfig } from "@infrastructure/config/configs/utility/plainToConfig";
+import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
 
 describe("OrderService", () => {
   describe("newOrdinalNumber", () => {

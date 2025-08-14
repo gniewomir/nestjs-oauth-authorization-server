@@ -1,12 +1,14 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { ClientDomainRepository } from "./Client.domain-repository";
-import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
+import { clientMother } from "@test/domain/authentication/Client.mother";
+
 import { Client as DomainClient } from "@domain/authentication/OAuth/Client/Client";
 import { IdentityValue } from "@domain/IdentityValue";
-import { clientMother } from "@test/domain/authentication/Client.mother";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
+import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
+
+import { ClientDomainRepository } from "./Client.domain-repository";
 
 describe("ClientDomainRepository", () => {
   let repository: ClientDomainRepository;

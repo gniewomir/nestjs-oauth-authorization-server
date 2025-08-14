@@ -1,24 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
-import { IdentityValue } from "@domain/IdentityValue";
-import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 
-import {
-  PasswordInterface,
-  PasswordInterfaceSymbol,
-} from "@domain/authentication/OAuth/User/Credentials/Password.interface";
-
-import { AuthConfig } from "@infrastructure/config/configs";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
+import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import {
+  CodeInterface,
+  CodeInterfaceSymbol,
+} from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import {
   PKCEInterface,
   PKCEInterfaceSymbol,
 } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
-import {
-  TokenPayloadInterface,
-  TokenPayloadInterfaceSymbol,
-} from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import {
   RequestInterface,
   RequestInterfaceSymbol,
@@ -27,17 +19,24 @@ import {
   ClientInterface,
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import {
+  TokenPayloadInterface,
+  TokenPayloadInterfaceSymbol,
+} from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import {
+  PasswordInterface,
+  PasswordInterfaceSymbol,
+} from "@domain/authentication/OAuth/User/Credentials/Password.interface";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import {
   UsersInterface,
   UsersInterfaceSymbol,
 } from "@domain/authentication/OAuth/User/Users.interface";
-import {
-  CodeInterface,
-  CodeInterfaceSymbol,
-} from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { IdentityValue } from "@domain/IdentityValue";
+import { AuthConfig } from "@infrastructure/config/configs";
 
 @Injectable()
 export class AuthorizationService {

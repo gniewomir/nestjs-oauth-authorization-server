@@ -1,8 +1,8 @@
-import { IdentityValue } from "@domain/IdentityValue";
-import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { Assert } from "@domain/Assert";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { IdentityValue } from "@domain/IdentityValue";
 
 export class RefreshTokenValue {
   public readonly jti: string;

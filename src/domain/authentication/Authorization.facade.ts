@@ -1,23 +1,23 @@
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
-import { IdentityValue } from "@domain/IdentityValue";
+import { Assert } from "@domain/Assert";
+import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
+import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
+import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
-import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
-import { ClockInterface } from "@domain/Clock.interface";
-import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
-import { AuthConfig } from "@infrastructure/config/configs";
-import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
-import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
-import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
-import { Assert } from "@domain/Assert";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
+import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
+import { ClockInterface } from "@domain/Clock.interface";
+import { IdentityValue } from "@domain/IdentityValue";
+import { AuthConfig } from "@infrastructure/config/configs";
 
 export class AuthorizationFacade {
   public static async request(

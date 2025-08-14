@@ -1,5 +1,6 @@
 import { isUUID } from "class-validator";
 import { v4 } from "uuid";
+
 import { Assert } from "@domain/Assert";
 
 export class IdentityValue {

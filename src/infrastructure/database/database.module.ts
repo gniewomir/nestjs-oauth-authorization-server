@@ -1,7 +1,9 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { ConfigModule } from "../config";
+
 import { DatabaseConfig } from "@infrastructure/config/configs";
+
+import { ConfigModule } from "../config";
 
 @Module({
   imports: [

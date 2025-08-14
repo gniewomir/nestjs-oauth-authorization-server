@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+
 import { ClockInterface } from "@domain/Clock.interface";
 
 @Injectable()

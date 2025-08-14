@@ -1,13 +1,14 @@
 import { createAuthenticationTestContext } from "@test/domain/authentication/Authentication.test-context";
-import { AuthenticationFacade } from "@domain/authentication/Authentication.facade";
 import { randomString } from "@test/utility/randomString";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
-import { AuthConfig } from "@infrastructure/config/configs";
-import { JwtServiceFake } from "@infrastructure/authentication/jwt";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+
+import { AuthenticationFacade } from "@domain/authentication/Authentication.facade";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { IdentityValue } from "@domain/IdentityValue";
+import { JwtServiceFake } from "@infrastructure/authentication/jwt";
+import { AuthConfig } from "@infrastructure/config/configs";
+import { plainToConfig } from "@infrastructure/config/configs/utility";
 
 describe("AuthenticationFacade", () => {
   describe("authenticate", () => {

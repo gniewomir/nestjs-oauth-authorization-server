@@ -1,7 +1,9 @@
-import { ClientDomainRepositoryInMemory } from "./Client.domain-repository.in-memory";
+import { clientMother } from "@test/domain/authentication/Client.mother";
+
 import { Client as DomainClient } from "@domain/authentication/OAuth/Client/Client";
 import { IdentityValue } from "@domain/IdentityValue";
-import { clientMother } from "@test/domain/authentication/Client.mother";
+
+import { ClientDomainRepositoryInMemory } from "./Client.domain-repository.in-memory";
 
 describe("ClientDomainRepositoryInMemory", () => {
   let repository: ClientDomainRepositoryInMemory;

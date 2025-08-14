@@ -1,6 +1,6 @@
+import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { IdentityValue } from "@domain/IdentityValue";
-import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 
 export class RequestDomainRepositoryInMemory implements RequestInterface {
   public requests = new Map<string, Request>();

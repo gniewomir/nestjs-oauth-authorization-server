@@ -1,6 +1,6 @@
-import { ContextsInterface } from "@domain/tasks/context/Contexts.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { Context } from "@domain/tasks/context/Context";
+import { ContextsInterface } from "@domain/tasks/context/Contexts.interface";
 
 export class ContextsDomainRepository implements ContextsInterface {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

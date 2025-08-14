@@ -1,7 +1,8 @@
 /* eslint @typescript-eslint/no-unsafe-assignment: 0 */
 
-import { LoggerInterface } from "./logger.interface";
 import { LogLevel } from "@nestjs/common";
+
+import { LoggerInterface } from "./logger.interface";
 
 export class LoggerMemory implements LoggerInterface {
   public archive: unknown[][] = [];

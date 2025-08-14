@@ -1,19 +1,20 @@
-import { IsInt, IsNotEmpty, IsString, Length, Max } from "class-validator";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
-import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
-import { plainToInstance } from "class-transformer";
-import {
-  configValidator,
-  deepFreeze,
-} from "@infrastructure/config/configs/utility";
 import { ConfigService } from "@nestjs/config";
-import { Algorithm } from "jsonwebtoken";
 import { randomString } from "@test/utility/randomString";
+import { plainToInstance } from "class-transformer";
+import { IsInt, IsNotEmpty, IsString, Length, Max } from "class-validator";
+import { Algorithm } from "jsonwebtoken";
+
 import {
   ONE_DAY_IN_SECONDS,
   ONE_HOUR_IN_SECONDS,
   ONE_MINUTE_IN_SECONDS,
 } from "@infrastructure/clock";
+import {
+  configValidator,
+  deepFreeze,
+} from "@infrastructure/config/configs/utility";
+import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 
 export const authConfigDefaults = {
   passwordSaltingRounds: 10,

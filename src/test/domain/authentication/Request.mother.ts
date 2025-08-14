@@ -1,12 +1,13 @@
-import { IdentityValue } from "@domain/IdentityValue";
+import { randomString } from "@test/utility/randomString";
+
+import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import {
   Request,
   TRequestConstructorParam,
 } from "@domain/authentication/OAuth/Authorization/Request";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
-import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
-import { randomString } from "@test/utility/randomString";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { IdentityValue } from "@domain/IdentityValue";
 
 export const requestMother = (
   params: Partial<TRequestConstructorParam> = {},

@@ -1,10 +1,11 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
-import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
 import { userMother } from "@test/domain/authentication/User.mother";
+import { DataSource } from "typeorm";
+
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
+import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
 
 describe("TypeOrm+Postgres upsert limitations", () => {
   let module: TestingModule;

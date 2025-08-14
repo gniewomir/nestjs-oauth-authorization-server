@@ -1,6 +1,6 @@
-export { Goal } from "./goal.entity";
-export { User } from "./user.entity";
-export { Context } from "./context.entity";
 export { AuthorizationRequest } from "./authorization-request.entity";
-export { Task } from "./task.entity";
+export { Context } from "./context.entity";
+export { Goal } from "./goal.entity";
 export { OauthClient } from "./oauth-client.entity";
+export { Task } from "./task.entity";
+export { User } from "./user.entity";

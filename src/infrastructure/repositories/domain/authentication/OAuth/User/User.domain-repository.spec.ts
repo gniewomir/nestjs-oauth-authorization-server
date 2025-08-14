@@ -1,17 +1,19 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { UserDomainRepository } from "./User.domain-repository";
-import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
-import { User as DomainUser } from "@domain/authentication/OAuth/User/User";
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { IdentityValue } from "@domain/IdentityValue";
-import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
-import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { userMother } from "@test/domain/authentication/User.mother";
+
+import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
+import { User as DomainUser } from "@domain/authentication/OAuth/User/User";
+import { IdentityValue } from "@domain/IdentityValue";
+import { ONE_DAY_IN_SECONDS } from "@infrastructure/clock";
+import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
-import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
-import { ONE_DAY_IN_SECONDS } from "@infrastructure/clock";
+import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
+
+import { UserDomainRepository } from "./User.domain-repository";
 
 describe("UserDomainRepository", () => {
   let repository: UserDomainRepository;

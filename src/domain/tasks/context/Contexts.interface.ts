@@ -1,6 +1,8 @@
-import { IdentityValue } from "../../IdentityValue";
-import { Context } from "./Context";
 import { OrderInterface } from "@domain/tasks/order";
+
+import { IdentityValue } from "../../IdentityValue";
+
+import { Context } from "./Context";
 
 export interface ContextsInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Context>;

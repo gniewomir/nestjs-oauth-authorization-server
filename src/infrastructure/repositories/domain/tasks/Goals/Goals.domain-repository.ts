@@ -1,6 +1,6 @@
-import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { Goal } from "@domain/tasks/goal/Goal";
+import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
 
 export class GoalsDomainRepository implements GoalsInterface {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

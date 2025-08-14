@@ -1,13 +1,15 @@
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import * as assert from "node:assert";
+
 import {
   decode as jwt_decode,
   sign as jwt_sign,
   verify as jwt_verify,
 } from "jsonwebtoken";
-import * as assert from "node:assert";
-import { AuthConfig } from "@infrastructure/config/configs";
+
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { AuthConfig } from "@infrastructure/config/configs";
 
 export class JwtServiceFake implements TokenPayloadInterface {
   constructor(private readonly authConfig: AuthConfig) {}

@@ -1,6 +1,6 @@
-import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
-import { Goal } from "@domain/tasks/goal/Goal";
 import { IdentityValue } from "@domain/IdentityValue";
+import { Goal } from "@domain/tasks/goal/Goal";
+import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
 
 export class GoalsDomainRepositoryInMemory implements GoalsInterface {
   public goals = new Map<string, Goal>();

@@ -1,8 +1,8 @@
-import { IdentityValue } from "@domain/IdentityValue";
 import {
   Client,
   TClientConstructorParam,
 } from "@domain/authentication/OAuth/Client/Client";
+import { IdentityValue } from "@domain/IdentityValue";
 
 export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {
   return new Client({

@@ -5,6 +5,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
+
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 
 @Entity()

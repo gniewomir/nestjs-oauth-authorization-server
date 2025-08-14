@@ -1,10 +1,11 @@
-import { Goal } from "../goal/Goal";
-import { Context } from "../context/Context";
-import { IdentityValue } from "../../IdentityValue";
-import { DescriptionValue } from "../DescriptionValue";
-import { Assigned } from "../assigned/Assigned";
 import { OrderService } from "@domain/tasks/order/Order.service";
 import { TasksInterface } from "@domain/tasks/task/Tasks.interface";
+
+import { IdentityValue } from "../../IdentityValue";
+import { Assigned } from "../assigned/Assigned";
+import { Context } from "../context/Context";
+import { DescriptionValue } from "../DescriptionValue";
+import { Goal } from "../goal/Goal";
 
 export type TTaskConstructorArgs = ConstructorParameters<typeof Task>;
 export type TTaskConstructorParam = TTaskConstructorArgs[0];

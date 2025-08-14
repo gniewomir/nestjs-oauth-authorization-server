@@ -1,5 +1,6 @@
-import { taskMother } from "./Task.mother";
 import { Task } from "@domain/tasks/task/Task";
+
+import { taskMother } from "./Task.mother";
 
 describe("Task.mothers", () => {
   it("has working mother", () => {

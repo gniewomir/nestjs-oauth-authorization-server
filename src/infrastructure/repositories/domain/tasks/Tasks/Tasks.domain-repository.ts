@@ -1,6 +1,6 @@
-import { TasksInterface } from "@domain/tasks/task/Tasks.interface";
-import { Task } from "@domain/tasks/task/Task";
 import { IdentityValue } from "@domain/IdentityValue";
+import { Task } from "@domain/tasks/task/Task";
+import { TasksInterface } from "@domain/tasks/task/Tasks.interface";
 
 export class TasksDomainRepository implements TasksInterface {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

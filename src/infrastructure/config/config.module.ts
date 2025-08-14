@@ -1,9 +1,12 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule as NestConfigModule } from "@nestjs/config";
-import { AppConfig, DatabaseConfig } from "./configs";
-import { LoggerModule } from "../logger";
-import { OrderingConfig } from "./configs/ordering.config";
+
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
+
+import { LoggerModule } from "../logger";
+
+import { OrderingConfig } from "./configs/ordering.config";
+import { AppConfig, DatabaseConfig } from "./configs";
 
 @Module({
   imports: [LoggerModule, NestConfigModule.forRoot()],

@@ -1,16 +1,18 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { RequestDomainRepository } from "./Request.domain-repository";
+import { requestMother } from "@test/domain/authentication/Request.mother";
+
+import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Request as DomainAuthorizationRequest } from "@domain/authentication/OAuth/Authorization/Request";
 import { IdentityValue } from "@domain/IdentityValue";
-import { requestMother } from "@test/domain/authentication/Request.mother";
-import { ConfigModule } from "@infrastructure/config";
-import { DatabaseModule } from "@infrastructure/database";
-import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { AuthorizationCodeService } from "@infrastructure/authentication/authorization-code/authorization-code.service";
+import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
+import { ConfigModule } from "@infrastructure/config";
 import { authConfigDefaults } from "@infrastructure/config/configs/auth.config";
+import { DatabaseModule } from "@infrastructure/database";
 import { AuthorizationRequest as DatabaseAuthorizationRequest } from "@infrastructure/database/entities";
+
+import { RequestDomainRepository } from "./Request.domain-repository";
 
 describe("RequestDomainRepository", () => {
   let repository: RequestDomainRepository;

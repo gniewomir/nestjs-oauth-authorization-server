@@ -6,6 +6,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
+
 import { Task } from "@infrastructure/database/entities/task.entity";
 
 @Entity()

@@ -1,7 +1,7 @@
-import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { IdentityValue } from "@domain/IdentityValue";
 import { User } from "@domain/authentication/OAuth/User/User";
+import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
+import { IdentityValue } from "@domain/IdentityValue";
 
 export class UserDomainRepositoryInMemory implements UsersInterface {
   public users = new Map<string, User>();

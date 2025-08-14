@@ -1,10 +1,11 @@
 import { taskMother } from "@test/domain/tasks/Task.mother";
-import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
-import { OrderService } from "@domain/tasks/order";
-import { plainToConfig } from "@infrastructure/config/configs/utility/plainToConfig";
-import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
 import { v4 } from "uuid";
+
 import { IdentityValue } from "@domain/IdentityValue";
+import { OrderService } from "@domain/tasks/order";
+import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
+import { plainToConfig } from "@infrastructure/config/configs/utility/plainToConfig";
+import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
 
 describe("Task", () => {
   it("can be moved before another one", async () => {

@@ -1,9 +1,9 @@
-import { IdentityValue } from "@domain/IdentityValue";
+import { Assert } from "@domain/Assert";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
-import { ClockInterface } from "@domain/Clock.interface";
 import { UniqueEmailSpecification } from "@domain/authentication/OAuth/User/UniqueEmail.specification";
-import { Assert } from "@domain/Assert";
+import { ClockInterface } from "@domain/Clock.interface";
+import { IdentityValue } from "@domain/IdentityValue";
 
 type TUserConstructorArgs = ConstructorParameters<typeof User>;
 export type TUserConstructorParam = TUserConstructorArgs[0];

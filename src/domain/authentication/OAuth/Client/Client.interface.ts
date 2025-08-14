@@ -1,5 +1,5 @@
-import { IdentityValue } from "@domain/IdentityValue";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
+import { IdentityValue } from "@domain/IdentityValue";
 
 export interface ClientInterface {
   persist(client: Client): Promise<void>;

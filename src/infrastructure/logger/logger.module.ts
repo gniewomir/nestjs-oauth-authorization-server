@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
-import { LoggerService } from "./logger.service";
+
 import { LoggerInterfaceSymbol } from "./logger.interface";
+import { LoggerService } from "./logger.service";
 
 @Module({
   providers: [

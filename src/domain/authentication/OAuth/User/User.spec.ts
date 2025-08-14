@@ -1,7 +1,8 @@
 import { userMother } from "@test/domain/authentication";
-import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
+
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
 import { IdentityValue } from "@domain/IdentityValue";
+import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 
 describe("User", () => {
   describe("rotateTokens", () => {

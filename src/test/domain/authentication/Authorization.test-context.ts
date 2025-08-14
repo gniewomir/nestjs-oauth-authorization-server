@@ -1,16 +1,17 @@
+import { clientMother } from "@test/domain/authentication/Client.mother";
+import { userMother } from "@test/domain/authentication/User.mother";
+
+import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizationCodeService } from "@infrastructure/authentication/authorization-code/authorization-code.service";
 import { JwtServiceFake } from "@infrastructure/authentication/jwt";
-import { PKCEServiceFake } from "@infrastructure/authentication/pkce";
-import { userMother } from "@test/domain/authentication/User.mother";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
-import { UserDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.in-memory";
-import { IdentityValue } from "@domain/IdentityValue";
-import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
-import { AuthConfig, authConfigDefaults } from "@infrastructure/config/configs";
 import { PasswordService } from "@infrastructure/authentication/password";
+import { PKCEServiceFake } from "@infrastructure/authentication/pkce";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
+import { AuthConfig, authConfigDefaults } from "@infrastructure/config/configs";
+import { plainToConfig } from "@infrastructure/config/configs/utility";
 import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
-import { clientMother } from "@test/domain/authentication/Client.mother";
+import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
+import { UserDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.in-memory";
 
 export const createAuthorizationTestContext = async () => {
   const clients = new ClientDomainRepositoryInMemory();

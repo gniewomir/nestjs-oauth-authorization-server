@@ -1,6 +1,8 @@
-import { IdentityValue } from "../../IdentityValue";
-import { Task } from "./Task";
 import { OrderInterface } from "@domain/tasks/order/Order.interface";
+
+import { IdentityValue } from "../../IdentityValue";
+
+import { Task } from "./Task";
 
 export interface TasksInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Task>;

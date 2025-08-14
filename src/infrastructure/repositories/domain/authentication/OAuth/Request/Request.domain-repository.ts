@@ -1,13 +1,14 @@
-import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
-import { IdentityValue } from "@domain/IdentityValue";
-import { Request as DomainRequest } from "@domain/authentication/OAuth/Authorization/Request";
-import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Injectable } from "@nestjs/common";
+
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { Request as DomainRequest } from "@domain/authentication/OAuth/Authorization/Request";
+import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { IdentityValue } from "@domain/IdentityValue";
+import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";
 
 @Injectable()
 export class RequestDomainRepository implements RequestInterface {

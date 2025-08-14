@@ -1,5 +1,5 @@
-import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { Assert } from "@domain/Assert";
+import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 
 export class PasswordValue {
   public static readonly minPasswordLength: number = 12;

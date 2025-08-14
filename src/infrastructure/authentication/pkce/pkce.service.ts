@@ -1,5 +1,6 @@
-import { createHash } from "crypto";
 import { Injectable } from "@nestjs/common";
+import { createHash } from "crypto";
+
 import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
 
 @Injectable()

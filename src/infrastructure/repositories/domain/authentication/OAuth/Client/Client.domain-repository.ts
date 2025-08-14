@@ -1,10 +1,11 @@
-import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { Client } from "@domain/authentication/OAuth/Client/Client";
-import { IdentityValue } from "@domain/IdentityValue";
-import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Injectable } from "@nestjs/common";
+
+import { Client } from "@domain/authentication/OAuth/Client/Client";
+import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
+import { IdentityValue } from "@domain/IdentityValue";
+import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
 
 @Injectable()
 export class ClientDomainRepository implements ClientInterface {

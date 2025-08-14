@@ -1,7 +1,8 @@
+import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
+import { OrderService } from "@domain/tasks/order";
+
 import { IdentityValue } from "../../IdentityValue";
 import { DescriptionValue } from "../DescriptionValue";
-import { OrderService } from "@domain/tasks/order";
-import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
 
 export type TGoalConstructorArgs = ConstructorParameters<typeof Goal>;
 export type TGoalConstructorParam = TGoalConstructorArgs[0];

@@ -1,9 +1,10 @@
-import { Task, TTaskConstructorParam } from "@domain/tasks/task/Task";
 import { IdentityValue } from "@domain/IdentityValue";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
-import { goalMother } from "./Goal.mother";
-import { contextMother } from "./Context.mother";
+import { Task, TTaskConstructorParam } from "@domain/tasks/task/Task";
+
 import { assignedMother } from "./Assigned.mother";
+import { contextMother } from "./Context.mother";
+import { goalMother } from "./Goal.mother";
 
 export const taskMother = (params: Partial<TTaskConstructorParam> = {}) => {
   return new Task({

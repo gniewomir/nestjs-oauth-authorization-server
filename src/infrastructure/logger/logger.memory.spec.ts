@@ -1,5 +1,5 @@
-import { LoggerMemory } from "./logger.memory";
 import { LoggerInterface } from "./logger.interface";
+import { LoggerMemory } from "./logger.memory";
 
 const levels = ["verbose", "debug", "log", "warn", "error", "fatal"];
 

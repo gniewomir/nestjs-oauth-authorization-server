@@ -1,7 +1,8 @@
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { Injectable } from "@nestjs/common";
 import { JwtService as NestJwtService } from "@nestjs/jwt";
+
+import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
 
 @Injectable()

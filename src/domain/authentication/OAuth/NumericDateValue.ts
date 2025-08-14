@@ -1,5 +1,6 @@
-import { Assert } from "@domain/Assert";
 import { isInt } from "class-validator";
+
+import { Assert } from "@domain/Assert";
 
 /**
  * A JSON numeric value representing the number of seconds from 1970-01-01T00:00:00Z UTC

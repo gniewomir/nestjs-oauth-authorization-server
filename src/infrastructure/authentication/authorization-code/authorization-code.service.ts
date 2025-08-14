@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { randomBytes } from "crypto";
+
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 
 @Injectable()

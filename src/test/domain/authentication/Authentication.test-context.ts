@@ -1,7 +1,8 @@
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
+import { requestMother } from "@test/domain/authentication/Request.mother";
+
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { requestMother } from "@test/domain/authentication/Request.mother";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 
 export const createAuthenticationTestContext = async ({

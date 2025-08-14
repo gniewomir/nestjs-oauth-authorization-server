@@ -1,5 +1,5 @@
-import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 
 export class UniqueEmailSpecification {
   constructor(private readonly users: UsersInterface) {}

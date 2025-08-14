@@ -1,7 +1,9 @@
-import { UserDomainRepositoryInMemory } from "./User.domain-repository.in-memory";
-import { IdentityValue } from "@domain/IdentityValue";
 import { userMother } from "@test/domain/authentication/User.mother";
+
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { IdentityValue } from "@domain/IdentityValue";
+
+import { UserDomainRepositoryInMemory } from "./User.domain-repository.in-memory";
 
 describe("UserDomainRepositoryInMemory", () => {
   let repository: UserDomainRepositoryInMemory;

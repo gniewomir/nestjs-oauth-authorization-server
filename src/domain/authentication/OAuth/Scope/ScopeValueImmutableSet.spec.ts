@@ -1,5 +1,5 @@
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 
 describe("ScopeValueImmutableSet", () => {
   it("can be created from string", () => {

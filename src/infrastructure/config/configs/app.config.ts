@@ -1,11 +1,13 @@
-import { IsInt, IsNotEmpty } from "class-validator";
+import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { ConfigService } from "@nestjs/config";
-import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
 import { plainToInstance } from "class-transformer";
+import { IsInt, IsNotEmpty } from "class-validator";
+
+import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
+
 import { configValidator } from "./utility/configValidator";
 import { deepFreeze } from "./utility/deepFreeze";
-import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class AppConfig {

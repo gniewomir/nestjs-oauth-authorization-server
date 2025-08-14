@@ -1,10 +1,10 @@
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { PasswordService } from "@infrastructure/authentication/password/password.service";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
 import {
   AuthConfig,
   authConfigDefaults,
 } from "@infrastructure/config/configs/auth.config";
+import { plainToConfig } from "@infrastructure/config/configs/utility";
 
 describe("PasswordValue", () => {
   it("Prevents creation of passwords starting with spaces", () => {

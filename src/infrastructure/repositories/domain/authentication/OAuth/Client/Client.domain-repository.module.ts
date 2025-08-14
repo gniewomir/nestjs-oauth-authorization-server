@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+
 import { OauthClient } from "@infrastructure/database/entities/oauth-client.entity";
+
 import { ClientDomainRepository } from "./Client.domain-repository";
 
 @Module({

@@ -1,15 +1,17 @@
-import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
-import { clientMother, requestMother } from "@test/domain/authentication";
-import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
-import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
-import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import * as assert from "node:assert";
-import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+
+import { clientMother, requestMother } from "@test/domain/authentication";
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
+
+import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
+import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { Request } from "@domain/authentication/OAuth/Authorization/Request";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { IdentityValue } from "@domain/IdentityValue";
+import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
+import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
 
 describe("AuthorizationFacade", () => {
   describe("request", () => {

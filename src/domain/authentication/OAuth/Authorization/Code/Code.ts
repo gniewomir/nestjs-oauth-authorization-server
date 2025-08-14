@@ -1,9 +1,9 @@
-import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
-import { ClockInterface } from "@domain/Clock.interface";
-import { AuthConfig } from "@infrastructure/config/configs";
-import { IdentityValue } from "@domain/IdentityValue";
 import { Assert } from "@domain/Assert";
+import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
+import { ClockInterface } from "@domain/Clock.interface";
+import { IdentityValue } from "@domain/IdentityValue";
+import { AuthConfig } from "@infrastructure/config/configs";
 
 export class Code {
   public readonly sub: string;

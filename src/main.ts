@@ -1,8 +1,11 @@
 import "reflect-metadata"; // as required by class-transformer
+
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./application/app";
-import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
+
 import { AppConfig } from "@infrastructure/config/configs";
+import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
+
+import { AppModule } from "./application/app";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

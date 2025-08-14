@@ -1,13 +1,13 @@
-import { IdentityValue } from "@domain/IdentityValue";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { ClockInterface } from "@domain/Clock.interface";
-import { AuthConfig } from "@infrastructure/config/configs";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
-import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
-import { User } from "@domain/authentication/OAuth/User/User";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
+import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { User } from "@domain/authentication/OAuth/User/User";
+import { ClockInterface } from "@domain/Clock.interface";
+import { IdentityValue } from "@domain/IdentityValue";
+import { AuthConfig } from "@infrastructure/config/configs";
 
 export type TTokenPayloadConstructorArgs = ConstructorParameters<
   typeof TokenPayload

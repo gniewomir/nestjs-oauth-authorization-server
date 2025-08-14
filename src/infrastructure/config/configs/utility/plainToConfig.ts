@@ -1,7 +1,8 @@
 import { plainToInstance } from "class-transformer";
+import { ClassConstructor } from "class-transformer/types/interfaces";
+
 import { configValidator } from "@infrastructure/config/configs/utility/configValidator";
 import { deepFreeze } from "@infrastructure/config/configs/utility/deepFreeze";
-import { ClassConstructor } from "class-transformer/types/interfaces";
 
 export const plainToConfig = async <T>(
   parameters: Partial<T>,

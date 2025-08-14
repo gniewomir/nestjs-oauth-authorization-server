@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
-import { ClockService } from "./clock.service";
+
 import { ClockInterfaceSymbol } from "@domain/Clock.interface";
+
+import { ClockService } from "./clock.service";
 
 @Module({
   imports: [],

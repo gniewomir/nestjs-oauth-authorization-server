@@ -1,7 +1,9 @@
-import { DataSource } from "typeorm";
 import { Test } from "@nestjs/testing";
-import { DatabaseModule } from "@infrastructure/database";
+import { DataSource } from "typeorm";
+
 import { ConfigModule } from "@infrastructure/config";
+import { DatabaseModule } from "@infrastructure/database";
+
 import {
   initializeTransactionalTestContext,
   rollbackTransaction,

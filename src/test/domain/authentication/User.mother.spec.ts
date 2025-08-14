@@ -1,5 +1,6 @@
-import { userMother } from "./User.mother";
 import { User } from "@domain/authentication/OAuth/User/User";
+
+import { userMother } from "./User.mother";
 
 describe("User.mothers", () => {
   it("has working mother", () => {

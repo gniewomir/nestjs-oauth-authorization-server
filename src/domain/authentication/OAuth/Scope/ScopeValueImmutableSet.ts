@@ -1,5 +1,5 @@
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { Assert } from "@domain/Assert";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 
 export class ScopeValueImmutableSet {
   private readonly scopes: Set<string>;

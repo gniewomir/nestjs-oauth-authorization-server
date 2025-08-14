@@ -5,6 +5,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
+
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
 
 @Entity()

@@ -1,6 +1,6 @@
-import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OrderInterface } from "@domain/tasks/order/Order.interface";
+import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
 
 export class OrderService<T extends OrderInterface> {
   constructor(
