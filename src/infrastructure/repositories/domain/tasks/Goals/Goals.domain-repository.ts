@@ -14,16 +14,25 @@ export class GoalsDomainRepository implements GoalsInterface {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getOrdinalNumber(identity: IdentityValue): Promise<number> {
+  getOrderKey(identity: IdentityValue): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  searchForLowerOrdinalNumber(_ordinalNumber: number): Promise<number | null> {
+  searchForLowerOrderKey(_orderKey: string): Promise<string | null> {
     throw new Error("Method not implemented.");
   }
 
-  searchForLowestOrdinalNumber(): Promise<number | null> {
+  searchForHighestOrderKey(): Promise<string | null> {
     throw new Error("Method not implemented.");
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  searchForHigherOrderKey(_orderKey: string): Promise<string | null> {
+    throw new Error("Method not implemented.");
+  }
+
+  searchForLowestOrderKey(): Promise<string | null> {
+    return Promise.resolve(null);
   }
 }

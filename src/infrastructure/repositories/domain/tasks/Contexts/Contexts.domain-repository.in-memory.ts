@@ -5,9 +5,9 @@ import { ContextsInterface } from "@domain/tasks/context/Contexts.interface";
 export class ContextsDomainRepositoryInMemory implements ContextsInterface {
   public contexts = new Map<string, Context>();
 
-  async getOrdinalNumber(identity: IdentityValue): Promise<number> {
+  async getOrderKey(identity: IdentityValue): Promise<string> {
     const goal = await this.retrieve(identity);
-    return Promise.resolve(goal.ordinalNumber);
+    return Promise.resolve(goal.orderKey);
   }
 
   persist(context: Context): Promise<void> {
@@ -23,29 +23,60 @@ export class ContextsDomainRepositoryInMemory implements ContextsInterface {
     return Promise.reject(new Error("Context not found"));
   }
 
-  searchForLowerOrdinalNumber(ordinalNumber: number): Promise<number | null> {
-    const sorted = Array.from(this.contexts.values()).toSorted(
-      (a, b) => b.ordinalNumber - a.ordinalNumber,
+  searchForLowerOrderKey(orderKey: string): Promise<string | null> {
+    const sorted = Array.from(this.contexts.values()).toSorted((a, b) =>
+      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
     );
 
+    let previous: string | null = null;
     for (const context of sorted) {
-      if (ordinalNumber > context.ordinalNumber) {
-        return Promise.resolve(context.ordinalNumber);
+      if (orderKey > context.orderKey) {
+        previous = context.orderKey;
+      } else if (orderKey === context.orderKey) {
+        return Promise.resolve(previous);
+      } else {
+        break;
       }
     }
 
-    return Promise.resolve(null);
+    return Promise.resolve(previous);
   }
 
-  async searchForLowestOrdinalNumber(): Promise<number | null> {
-    const sorted = Array.from(this.contexts.values()).toSorted(
-      (a, b) => b.ordinalNumber - a.ordinalNumber,
+  async searchForHighestOrderKey(): Promise<string | null> {
+    const sorted = Array.from(this.contexts.values()).toSorted((a, b) =>
+      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
     );
 
     if (sorted.length === 0) {
       return Promise.resolve(null);
     }
 
-    return sorted[sorted.length - 1].ordinalNumber;
+    return sorted[sorted.length - 1].orderKey;
+  }
+
+  async searchForLowestOrderKey(): Promise<string | null> {
+    const sorted = Array.from(this.contexts.values()).toSorted((a, b) =>
+      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
+    );
+
+    if (sorted.length === 0) {
+      return Promise.resolve(null);
+    }
+
+    return sorted[0].orderKey;
+  }
+
+  searchForHigherOrderKey(orderKey: string): Promise<string | null> {
+    const sorted = Array.from(this.contexts.values()).toSorted((a, b) =>
+      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
+    );
+
+    for (const context of sorted) {
+      if (context.orderKey > orderKey) {
+        return Promise.resolve(context.orderKey);
+      }
+    }
+
+    return Promise.resolve(null);
   }
 }

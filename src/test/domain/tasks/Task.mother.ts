@@ -13,7 +13,7 @@ export const taskMother = (params: Partial<TTaskConstructorParam> = {}) => {
     description: DescriptionValue.fromString("example task"),
     goal: goalMother(),
     context: contextMother(),
-    ordinalNumber: Number.MAX_SAFE_INTEGER,
+    orderKey: "Z",
     ...params,
   });
 };

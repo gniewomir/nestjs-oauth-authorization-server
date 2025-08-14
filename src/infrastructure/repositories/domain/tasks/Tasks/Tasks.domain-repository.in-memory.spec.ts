@@ -31,60 +31,67 @@ describe("TasksDomainRepositoryInMemory", () => {
     });
   });
   describe("getOrdinalNumber", () => {
-    it("returns ordinal number of task", async () => {
+    it("returns order key of task", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      const ordinalNumber = 42;
-      const task = taskMother({ ordinalNumber });
+      const orderKey = "M";
+      const task = taskMother({ orderKey });
       await sut.persist(task);
-      await expect(sut.getOrdinalNumber(task.identity)).resolves.toBe(
-        ordinalNumber,
-      );
+      await expect(sut.getOrderKey(task.identity)).resolves.toBe(orderKey);
     });
   });
 
-  describe("searchForLowestOrdinalNumber", () => {
-    it("returns lowest existing ordinal number", async () => {
+  describe("searchForHighestOrderKey", () => {
+    it("returns highest existing order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      const lowestOrdinalNumber = 42;
-      const higherOrdinalNumber = lowestOrdinalNumber * 2;
-      const highestOrdinalNumber = higherOrdinalNumber * 2;
-      await sut.persist(taskMother({ ordinalNumber: lowestOrdinalNumber }));
-      await sut.persist(taskMother({ ordinalNumber: higherOrdinalNumber }));
-      await sut.persist(taskMother({ ordinalNumber: highestOrdinalNumber }));
-      await expect(sut.searchForLowestOrdinalNumber()).resolves.toBe(
-        lowestOrdinalNumber,
-      );
+      const lower = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(taskMother({ orderKey: lower }));
+      await sut.persist(taskMother({ orderKey: higher }));
+      await sut.persist(taskMother({ orderKey: highest }));
+      await expect(sut.searchForHighestOrderKey()).resolves.toBe(highest);
     });
   });
 
-  describe("searchForLowerOrdinalNumber", () => {
+  describe("searchForLowerOrderKey", () => {
     it("returns null if there is no tasks", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      await expect(sut.searchForLowerOrdinalNumber(1)).resolves.toBe(null);
+      await expect(sut.searchForLowerOrderKey("M")).resolves.toBe(null);
     });
-    it("returns null if there is no lower positive ordinal number", async () => {
+    it("returns null if there is no lower order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      const ordinalNumber = 42;
-      const task = taskMother({ ordinalNumber });
+      const orderKey = "M";
+      const task = taskMother({ orderKey });
       await sut.persist(task);
-      await expect(
-        sut.searchForLowerOrdinalNumber(ordinalNumber),
-      ).resolves.toBe(null);
+      await expect(sut.searchForLowerOrderKey(orderKey)).resolves.toBe(null);
     });
-    it("returns ordinal number of the next task with lower ordinal number", async () => {
+    it("returns order key of the next task with lower order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      const lowerOrdinalNumber = 42;
-      const higherOrdinalNumber = lowerOrdinalNumber * 2;
-      const highestOrdinalNumber = higherOrdinalNumber * 2;
-      await sut.persist(taskMother({ ordinalNumber: lowerOrdinalNumber }));
-      await sut.persist(taskMother({ ordinalNumber: higherOrdinalNumber }));
-      await sut.persist(taskMother({ ordinalNumber: highestOrdinalNumber }));
-      await expect(
-        sut.searchForLowerOrdinalNumber(higherOrdinalNumber),
-      ).resolves.toBe(lowerOrdinalNumber);
-      await expect(
-        sut.searchForLowerOrdinalNumber(highestOrdinalNumber),
-      ).resolves.toBe(higherOrdinalNumber);
+      const lower = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(taskMother({ orderKey: lower }));
+      await sut.persist(taskMother({ orderKey: higher }));
+      await sut.persist(taskMother({ orderKey: highest }));
+      await expect(sut.searchForLowerOrderKey(higher)).resolves.toBe(lower);
+      await expect(sut.searchForLowerOrderKey(highest)).resolves.toBe(higher);
+    });
+  });
+
+  describe("searchForLowestOrderKey", () => {
+    it("returns null if there are no tasks", async () => {
+      const sut = new TasksDomainRepositoryInMemory();
+      await expect(sut.searchForLowestOrderKey()).resolves.toBe(null);
+    });
+    it("returns the lowest existing order key", async () => {
+      const sut = new TasksDomainRepositoryInMemory();
+      const lowest = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(taskMother({ orderKey: higher }));
+      await sut.persist(taskMother({ orderKey: highest }));
+      await sut.persist(taskMother({ orderKey: lowest }));
+      await expect(sut.searchForLowestOrderKey()).resolves.toBe(lowest);
     });
   });
 });

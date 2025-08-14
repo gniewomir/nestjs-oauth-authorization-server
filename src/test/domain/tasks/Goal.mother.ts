@@ -6,7 +6,7 @@ export const goalMother = (params: Partial<TGoalConstructorParam> = {}) => {
   return new Goal({
     identity: IdentityValue.create(),
     description: DescriptionValue.fromString("example goal"),
-    ordinalNumber: Number.MAX_SAFE_INTEGER,
+    orderKey: "Z",
     ...params,
   });
 };

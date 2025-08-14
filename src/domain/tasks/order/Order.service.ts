@@ -1,37 +1,67 @@
 import { IdentityValue } from "@domain/IdentityValue";
 import { OrderInterface } from "@domain/tasks/order/Order.interface";
-import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
+
+const alphabet =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const MIN = alphabet[0];
+const MAX = alphabet[alphabet.length - 1];
+
+function charAt(str: string, index: number, fallback: string): string {
+  return index < str.length ? str[index] : fallback;
+}
 
 export class OrderService<T extends OrderInterface> {
-  constructor(
-    private readonly orderingConfig: OrderingConfig,
-    private readonly entities: T,
-  ) {}
+  public static readonly START_ORDER_KEY = "U";
 
-  public async newOrdinalNumber(): Promise<number> {
-    const lowestOrdinalNumber =
-      await this.entities.searchForLowestOrdinalNumber();
-    return lowestOrdinalNumber === null
-      ? Math.floor(this.orderingConfig.maxOrdinalNumber / 2)
-      : lowestOrdinalNumber - this.orderingConfig.ordinalNumbersSpacing;
+  constructor(private readonly entities: T) {}
+
+  public async newOrderKey(): Promise<string> {
+    const highest = await this.entities.searchForHighestOrderKey();
+    return this.between(highest ?? undefined, undefined);
   }
 
-  public async nextAvailableOrdinalNumber(
-    taskIdentity: IdentityValue,
-  ): Promise<number> {
-    const taskOrdinalNumber =
-      await this.entities.getOrdinalNumber(taskIdentity);
+  public async nextAvailableOrderKeyBefore(
+    referenceIdentity: IdentityValue,
+  ): Promise<string> {
+    const referenceKey = await this.entities.getOrderKey(referenceIdentity);
+    const lowerKey = await this.entities.searchForLowerOrderKey(referenceKey);
+    return this.between(lowerKey ?? undefined, referenceKey);
+  }
 
-    const boundaryOrdinalNumber =
-      await this.entities.searchForLowerOrdinalNumber(taskOrdinalNumber);
+  public async nextAvailableOrderKeyAfter(
+    referenceIdentity: IdentityValue,
+  ): Promise<string> {
+    const referenceKey = await this.entities.getOrderKey(referenceIdentity);
+    const higherKey = await this.entities.searchForHigherOrderKey(referenceKey);
+    return this.between(referenceKey, higherKey ?? undefined);
+  }
 
-    if (boundaryOrdinalNumber === null) {
-      return taskOrdinalNumber - this.orderingConfig.ordinalNumbersSpacing;
+  public between(a?: string, b?: string): string {
+    const A = a ?? "";
+    const B = b ?? "";
+    let i = 0;
+    let prefix = "";
+
+    while (true) {
+      const ca = charAt(A, i, MIN);
+      const cb = charAt(B, i, MAX);
+
+      if (ca === cb) {
+        prefix += ca;
+        i++;
+        continue;
+      }
+
+      const ia = alphabet.indexOf(ca);
+      const ib = alphabet.indexOf(cb);
+
+      if (ib - ia > 1) {
+        const midIndex = Math.floor((ia + ib) / 2);
+        return prefix + alphabet[midIndex];
+      }
+
+      prefix += ca;
+      i++;
     }
-
-    return (
-      taskOrdinalNumber -
-      Math.floor((taskOrdinalNumber - boundaryOrdinalNumber) / 2)
-    );
   }
 }

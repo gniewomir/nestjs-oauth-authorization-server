@@ -11,7 +11,7 @@ export const contextMother = (
   return new Context({
     identity: IdentityValue.create(),
     description: DescriptionValue.fromString("example context"),
-    ordinalNumber: Number.MAX_SAFE_INTEGER,
+    orderKey: "Z",
     ...params,
   });
 };

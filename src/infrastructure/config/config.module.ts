@@ -5,7 +5,6 @@ import { AuthConfig } from "@infrastructure/config/configs/auth.config";
 
 import { LoggerModule } from "../logger";
 
-import { OrderingConfig } from "./configs/ordering.config";
 import { AppConfig, DatabaseConfig } from "./configs";
 
 @Module({
@@ -14,8 +13,7 @@ import { AppConfig, DatabaseConfig } from "./configs";
     AppConfig.provider(),
     AuthConfig.provider(),
     DatabaseConfig.provider(),
-    OrderingConfig.provider(),
   ],
-  exports: [AppConfig, AuthConfig, DatabaseConfig, OrderingConfig],
+  exports: [AppConfig, AuthConfig, DatabaseConfig],
 })
 export class ConfigModule {}

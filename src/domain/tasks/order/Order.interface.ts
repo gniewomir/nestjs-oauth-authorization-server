@@ -1,11 +1,15 @@
 import { IdentityValue } from "@domain/IdentityValue";
 
 export interface OrderInterface {
-  searchForLowerOrdinalNumber(ordinalNumber: number): Promise<number | null>;
+  getOrderKey(identity: IdentityValue): Promise<string>;
 
-  searchForLowestOrdinalNumber(): Promise<number | null>;
+  searchForLowerOrderKey(orderKey: string): Promise<string | null>;
 
-  getOrdinalNumber(identity: IdentityValue): Promise<number>;
+  searchForHigherOrderKey(orderKey: string): Promise<string | null>;
+
+  searchForHighestOrderKey(): Promise<string | null>;
+
+  searchForLowestOrderKey(): Promise<string | null>;
 }
 
 export const OrderInterfaceSymbol = Symbol.for("OrderInterface");

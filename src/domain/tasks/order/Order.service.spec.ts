@@ -1,125 +1,70 @@
 import { taskMother } from "@test/domain/tasks/Task.mother";
 
 import { OrderService } from "@domain/tasks/order/Order.service";
-import { OrderingConfig } from "@infrastructure/config/configs/ordering.config";
-import { plainToConfig } from "@infrastructure/config/configs/utility/plainToConfig";
 import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
 
 describe("OrderService", () => {
-  describe("newOrdinalNumber", () => {
-    it("returns half of greatest safe integer if there is no tasks", async () => {
-      const maxOrdinalNumber = Number.MAX_SAFE_INTEGER;
-      const halfOfMaxOrdinalNumber = Math.floor(maxOrdinalNumber / 2);
-      const maxEntitiesPerAssigned = 100_000;
-      const ordinalNumbersSpacing = Math.floor(
-        maxOrdinalNumber / maxEntitiesPerAssigned,
-      );
-      const sut = new OrderService(
-        await plainToConfig(
-          {
-            maxOrdinalNumber,
-            maxEntitiesPerAssigned,
-            ordinalNumbersSpacing,
-          },
-          OrderingConfig,
-        ),
-        new TasksDomainRepositoryInMemory(),
-      );
-      await expect(sut.newOrdinalNumber()).resolves.toEqual(
-        halfOfMaxOrdinalNumber,
-      );
+  describe("between", () => {
+    it("returns a key strictly between two given keys", () => {
+      const sut = new OrderService(new TasksDomainRepositoryInMemory());
+      const mid = sut.between("A", "C");
+      expect(mid > "A" && mid < "C").toBe(true);
     });
-    it("returns lowest task ordinal number minus ordinal number spacing", async () => {
-      const maxOrdinalNumber = Number.MAX_SAFE_INTEGER;
-      const maxEntitiesPerAssigned = 100_000;
-      const ordinalNumbersSpacing = Math.floor(
-        maxOrdinalNumber / maxEntitiesPerAssigned,
-      );
-      const tasks = new TasksDomainRepositoryInMemory();
-      await tasks.persist(taskMother({ ordinalNumber: maxOrdinalNumber }));
-      const sut = new OrderService(
-        await plainToConfig(
-          {
-            maxOrdinalNumber,
-            maxEntitiesPerAssigned,
-            ordinalNumbersSpacing,
-          },
-          OrderingConfig,
-        ),
-        tasks,
-      );
-      await expect(sut.newOrdinalNumber()).resolves.toEqual(
-        maxOrdinalNumber - ordinalNumbersSpacing,
-      );
+    it("creates space by extending length when needed", () => {
+      const sut = new OrderService(new TasksDomainRepositoryInMemory());
+      const a = "A";
+      const b = "A";
+      const mid = sut.between(a, b);
+      expect(mid.startsWith("A")).toBe(true);
+      expect(mid.length).toBeGreaterThan(a.length);
     });
   });
-  describe("nextAvailableOrdinalNumber", () => {
-    it("finds ordinal number between two entities", async () => {
-      const maxOrdinalNumber = 100;
-      const maxEntitiesPerAssigned = 10;
-      const ordinalNumbersSpacing = Math.floor(
-        maxOrdinalNumber / maxEntitiesPerAssigned,
-      );
-      const tasks = new TasksDomainRepositoryInMemory();
-      const sut = new OrderService(
-        await plainToConfig(
-          {
-            maxOrdinalNumber,
-            maxEntitiesPerAssigned,
-            ordinalNumbersSpacing,
-          },
-          OrderingConfig,
-        ),
-        tasks,
-      );
-      const firstTask = taskMother({ ordinalNumber: 100 });
-      const secondTask = taskMother({ ordinalNumber: 90 });
-      const thirdTask = taskMother({ ordinalNumber: 80 });
 
-      await tasks.persist(firstTask);
-      await tasks.persist(secondTask);
-      await tasks.persist(thirdTask);
+  describe("newOrderKey and nextAvailableOrderKey", () => {
+    it("generates monotonic keys for inserts at end and between neighbors", async () => {
+      const repo = new TasksDomainRepositoryInMemory();
+      const sut = new OrderService(repo);
 
-      await expect(
-        sut.nextAvailableOrdinalNumber(firstTask.identity),
-      ).resolves.toBe(95);
-      await expect(
-        sut.nextAvailableOrdinalNumber(secondTask.identity),
-      ).resolves.toBe(85);
-      await expect(
-        sut.nextAvailableOrdinalNumber(thirdTask.identity),
-      ).resolves.toBe(70);
+      const a = taskMother({ orderKey: await sut.newOrderKey() });
+      await repo.persist(a);
+
+      const b = taskMother({ orderKey: await sut.newOrderKey() });
+      await repo.persist(b);
+
+      expect(a.orderKey < b.orderKey).toBe(true);
+
+      const c = taskMother({
+        orderKey: await sut.nextAvailableOrderKeyBefore(b.identity),
+      });
+      await repo.persist(c);
+
+      expect(a.orderKey < c.orderKey && c.orderKey < b.orderKey).toBe(true);
+    });
+  });
+
+  describe("nextAvailableOrderKeyAfter", () => {
+    it("generates key after reference when higher neighbor exists", async () => {
+      const repo = new TasksDomainRepositoryInMemory();
+      const sut = new OrderService(repo);
+
+      const a = taskMother({ orderKey: await sut.newOrderKey() });
+      await repo.persist(a);
+      const b = taskMother({ orderKey: await sut.newOrderKey() });
+      await repo.persist(b);
+
+      const key = await sut.nextAvailableOrderKeyAfter(a.identity);
+      expect(key > a.orderKey && key < b.orderKey).toBe(true);
     });
 
-    it("finds next ordinal number according to ordinal number spacing, if there is no entity with lower ordinal number", async () => {
-      const maxOrdinalNumber = 100;
-      const maxEntitiesPerAssigned = 10;
-      const ordinalNumbersSpacing = Math.floor(
-        maxOrdinalNumber / maxEntitiesPerAssigned,
-      );
-      const tasks = new TasksDomainRepositoryInMemory();
-      const sut = new OrderService(
-        await plainToConfig(
-          {
-            maxOrdinalNumber,
-            maxEntitiesPerAssigned,
-            ordinalNumbersSpacing,
-          },
-          OrderingConfig,
-        ),
-        tasks,
-      );
-      const firstTask = taskMother({ ordinalNumber: 100 });
-      const secondTask = taskMother({ ordinalNumber: 90 });
-      const thirdTask = taskMother({ ordinalNumber: 80 });
+    it("generates key after reference when it is the last element", async () => {
+      const repo = new TasksDomainRepositoryInMemory();
+      const sut = new OrderService(repo);
 
-      await tasks.persist(firstTask);
-      await tasks.persist(secondTask);
-      await tasks.persist(thirdTask);
+      const a = taskMother({ orderKey: await sut.newOrderKey() });
+      await repo.persist(a);
 
-      await expect(
-        sut.nextAvailableOrdinalNumber(thirdTask.identity),
-      ).resolves.toBe(70);
+      const key = await sut.nextAvailableOrderKeyAfter(a.identity);
+      expect(key > a.orderKey).toBe(true);
     });
   });
 });

@@ -16,10 +16,10 @@ export class Goal {
 
   @Column({
     nullable: false,
-    unique: true,
-    type: "bigint",
+    unique: false,
+    type: "text",
   })
-  ordinalNumber: number;
+  orderKey: string;
 
   @Column({
     nullable: false,

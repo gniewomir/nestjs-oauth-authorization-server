@@ -1,5 +1,6 @@
 import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
 import { OrderService } from "@domain/tasks/order";
+import { OrderedEntity } from "@domain/tasks/order/OrderedEntity.abstract";
 
 import { IdentityValue } from "../../IdentityValue";
 import { DescriptionValue } from "../DescriptionValue";
@@ -7,32 +8,31 @@ import { DescriptionValue } from "../DescriptionValue";
 export type TGoalConstructorArgs = ConstructorParameters<typeof Goal>;
 export type TGoalConstructorParam = TGoalConstructorArgs[0];
 
-export class Goal {
+export class Goal extends OrderedEntity<GoalsInterface> {
   public readonly description: DescriptionValue;
   public readonly identity: IdentityValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
-    ordinalNumber: number;
+    orderKey: string;
   }) {
+    super();
+
     this.identity = parameters.identity;
     this.description = parameters.description;
-    this._ordinalNumber = parameters.ordinalNumber;
+    this._orderKey = parameters.orderKey;
   }
 
-  private _ordinalNumber: number;
-
-  public get ordinalNumber(): number {
-    return this._ordinalNumber;
-  }
-
-  public async moveBefore(
-    referenceEntityIdentity: IdentityValue,
-    orderingService: OrderService<GoalsInterface>,
-  ): Promise<void> {
-    this._ordinalNumber = await orderingService.nextAvailableOrdinalNumber(
-      referenceEntityIdentity,
-    );
+  public static async create(
+    parameters: Omit<TGoalConstructorParam, "orderKey">,
+    goals: GoalsInterface,
+  ): Promise<Goal> {
+    return new Goal({
+      ...parameters,
+      orderKey:
+        (await goals.searchForHighestOrderKey()) ||
+        OrderService.START_ORDER_KEY,
+    });
   }
 }

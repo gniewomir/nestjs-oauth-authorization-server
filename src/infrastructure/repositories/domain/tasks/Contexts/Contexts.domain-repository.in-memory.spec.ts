@@ -30,61 +30,68 @@ describe("ContextsDomainRepositoryInMemory", () => {
       );
     });
   });
-  describe("getOrdinalNumber", () => {
-    it("returns ordinal number of entity", async () => {
+  describe("getOrderKey", () => {
+    it("returns order key of entity", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      const ordinalNumber = 42;
-      const context = contextMother({ ordinalNumber });
+      const orderKey = "M";
+      const context = contextMother({ orderKey });
       await sut.persist(context);
-      await expect(sut.getOrdinalNumber(context.identity)).resolves.toBe(
-        ordinalNumber,
-      );
+      await expect(sut.getOrderKey(context.identity)).resolves.toBe(orderKey);
     });
   });
 
-  describe("searchForLowestOrdinalNumber", () => {
-    it("returns lowest existing ordinal number", async () => {
+  describe("searchForHighestOrderKey", () => {
+    it("returns highest existing order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      const lowestOrdinalNumber = 42;
-      const higherOrdinalNumber = lowestOrdinalNumber * 2;
-      const highestOrdinalNumber = higherOrdinalNumber * 2;
-      await sut.persist(contextMother({ ordinalNumber: lowestOrdinalNumber }));
-      await sut.persist(contextMother({ ordinalNumber: higherOrdinalNumber }));
-      await sut.persist(contextMother({ ordinalNumber: highestOrdinalNumber }));
-      await expect(sut.searchForLowestOrdinalNumber()).resolves.toBe(
-        lowestOrdinalNumber,
-      );
+      const lower = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(contextMother({ orderKey: lower }));
+      await sut.persist(contextMother({ orderKey: higher }));
+      await sut.persist(contextMother({ orderKey: highest }));
+      await expect(sut.searchForHighestOrderKey()).resolves.toBe(highest);
     });
   });
 
-  describe("searchForLowerOrdinalNumber", () => {
+  describe("searchForLowerOrderKey", () => {
     it("returns null if there is no entities", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      await expect(sut.searchForLowerOrdinalNumber(1)).resolves.toBe(null);
+      await expect(sut.searchForLowerOrderKey("M")).resolves.toBe(null);
     });
-    it("returns null if there is no lower positive ordinal number", async () => {
+    it("returns null if there is no lower order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      const ordinalNumber = 42;
-      const context = contextMother({ ordinalNumber });
+      const orderKey = "M";
+      const context = contextMother({ orderKey });
       await sut.persist(context);
-      await expect(
-        sut.searchForLowerOrdinalNumber(ordinalNumber),
-      ).resolves.toBe(null);
+      await expect(sut.searchForLowerOrderKey(orderKey)).resolves.toBe(null);
     });
-    it("returns ordinal number of the next entity with lower ordinal number", async () => {
+    it("returns order key of the next entity with lower order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      const lowerOrdinalNumber = 42;
-      const higherOrdinalNumber = lowerOrdinalNumber * 2;
-      const highestOrdinalNumber = higherOrdinalNumber * 2;
-      await sut.persist(contextMother({ ordinalNumber: lowerOrdinalNumber }));
-      await sut.persist(contextMother({ ordinalNumber: higherOrdinalNumber }));
-      await sut.persist(contextMother({ ordinalNumber: highestOrdinalNumber }));
-      await expect(
-        sut.searchForLowerOrdinalNumber(higherOrdinalNumber),
-      ).resolves.toBe(lowerOrdinalNumber);
-      await expect(
-        sut.searchForLowerOrdinalNumber(highestOrdinalNumber),
-      ).resolves.toBe(higherOrdinalNumber);
+      const lower = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(contextMother({ orderKey: lower }));
+      await sut.persist(contextMother({ orderKey: higher }));
+      await sut.persist(contextMother({ orderKey: highest }));
+      await expect(sut.searchForLowerOrderKey(higher)).resolves.toBe(lower);
+      await expect(sut.searchForLowerOrderKey(highest)).resolves.toBe(higher);
+    });
+  });
+
+  describe("searchForLowestOrderKey", () => {
+    it("returns null if there are no entities", async () => {
+      const sut = new ContextsDomainRepositoryInMemory();
+      await expect(sut.searchForLowestOrderKey()).resolves.toBe(null);
+    });
+    it("returns the lowest existing order key", async () => {
+      const sut = new ContextsDomainRepositoryInMemory();
+      const lowest = "A";
+      const higher = "M";
+      const highest = "z";
+      await sut.persist(contextMother({ orderKey: higher }));
+      await sut.persist(contextMother({ orderKey: highest }));
+      await sut.persist(contextMother({ orderKey: lowest }));
+      await expect(sut.searchForLowestOrderKey()).resolves.toBe(lowest);
     });
   });
 });
