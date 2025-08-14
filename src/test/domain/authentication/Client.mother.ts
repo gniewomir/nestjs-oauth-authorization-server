@@ -1,5 +1,4 @@
 import { IdentityValue } from "@domain/IdentityValue";
-import { v4 } from "uuid";
 import {
   Client,
   TClientConstructorParam,
@@ -7,7 +6,7 @@ import {
 
 export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {
   return new Client({
-    id: IdentityValue.fromString(v4()),
+    id: IdentityValue.create(),
     name: "web",
     ...params,
   });

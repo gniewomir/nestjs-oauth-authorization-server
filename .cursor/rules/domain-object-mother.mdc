@@ -1,0 +1,142 @@
+---
+description: Rules for generating mother objects 
+globs: **/*.mother.ts
+alwaysApply: false
+---
+
+# Domain Object Mother Pattern Rules
+
+## Overview
+Mother objects are factory functions that create domain objects with sensible defaults for testing purposes, following the Object Mother pattern. They should be placed in `src/test/domain/` directory structure mirroring the domain structure.
+
+## Naming Conventions
+- File naming: `{DomainObject}.mother.ts` (e.g., `User.mother.ts`, `Task.mother.ts`)
+- Function naming: `{domainObject}Mother` in camelCase (e.g., `userMother`, `taskMother`)
+- Export as named export: `export const {domainObject}Mother`
+
+## Implementation Patterns
+
+### 1. Function Signature
+```typescript
+export const {domainObject}Mother = (
+  params: Partial<T{DomainObject}ConstructorParam> = {}
+) => {
+  return new {DomainObject}({
+    // default values
+    ...params, // override defaults with provided params
+  });
+};
+```
+
+### 2. Required Imports
+- Always import the domain class and its constructor parameter type
+- Import `IdentityValue` from `@domain/IdentityValue` for identity fields
+- Import utility functions like `randomString` from `@test/utility/randomString`
+- Import `v4` from `uuid` when creating deterministic IDs
+- Import related mother objects for complex object composition
+
+### 3. Default Value Strategies
+
+#### Identity Fields
+- Use `IdentityValue.create()` for random identities
+
+#### String Fields
+- Use meaningful example values (e.g., "example task", "example goal")
+- Use `randomString()` for fields requiring uniqueness
+- For email fields, generate unique emails: `${IdentityValue.create().toString()}@gmail.com`
+
+#### Boolean Fields
+- Use `false` as default for verification flags (e.g., `emailVerified: false`)
+- Choose sensible defaults based on business logic
+
+#### Array Fields
+- Use empty arrays `[]` as defaults for collections
+- Populate with meaningful examples if the array is critical for testing
+
+#### Complex Object Fields
+- Import and use other mother objects for composition
+- Example: `assigned: assignedMother()`, `goal: goalMother()`
+
+#### URL Fields
+- Use realistic example URLs: `HttpUrlValue.fromString("https://client-website.com/callback")`
+
+#### Null/Optional Fields
+- Set to `null` if the field can be null and that's the common case
+- Provide meaningful defaults if the field is typically populated
+
+### 4. File Structure Template
+```typescript
+import { {DomainClass}, T{DomainClass}ConstructorParam } from "@domain/path/to/{DomainClass}";
+import { IdentityValue } from "@domain/IdentityValue";
+import { v4 } from "uuid"; // if using deterministic IDs
+import { randomString } from "@test/utility/randomString"; // if needed
+// Import other required value objects and mother objects
+
+export const {domainObject}Mother = (
+  params: Partial<T{DomainClass}ConstructorParam> = {},
+) => {
+  return new {DomainClass}({
+    // Provide sensible defaults for all required constructor parameters
+    identity: IdentityValue.create(), // or IdentityValue.fromString(v4())
+    // ... other required fields with appropriate defaults
+    ...params, // Always spread params last to allow overrides
+  });
+};
+```
+
+### 5. Best Practices
+- **Always** use the spread operator (`...params`) as the last property to enable parameter overrides
+- Provide defaults for ALL required constructor parameters
+- Use realistic but simple example data
+- Prefer composition with other mother objects over inline complex object creation
+- Keep defaults deterministic where possible to make tests predictable
+- For fields that need to be unique across test runs, use `randomString()` or `IdentityValue.create()`
+- Import paths should use absolute imports with `@domain` and `@test` aliases
+
+### 6. Testing Integration
+- Mother objects should create valid domain objects that pass all business rules
+- They should be usable in both unit tests and integration tests
+- Default values should not violate domain invariants
+- Consider edge cases when choosing defaults (e.g., using MAX_SAFE_INTEGER for ordering)
+
+## Examples from Codebase
+
+### Simple Object (Assigned)
+```typescript
+export const assignedMother = () => {
+  return new Assigned(IdentityValue.fromString(v4()));
+};
+```
+
+### Complex Object with Composition (Task)
+```typescript
+export const taskMother = (params: Partial<TTaskConstructorParam> = {}) => {
+  return new Task({
+    identity: IdentityValue.create(),
+    assigned: assignedMother(),
+    description: DescriptionValue.fromString("example task"),
+    goal: goalMother(),
+    context: contextMother(),
+    ordinalNumber: Number.MAX_SAFE_INTEGER,
+    ...params,
+  });
+};
+```
+
+### Object with Complex Defaults (Request)
+```typescript
+export const requestMother = (
+  params: Partial<TRequestConstructorParam> = {},
+) => {
+  return new Request({
+    id: IdentityValue.create(),
+    clientId: IdentityValue.create(),
+    redirectUri: HttpUrlValue.fromString("https://client-website.com/callback"),
+    scope: ScopeValueImmutableSet.fromArray([ScopeValue.TASK_API()]),
+    state: randomString(),
+    codeChallenge: randomString(),
+    authorizationCode: null,
+    ...params,
+  });
+};
+```
