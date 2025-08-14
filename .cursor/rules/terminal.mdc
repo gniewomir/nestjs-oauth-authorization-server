@@ -1,0 +1,20 @@
+---
+description: Rules for using terminal commands, build scripts etc. 
+globs:
+alwaysApply: true
+---
+
+- Before running any commands in this project, run `nvm use` to ensure the correct Node and npm version is available.
+
+## Scripts 
+- run `npm build` to build project
+- always run `npm run format` after introducing changes to the code to format code correctly
+- always run `npm run lint` after introducing changes to the code to lint code 
+- to test code run `npm test`
+
+## Database migrations 
+- always run `npm build` before generating migrations
+- to generate migration from changes made to the TypeOrm entities, run `npm run migration:generate --name=MIGRATION-NAME`
+- to create blank migration, run `npm run migration:generate --name=MIGRATION-NAME`
+- to apply migrations run `npm run migration:run`
+- to revert migration run `npm run migration:revert`
