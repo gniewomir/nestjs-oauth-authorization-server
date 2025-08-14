@@ -36,12 +36,7 @@ wait_for_postgres() {
     return 1
 }
 
-
 execute() {
-  echo # new line
-  echo # new line
-  echo # new line
-
   if [ $# -eq 0 ]; then
     echo "❌ Error: No command to execute."
     return 1
@@ -49,7 +44,7 @@ execute() {
 
   echo "▶️  Executing: '$*'..."
 
-  "$@"
+  "$@" > /dev/null 2>&1
 
   local exit_code=$?
 
@@ -86,12 +81,11 @@ execute docker run -d \
 
 echo "⚡ Container '$CONTAINER_NAME' started."
 
-if wait_for_postgres; then
-    echo "⚡ PostgreSQL is up. Migrating fresh container..."
+if execute wait_for_postgres; then
 
     execute cd "$PROJECT_ROOT"
-    execute export NVM_DIR=$HOME/.nvm;
-    execute source $NVM_DIR/nvm.sh;
+    execute export "NVM_DIR=$HOME/.nvm";
+    execute source "$NVM_DIR/nvm.sh";
     execute nvm use
     execute npm run build
     execute npm run migration:run
