@@ -4,6 +4,9 @@ globs: **/*/*domain-repository.spec.ts
 alwaysApply: false
 ---
 
+# Requirements 
+* To create other database entities that might be required use other Domain Repositories, not Database Repositories
+
 # Domain Repository Testing Rules
 
 Follow these patterns when creating or maintaining domain repository test files:

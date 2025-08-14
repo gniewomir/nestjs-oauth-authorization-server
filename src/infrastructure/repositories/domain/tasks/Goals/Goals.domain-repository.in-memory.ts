@@ -28,9 +28,7 @@ export class GoalsDomainRepositoryInMemory implements GoalsInterface {
     orderKey: string,
   ): Promise<string | null> {
     const sorted = Array.from(this.goals.values())
-      .filter(
-        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
-      )
+      .filter((t) => t.assigned.toString() === assignedIdentity.toString())
       .toSorted((a, b) =>
         a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
       );
@@ -53,9 +51,7 @@ export class GoalsDomainRepositoryInMemory implements GoalsInterface {
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
     const sorted = Array.from(this.goals.values())
-      .filter(
-        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
-      )
+      .filter((t) => t.assigned.toString() === assignedIdentity.toString())
       .toSorted((a, b) =>
         a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
       );
@@ -71,9 +67,7 @@ export class GoalsDomainRepositoryInMemory implements GoalsInterface {
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
     const sorted = Array.from(this.goals.values())
-      .filter(
-        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
-      )
+      .filter((t) => t.assigned.toString() === assignedIdentity.toString())
       .toSorted((a, b) =>
         a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
       );
@@ -90,9 +84,7 @@ export class GoalsDomainRepositoryInMemory implements GoalsInterface {
     orderKey: string,
   ): Promise<string | null> {
     const sorted = Array.from(this.goals.values())
-      .filter(
-        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
-      )
+      .filter((t) => t.assigned.toString() === assignedIdentity.toString())
       .toSorted((a, b) =>
         a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
       );

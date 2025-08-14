@@ -5,7 +5,7 @@ import { GoalsDomainRepositoryInMemory } from "@infrastructure/repositories/doma
 
 describe("GoalsDomainRepositoryInMemory", () => {
   describe("persist", () => {
-    it("persists", async () => {
+    it("should save a goal to memory", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const goal = goalMother();
       await sut.persist(goal);
@@ -14,7 +14,7 @@ describe("GoalsDomainRepositoryInMemory", () => {
     });
   });
   describe("retrieve", () => {
-    it("retrieves", async () => {
+    it("should return goal when found by identity", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const goal = goalMother();
       await sut.persist(goal);
@@ -22,7 +22,7 @@ describe("GoalsDomainRepositoryInMemory", () => {
       await expect(sut.retrieve(goal.identity)).resolves.toBe(goal);
     });
 
-    it("rejects when goal not found", async () => {
+    it("should throw error when goal not found by identity", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const nonExistentId = goalMother().identity;
 
@@ -32,7 +32,7 @@ describe("GoalsDomainRepositoryInMemory", () => {
     });
   });
   describe("getOrderKey", () => {
-    it("returns order key of goal", async () => {
+    it("should return order key when goal found by identity", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const orderKey = "M";
       const goal = goalMother({ orderKey });
@@ -42,7 +42,7 @@ describe("GoalsDomainRepositoryInMemory", () => {
   });
 
   describe("searchForHighestOrderKey", () => {
-    it("returns highest existing order key", async () => {
+    it("should return highest order key when goals exist for user", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const assigned = assignedMother();
       const lower = "A";
@@ -64,13 +64,13 @@ describe("GoalsDomainRepositoryInMemory", () => {
   });
 
   describe("searchForLowerOrderKey", () => {
-    it("returns null if there is no entities", async () => {
+    it("should return null when no goals exist for user", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       await expect(
         sut.searchForLowerOrderKey(goalMother().assigned, "M"),
       ).resolves.toBe(null);
     });
-    it("returns null if there is no lower order key", async () => {
+    it("should return null when no lower order key exists", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const orderKey = "M";
       const goal = goalMother({ orderKey });
@@ -79,7 +79,7 @@ describe("GoalsDomainRepositoryInMemory", () => {
         sut.searchForLowerOrderKey(goal.assigned, orderKey),
       ).resolves.toBe(null);
     });
-    it("returns order key of the next goal with lower order key", async () => {
+    it("should return order key of goal with next lower order key", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const assigned = assignedMother();
       const lower = "A";
@@ -104,13 +104,13 @@ describe("GoalsDomainRepositoryInMemory", () => {
   });
 
   describe("searchForLowestOrderKey", () => {
-    it("returns null if there are no entities", async () => {
+    it("should return null when no goals exist for user", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       await expect(
         sut.searchForLowestOrderKey(goalMother().assigned),
       ).resolves.toBe(null);
     });
-    it("returns the lowest existing order key", async () => {
+    it("should return lowest order key when goals exist for user", async () => {
       const sut = new GoalsDomainRepositoryInMemory();
       const assigned = assignedMother();
       const lowest = "A";

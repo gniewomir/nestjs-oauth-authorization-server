@@ -1,46 +1,126 @@
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
 import { IdentityValue } from "@domain/IdentityValue";
-import { Goal } from "@domain/tasks/goal/Goal";
+import { DescriptionValue } from "@domain/tasks/DescriptionValue";
+import { Goal as DomainGoal } from "@domain/tasks/goal/Goal";
 import { GoalsInterface } from "@domain/tasks/goal/Goals.interface";
+import { Goal as DatabaseGoal } from "@infrastructure/database/entities/goal.entity";
 
+@Injectable()
 export class GoalsDomainRepository implements GoalsInterface {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  persist(_goal: Goal): Promise<void> {
-    throw new Error("Method not implemented.");
+  constructor(
+    @InjectRepository(DatabaseGoal)
+    private readonly goalRepository: Repository<DatabaseGoal>,
+  ) {}
+
+  async persist(goal: DomainGoal): Promise<void> {
+    const databaseGoal = this.mapToDatabase(goal);
+    await this.goalRepository.save(databaseGoal);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  retrieve(_identity: IdentityValue): Promise<Goal> {
-    throw new Error("Method not implemented.");
+  async retrieve(identity: IdentityValue): Promise<DomainGoal> {
+    const goal = await this.goalRepository.findOne({
+      where: { id: identity.toString() },
+    });
+    if (!goal) {
+      throw new Error("Goal not found");
+    }
+
+    return this.mapToDomain(goal);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getOrderKey(identity: IdentityValue): Promise<string> {
-    throw new Error("Method not implemented.");
+  async getOrderKey(identity: IdentityValue): Promise<string> {
+    const goal = await this.goalRepository.findOne({
+      where: { id: identity.toString() },
+      select: ["orderKey"],
+    });
+
+    if (!goal) {
+      throw new Error("Goal not found");
+    }
+
+    return goal.orderKey;
   }
 
-  searchForLowerOrderKey(
+  async searchForLowerOrderKey(
     assignedIdentity: IdentityValue,
-    _orderKey: string,
+    orderKey: string,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const goal = await this.goalRepository
+      .createQueryBuilder("goal")
+      .select("goal.orderKey")
+      .where("goal.userId = :userId", { userId: assignedIdentity.toString() })
+      .andWhere("goal.orderKey < :orderKey", { orderKey })
+      .orderBy("goal.orderKey", "DESC")
+      .limit(1)
+      .getOne();
+
+    return goal?.orderKey || null;
   }
 
-  searchForHighestOrderKey(
+  async searchForHighestOrderKey(
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const goal = await this.goalRepository
+      .createQueryBuilder("goal")
+      .select("goal.orderKey")
+      .where("goal.userId = :userId", { userId: assignedIdentity.toString() })
+      .orderBy("goal.orderKey", "DESC")
+      .limit(1)
+      .getOne();
+
+    return goal?.orderKey || null;
   }
 
-  searchForHigherOrderKey(
+  async searchForHigherOrderKey(
     assignedIdentity: IdentityValue,
-    _orderKey: string,
+    orderKey: string,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const goal = await this.goalRepository
+      .createQueryBuilder("goal")
+      .select("goal.orderKey")
+      .where("goal.userId = :userId", { userId: assignedIdentity.toString() })
+      .andWhere("goal.orderKey > :orderKey", { orderKey })
+      .orderBy("goal.orderKey", "ASC")
+      .limit(1)
+      .getOne();
+
+    return goal?.orderKey || null;
   }
 
-  searchForLowestOrderKey(
+  async searchForLowestOrderKey(
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
-    return Promise.resolve(null);
+    const goal = await this.goalRepository
+      .createQueryBuilder("goal")
+      .select("goal.orderKey")
+      .where("goal.userId = :userId", { userId: assignedIdentity.toString() })
+      .orderBy("goal.orderKey", "ASC")
+      .limit(1)
+      .getOne();
+
+    return goal?.orderKey || null;
+  }
+
+  private mapToDomain(databaseGoal: DatabaseGoal): DomainGoal {
+    return new DomainGoal({
+      identity: IdentityValue.fromString(databaseGoal.id),
+      description: DescriptionValue.fromString(databaseGoal.description),
+      assigned: IdentityValue.fromString(databaseGoal.userId),
+      orderKey: databaseGoal.orderKey,
+    });
+  }
+
+  private mapToDatabase(
+    domainGoal: DomainGoal,
+  ): Omit<DatabaseGoal, "createdAt" | "updatedAt" | "tasks" | "user"> {
+    return {
+      id: domainGoal.identity.toString(),
+      description: domainGoal.description.toString(),
+      orderKey: domainGoal.orderKey,
+      userId: domainGoal.assigned.toString(),
+    };
   }
 }
