@@ -15,24 +15,33 @@ export class OrderService<T extends OrderInterface> {
 
   constructor(private readonly entities: T) {}
 
-  public async newOrderKey(): Promise<string> {
-    const highest = await this.entities.searchForHighestOrderKey();
+  public async newOrderKey(assignedIdentity: IdentityValue): Promise<string> {
+    const highest =
+      await this.entities.searchForHighestOrderKey(assignedIdentity);
     return this.between(highest ?? undefined, undefined);
   }
 
   public async nextAvailableOrderKeyBefore(
     referenceIdentity: IdentityValue,
+    assignedIdentity: IdentityValue,
   ): Promise<string> {
     const referenceKey = await this.entities.getOrderKey(referenceIdentity);
-    const lowerKey = await this.entities.searchForLowerOrderKey(referenceKey);
+    const lowerKey = await this.entities.searchForLowerOrderKey(
+      assignedIdentity,
+      referenceKey,
+    );
     return this.between(lowerKey ?? undefined, referenceKey);
   }
 
   public async nextAvailableOrderKeyAfter(
     referenceIdentity: IdentityValue,
+    assignedIdentity: IdentityValue,
   ): Promise<string> {
     const referenceKey = await this.entities.getOrderKey(referenceIdentity);
-    const higherKey = await this.entities.searchForHigherOrderKey(referenceKey);
+    const higherKey = await this.entities.searchForHigherOrderKey(
+      assignedIdentity,
+      referenceKey,
+    );
     return this.between(referenceKey, higherKey ?? undefined);
   }
 

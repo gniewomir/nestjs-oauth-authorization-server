@@ -1,3 +1,4 @@
+import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { contextMother } from "@test/domain/tasks/Context.mother";
 
 import { ContextsDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Contexts/Contexts.domain-repository.in-memory";
@@ -43,55 +44,90 @@ describe("ContextsDomainRepositoryInMemory", () => {
   describe("searchForHighestOrderKey", () => {
     it("returns highest existing order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
+      const assigned = assignedMother();
       const lower = "A";
       const higher = "M";
       const highest = "z";
-      await sut.persist(contextMother({ orderKey: lower }));
-      await sut.persist(contextMother({ orderKey: higher }));
-      await sut.persist(contextMother({ orderKey: highest }));
-      await expect(sut.searchForHighestOrderKey()).resolves.toBe(highest);
+      await sut.persist(
+        contextMother({ orderKey: lower, assigned: assigned.identity }),
+      );
+      await sut.persist(
+        contextMother({ orderKey: higher, assigned: assigned.identity }),
+      );
+      await sut.persist(
+        contextMother({ orderKey: highest, assigned: assigned.identity }),
+      );
+      await expect(
+        sut.searchForHighestOrderKey(assigned.identity),
+      ).resolves.toBe(highest);
     });
   });
 
   describe("searchForLowerOrderKey", () => {
     it("returns null if there is no entities", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      await expect(sut.searchForLowerOrderKey("M")).resolves.toBe(null);
+      await expect(
+        sut.searchForLowerOrderKey(contextMother().identity, "M"),
+      ).resolves.toBe(null);
     });
     it("returns null if there is no lower order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
       const orderKey = "M";
       const context = contextMother({ orderKey });
       await sut.persist(context);
-      await expect(sut.searchForLowerOrderKey(orderKey)).resolves.toBe(null);
+      await expect(
+        sut.searchForLowerOrderKey(context.identity, orderKey),
+      ).resolves.toBe(null);
     });
     it("returns order key of the next entity with lower order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
+      const assigned = assignedMother();
       const lower = "A";
       const higher = "M";
       const highest = "z";
-      await sut.persist(contextMother({ orderKey: lower }));
-      await sut.persist(contextMother({ orderKey: higher }));
-      await sut.persist(contextMother({ orderKey: highest }));
-      await expect(sut.searchForLowerOrderKey(higher)).resolves.toBe(lower);
-      await expect(sut.searchForLowerOrderKey(highest)).resolves.toBe(higher);
+      await sut.persist(
+        contextMother({ orderKey: lower, assigned: assigned.identity }),
+      );
+      await sut.persist(
+        contextMother({ orderKey: higher, assigned: assigned.identity }),
+      );
+      await sut.persist(
+        contextMother({ orderKey: highest, assigned: assigned.identity }),
+      );
+      await expect(
+        sut.searchForLowerOrderKey(assigned.identity, higher),
+      ).resolves.toBe(lower);
+      await expect(
+        sut.searchForLowerOrderKey(assigned.identity, highest),
+      ).resolves.toBe(higher);
     });
   });
 
   describe("searchForLowestOrderKey", () => {
     it("returns null if there are no entities", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
-      await expect(sut.searchForLowestOrderKey()).resolves.toBe(null);
+      await expect(
+        sut.searchForLowestOrderKey(contextMother().identity),
+      ).resolves.toBe(null);
     });
     it("returns the lowest existing order key", async () => {
       const sut = new ContextsDomainRepositoryInMemory();
+      const assigned = assignedMother();
       const lowest = "A";
       const higher = "M";
       const highest = "z";
-      await sut.persist(contextMother({ orderKey: higher }));
-      await sut.persist(contextMother({ orderKey: highest }));
-      await sut.persist(contextMother({ orderKey: lowest }));
-      await expect(sut.searchForLowestOrderKey()).resolves.toBe(lowest);
+      await sut.persist(
+        contextMother({ orderKey: higher, assigned: assigned.identity }),
+      );
+      await sut.persist(
+        contextMother({ orderKey: highest, assigned: assigned.identity }),
+      );
+      await sut.persist(
+        contextMother({ orderKey: lowest, assigned: assigned.identity }),
+      );
+      await expect(
+        sut.searchForLowestOrderKey(assigned.identity),
+      ).resolves.toBe(lowest);
     });
   });
 });

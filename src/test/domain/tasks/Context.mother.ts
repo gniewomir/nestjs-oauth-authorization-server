@@ -1,3 +1,5 @@
+import { assignedMother } from "@test/domain/tasks/Assigned.mother";
+
 import { IdentityValue } from "@domain/IdentityValue";
 import {
   Context,
@@ -12,6 +14,7 @@ export const contextMother = (
     identity: IdentityValue.create(),
     description: DescriptionValue.fromString("example context"),
     orderKey: "Z",
+    assigned: assignedMother().identity,
     ...params,
   });
 };

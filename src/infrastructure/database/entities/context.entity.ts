@@ -14,6 +14,9 @@ export class Context {
   @PrimaryColumn("uuid")
   id: string;
 
+  @Column("uuid")
+  assignedId: string;
+
   @Column({
     nullable: false,
     unique: false,

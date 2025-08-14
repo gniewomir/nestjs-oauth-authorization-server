@@ -1,3 +1,4 @@
+import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { taskMother } from "@test/domain/tasks/Task.mother";
 
 import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
@@ -43,55 +44,121 @@ describe("TasksDomainRepositoryInMemory", () => {
   describe("searchForHighestOrderKey", () => {
     it("returns highest existing order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
+      const assigned = assignedMother();
       const lower = "A";
       const higher = "M";
       const highest = "z";
-      await sut.persist(taskMother({ orderKey: lower }));
-      await sut.persist(taskMother({ orderKey: higher }));
-      await sut.persist(taskMother({ orderKey: highest }));
-      await expect(sut.searchForHighestOrderKey()).resolves.toBe(highest);
+      await sut.persist(
+        taskMother({
+          orderKey: lower,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: higher,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: highest,
+          assigned: assigned.identity,
+        }),
+      );
+      await expect(
+        sut.searchForHighestOrderKey(assigned.identity),
+      ).resolves.toBe(highest);
     });
   });
 
   describe("searchForLowerOrderKey", () => {
     it("returns null if there is no tasks", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      await expect(sut.searchForLowerOrderKey("M")).resolves.toBe(null);
+      await expect(
+        sut.searchForLowerOrderKey(taskMother().assigned, "M"),
+      ).resolves.toBe(null);
     });
     it("returns null if there is no lower order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
       const orderKey = "M";
-      const task = taskMother({ orderKey });
+      const assigned = assignedMother();
+      const task = taskMother({
+        orderKey,
+        assigned: assigned.identity,
+      });
       await sut.persist(task);
-      await expect(sut.searchForLowerOrderKey(orderKey)).resolves.toBe(null);
+      await expect(
+        sut.searchForLowerOrderKey(assigned.identity, orderKey),
+      ).resolves.toBe(null);
     });
     it("returns order key of the next task with lower order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
+      const assigned = assignedMother();
       const lower = "A";
       const higher = "M";
       const highest = "z";
-      await sut.persist(taskMother({ orderKey: lower }));
-      await sut.persist(taskMother({ orderKey: higher }));
-      await sut.persist(taskMother({ orderKey: highest }));
-      await expect(sut.searchForLowerOrderKey(higher)).resolves.toBe(lower);
-      await expect(sut.searchForLowerOrderKey(highest)).resolves.toBe(higher);
+      await sut.persist(
+        taskMother({
+          orderKey: lower,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: higher,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: highest,
+          assigned: assigned.identity,
+        }),
+      );
+      await expect(
+        sut.searchForLowerOrderKey(assigned.identity, higher),
+      ).resolves.toBe(lower);
+      await expect(
+        sut.searchForLowerOrderKey(assigned.identity, highest),
+      ).resolves.toBe(higher);
     });
   });
 
   describe("searchForLowestOrderKey", () => {
     it("returns null if there are no tasks", async () => {
       const sut = new TasksDomainRepositoryInMemory();
-      await expect(sut.searchForLowestOrderKey()).resolves.toBe(null);
+      await expect(
+        sut.searchForLowestOrderKey(taskMother().assigned),
+      ).resolves.toBe(null);
     });
     it("returns the lowest existing order key", async () => {
       const sut = new TasksDomainRepositoryInMemory();
+      const assigned = assignedMother();
       const lowest = "A";
       const higher = "M";
       const highest = "z";
-      await sut.persist(taskMother({ orderKey: higher }));
-      await sut.persist(taskMother({ orderKey: highest }));
-      await sut.persist(taskMother({ orderKey: lowest }));
-      await expect(sut.searchForLowestOrderKey()).resolves.toBe(lowest);
+      await sut.persist(
+        taskMother({
+          orderKey: higher,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: highest,
+          assigned: assigned.identity,
+        }),
+      );
+      await sut.persist(
+        taskMother({
+          orderKey: lowest,
+          assigned: assigned.identity,
+        }),
+      );
+      await expect(
+        sut.searchForLowestOrderKey(assigned.identity),
+      ).resolves.toBe(lowest);
     });
   });
 });

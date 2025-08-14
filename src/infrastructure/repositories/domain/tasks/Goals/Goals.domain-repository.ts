@@ -18,21 +18,29 @@ export class GoalsDomainRepository implements GoalsInterface {
     throw new Error("Method not implemented.");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  searchForLowerOrderKey(_orderKey: string): Promise<string | null> {
+  searchForLowerOrderKey(
+    assignedIdentity: IdentityValue,
+    _orderKey: string,
+  ): Promise<string | null> {
     throw new Error("Method not implemented.");
   }
 
-  searchForHighestOrderKey(): Promise<string | null> {
+  searchForHighestOrderKey(
+    assignedIdentity: IdentityValue,
+  ): Promise<string | null> {
     throw new Error("Method not implemented.");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  searchForHigherOrderKey(_orderKey: string): Promise<string | null> {
+  searchForHigherOrderKey(
+    assignedIdentity: IdentityValue,
+    _orderKey: string,
+  ): Promise<string | null> {
     throw new Error("Method not implemented.");
   }
 
-  searchForLowestOrderKey(): Promise<string | null> {
+  searchForLowestOrderKey(
+    assignedIdentity: IdentityValue,
+  ): Promise<string | null> {
     return Promise.resolve(null);
   }
 }

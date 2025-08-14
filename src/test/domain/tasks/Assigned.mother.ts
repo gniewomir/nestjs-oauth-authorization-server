@@ -1,6 +1,14 @@
 import { IdentityValue } from "@domain/IdentityValue";
-import { Assigned } from "@domain/tasks/assigned/Assigned";
+import {
+  Assigned,
+  TAssignedConstructorParam,
+} from "@domain/tasks/assigned/Assigned";
 
-export const assignedMother = () => {
-  return new Assigned(IdentityValue.create());
+export const assignedMother = (
+  params: Partial<TAssignedConstructorParam> = {},
+) => {
+  return new Assigned({
+    identity: IdentityValue.create(),
+    ...params,
+  });
 };

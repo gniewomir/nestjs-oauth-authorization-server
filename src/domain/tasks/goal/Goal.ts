@@ -11,15 +11,20 @@ export type TGoalConstructorParam = TGoalConstructorArgs[0];
 export class Goal extends OrderedEntity<GoalsInterface> {
   public readonly description: DescriptionValue;
   public readonly identity: IdentityValue;
+  public readonly assigned: IdentityValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
     orderKey: string;
+    assigned: IdentityValue;
   }) {
-    super();
+    super({
+      assigned: parameters.assigned,
+    });
 
     this.identity = parameters.identity;
+    this.assigned = parameters.assigned;
     this.description = parameters.description;
     this._orderKey = parameters.orderKey;
   }
@@ -31,7 +36,7 @@ export class Goal extends OrderedEntity<GoalsInterface> {
     return new Goal({
       ...parameters,
       orderKey:
-        (await goals.searchForHighestOrderKey()) ||
+        (await goals.searchForHighestOrderKey(parameters.identity)) ||
         OrderService.START_ORDER_KEY,
     });
   }

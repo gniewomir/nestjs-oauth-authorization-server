@@ -12,15 +12,20 @@ export type TContextConstructorParam = TContextConstructorArgs[0];
 export class Context extends OrderedEntity<GoalsInterface> {
   public readonly description: DescriptionValue;
   public readonly identity: IdentityValue;
+  public readonly assigned: IdentityValue;
 
   constructor(parameters: {
     identity: IdentityValue;
+    assigned: IdentityValue;
     description: DescriptionValue;
     orderKey: string;
   }) {
-    super();
+    super({
+      assigned: parameters.assigned,
+    });
 
     this.identity = parameters.identity;
+    this.assigned = parameters.assigned;
     this.description = parameters.description;
     this._orderKey = parameters.orderKey;
   }
@@ -32,7 +37,7 @@ export class Context extends OrderedEntity<GoalsInterface> {
     return new Context({
       ...parameters,
       orderKey:
-        (await contexts.searchForHighestOrderKey()) ||
+        (await contexts.searchForHighestOrderKey(parameters.identity)) ||
         OrderService.START_ORDER_KEY,
     });
   }

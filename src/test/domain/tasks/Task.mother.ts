@@ -9,7 +9,7 @@ import { goalMother } from "./Goal.mother";
 export const taskMother = (params: Partial<TTaskConstructorParam> = {}) => {
   return new Task({
     identity: IdentityValue.create(),
-    assigned: assignedMother(),
+    assigned: assignedMother().identity,
     description: DescriptionValue.fromString("example task"),
     goal: goalMother(),
     context: contextMother(),

@@ -1,3 +1,4 @@
+import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { taskMother } from "@test/domain/tasks/Task.mother";
 import { v4 } from "uuid";
 
@@ -9,11 +10,13 @@ describe("Task", () => {
   it("can be moved before another one", async () => {
     const tasksRepository = new TasksDomainRepositoryInMemory();
     const orderingService = new OrderService(tasksRepository);
+    const assigned = assignedMother({ identity: IdentityValue.create() });
     const exampleTasks = [v4(), v4()];
     for (const identity of exampleTasks) {
       const task = taskMother({
         identity: IdentityValue.fromString(identity),
-        orderKey: await orderingService.newOrderKey(),
+        assigned: assigned.identity,
+        orderKey: await orderingService.newOrderKey(assigned.identity),
       });
       await tasksRepository.persist(task);
     }
@@ -40,11 +43,13 @@ describe("Task", () => {
   it("can be moved after another one", async () => {
     const tasksRepository = new TasksDomainRepositoryInMemory();
     const orderingService = new OrderService(tasksRepository);
+    const assigned = assignedMother({ identity: IdentityValue.create() });
     const exampleTasks = [v4(), v4()];
     for (const identity of exampleTasks) {
       const task = taskMother({
         identity: IdentityValue.fromString(identity),
-        orderKey: await orderingService.newOrderKey(),
+        assigned: assigned.identity,
+        orderKey: await orderingService.newOrderKey(assigned.identity),
       });
       await tasksRepository.persist(task);
     }

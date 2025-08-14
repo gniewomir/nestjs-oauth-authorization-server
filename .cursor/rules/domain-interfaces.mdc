@@ -7,7 +7,7 @@ alwaysApply: false
 ## Rules 
 - every interface in domain mus export both the interface itself and the symbol for the interface
 - symbol should be named `{InterfaceName}Symbol`
-- if module implements created interface it should provide symbol not concreate implementatation 
+- if module implements created interface, it should provide symbol not concreate implementation
 
 
 ## Example

@@ -23,10 +23,17 @@ export class TasksDomainRepositoryInMemory implements TasksInterface {
     return Promise.resolve(task.orderKey);
   }
 
-  searchForLowerOrderKey(orderKey: string): Promise<string | null> {
-    const sorted = Array.from(this.tasks.values()).toSorted((a, b) =>
-      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
-    );
+  searchForLowerOrderKey(
+    assignedIdentity: IdentityValue,
+    orderKey: string,
+  ): Promise<string | null> {
+    const sorted = Array.from(this.tasks.values())
+      .filter(
+        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
+      )
+      .toSorted((a, b) =>
+        a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
+      );
 
     let previous: string | null = null;
     for (const task of sorted) {
@@ -42,10 +49,16 @@ export class TasksDomainRepositoryInMemory implements TasksInterface {
     return Promise.resolve(previous);
   }
 
-  async searchForHighestOrderKey(): Promise<string | null> {
-    const sorted = Array.from(this.tasks.values()).toSorted((a, b) =>
-      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
-    );
+  async searchForHighestOrderKey(
+    assignedIdentity: IdentityValue,
+  ): Promise<string | null> {
+    const sorted = Array.from(this.tasks.values())
+      .filter(
+        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
+      )
+      .toSorted((a, b) =>
+        a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
+      );
 
     if (sorted.length === 0) {
       return Promise.resolve(null);
@@ -54,10 +67,16 @@ export class TasksDomainRepositoryInMemory implements TasksInterface {
     return sorted[sorted.length - 1].orderKey;
   }
 
-  async searchForLowestOrderKey(): Promise<string | null> {
-    const sorted = Array.from(this.tasks.values()).toSorted((a, b) =>
-      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
-    );
+  async searchForLowestOrderKey(
+    assignedIdentity: IdentityValue,
+  ): Promise<string | null> {
+    const sorted = Array.from(this.tasks.values())
+      .filter(
+        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
+      )
+      .toSorted((a, b) =>
+        a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
+      );
 
     if (sorted.length === 0) {
       return Promise.resolve(null);
@@ -66,10 +85,17 @@ export class TasksDomainRepositoryInMemory implements TasksInterface {
     return sorted[0].orderKey;
   }
 
-  searchForHigherOrderKey(orderKey: string): Promise<string | null> {
-    const sorted = Array.from(this.tasks.values()).toSorted((a, b) =>
-      a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
-    );
+  searchForHigherOrderKey(
+    assignedIdentity: IdentityValue,
+    orderKey: string,
+  ): Promise<string | null> {
+    const sorted = Array.from(this.tasks.values())
+      .filter(
+        (t) => t.assigned.identity.toString() === assignedIdentity.toString(),
+      )
+      .toSorted((a, b) =>
+        a.orderKey < b.orderKey ? -1 : a.orderKey > b.orderKey ? 1 : 0,
+      );
 
     for (const task of sorted) {
       if (task.orderKey > orderKey) {

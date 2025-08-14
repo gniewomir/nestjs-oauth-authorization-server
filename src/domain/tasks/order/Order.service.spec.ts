@@ -1,5 +1,7 @@
+import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { taskMother } from "@test/domain/tasks/Task.mother";
 
+import { IdentityValue } from "@domain/IdentityValue";
 import { OrderService } from "@domain/tasks/order/Order.service";
 import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks/Tasks.domain-repository.in-memory";
 
@@ -24,17 +26,28 @@ describe("OrderService", () => {
     it("generates monotonic keys for inserts at end and between neighbors", async () => {
       const repo = new TasksDomainRepositoryInMemory();
       const sut = new OrderService(repo);
+      const assigned = assignedMother({ identity: IdentityValue.create() });
 
-      const a = taskMother({ orderKey: await sut.newOrderKey() });
+      const a = taskMother({
+        assigned: assigned.identity,
+        orderKey: await sut.newOrderKey(assigned.identity),
+      });
       await repo.persist(a);
 
-      const b = taskMother({ orderKey: await sut.newOrderKey() });
+      const b = taskMother({
+        assigned: assigned.identity,
+        orderKey: await sut.newOrderKey(assigned.identity),
+      });
       await repo.persist(b);
 
       expect(a.orderKey < b.orderKey).toBe(true);
 
       const c = taskMother({
-        orderKey: await sut.nextAvailableOrderKeyBefore(b.identity),
+        assigned: assigned.identity,
+        orderKey: await sut.nextAvailableOrderKeyBefore(
+          b.identity,
+          assigned.identity,
+        ),
       });
       await repo.persist(c);
 
@@ -46,24 +59,41 @@ describe("OrderService", () => {
     it("generates key after reference when higher neighbor exists", async () => {
       const repo = new TasksDomainRepositoryInMemory();
       const sut = new OrderService(repo);
+      const assigned = assignedMother({ identity: IdentityValue.create() });
 
-      const a = taskMother({ orderKey: await sut.newOrderKey() });
+      const a = taskMother({
+        assigned: assigned.identity,
+        orderKey: await sut.newOrderKey(assigned.identity),
+      });
       await repo.persist(a);
-      const b = taskMother({ orderKey: await sut.newOrderKey() });
+      const b = taskMother({
+        assigned: assigned.identity,
+        orderKey: await sut.newOrderKey(assigned.identity),
+      });
       await repo.persist(b);
 
-      const key = await sut.nextAvailableOrderKeyAfter(a.identity);
+      const key = await sut.nextAvailableOrderKeyAfter(
+        a.identity,
+        assigned.identity,
+      );
       expect(key > a.orderKey && key < b.orderKey).toBe(true);
     });
 
     it("generates key after reference when it is the last element", async () => {
       const repo = new TasksDomainRepositoryInMemory();
       const sut = new OrderService(repo);
+      const assigned = assignedMother({ identity: IdentityValue.create() });
 
-      const a = taskMother({ orderKey: await sut.newOrderKey() });
+      const a = taskMother({
+        assigned: assigned.identity,
+        orderKey: await sut.newOrderKey(assigned.identity),
+      });
       await repo.persist(a);
 
-      const key = await sut.nextAvailableOrderKeyAfter(a.identity);
+      const key = await sut.nextAvailableOrderKeyAfter(
+        a.identity,
+        assigned.identity,
+      );
       expect(key > a.orderKey).toBe(true);
     });
   });
