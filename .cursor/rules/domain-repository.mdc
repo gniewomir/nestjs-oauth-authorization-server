@@ -6,6 +6,12 @@ alwaysApply: false
 
 # Domain Repository Implementation Rules
 
+## Requirements
+* Domain Repository have to be acompanied by in-memory implementation 
+* Both Domain Repository and its in-memory implementataion have to be tested 
+* Domain Repository have to be exported from NestJS module
+* Directory for Domain Repository have to contain index.ts file exporting DOmain Repository, its in-memory implementation and NestJS module
+
 ## Structure and Dependencies
 - Use `@Injectable()` decorator for dependency injection
 - Implement the corresponding domain interface (e.g., `UsersInterface`)

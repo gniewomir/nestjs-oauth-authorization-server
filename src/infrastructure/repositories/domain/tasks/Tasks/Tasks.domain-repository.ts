@@ -1,46 +1,133 @@
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
 import { IdentityValue } from "@domain/IdentityValue";
-import { Task } from "@domain/tasks/task/Task";
+import { DescriptionValue } from "@domain/tasks/DescriptionValue";
+import { Task as DomainTask } from "@domain/tasks/task/Task";
 import { TasksInterface } from "@domain/tasks/task/Tasks.interface";
+import { Task as DatabaseTask } from "@infrastructure/database/entities/task.entity";
 
+@Injectable()
 export class TasksDomainRepository implements TasksInterface {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  persist(_task: Task): Promise<void> {
-    throw new Error("Method not implemented.");
+  constructor(
+    @InjectRepository(DatabaseTask)
+    private readonly taskRepository: Repository<DatabaseTask>,
+  ) {}
+
+  async persist(task: DomainTask): Promise<void> {
+    const databaseTask = this.mapToDatabase(task);
+    await this.taskRepository.save(databaseTask);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  retrieve(_identity: IdentityValue): Promise<Task> {
-    throw new Error("Method not implemented.");
+  async retrieve(identity: IdentityValue): Promise<DomainTask> {
+    const task = await this.taskRepository.findOne({
+      where: { id: identity.toString() },
+    });
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    return this.mapToDomain(task);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getOrderKey(_identity: IdentityValue): Promise<string> {
-    throw new Error("Method not implemented.");
+  async getOrderKey(identity: IdentityValue): Promise<string> {
+    const task = await this.taskRepository.findOne({
+      where: { id: identity.toString() },
+      select: ["orderKey"],
+    });
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    return task.orderKey;
   }
 
-  searchForLowerOrderKey(
+  async searchForLowerOrderKey(
     assignedIdentity: IdentityValue,
-    _orderKey: string,
+    orderKey: string,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const task = await this.taskRepository
+      .createQueryBuilder("task")
+      .select("task.orderKey")
+      .where("task.userId = :userId", { userId: assignedIdentity.toString() })
+      .andWhere("task.orderKey < :orderKey", { orderKey })
+      .orderBy("task.orderKey", "DESC")
+      .limit(1)
+      .getOne();
+
+    return task?.orderKey || null;
   }
 
-  searchForHighestOrderKey(
+  async searchForHighestOrderKey(
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
-    return Promise.resolve(null);
+    const task = await this.taskRepository
+      .createQueryBuilder("task")
+      .select("task.orderKey")
+      .where("task.userId = :userId", { userId: assignedIdentity.toString() })
+      .orderBy("task.orderKey", "DESC")
+      .limit(1)
+      .getOne();
+
+    return task?.orderKey || null;
   }
 
-  searchForHigherOrderKey(
+  async searchForHigherOrderKey(
     assignedIdentity: IdentityValue,
-    _orderKey: string,
+    orderKey: string,
   ): Promise<string | null> {
-    throw new Error("Method not implemented.");
+    const task = await this.taskRepository
+      .createQueryBuilder("task")
+      .select("task.orderKey")
+      .where("task.userId = :userId", { userId: assignedIdentity.toString() })
+      .andWhere("task.orderKey > :orderKey", { orderKey })
+      .orderBy("task.orderKey", "ASC")
+      .limit(1)
+      .getOne();
+
+    return task?.orderKey || null;
   }
 
-  searchForLowestOrderKey(
+  async searchForLowestOrderKey(
     assignedIdentity: IdentityValue,
   ): Promise<string | null> {
-    return Promise.resolve(null);
+    const task = await this.taskRepository
+      .createQueryBuilder("task")
+      .select("task.orderKey")
+      .where("task.userId = :userId", { userId: assignedIdentity.toString() })
+      .orderBy("task.orderKey", "ASC")
+      .limit(1)
+      .getOne();
+
+    return task?.orderKey || null;
+  }
+
+  private mapToDomain(databaseTask: DatabaseTask): DomainTask {
+    return new DomainTask({
+      identity: IdentityValue.fromString(databaseTask.id),
+      description: DescriptionValue.fromString(databaseTask.description),
+      assigned: IdentityValue.fromString(databaseTask.userId),
+      goal: IdentityValue.fromString(databaseTask.goalId),
+      context: IdentityValue.fromString(databaseTask.contextId),
+      orderKey: databaseTask.orderKey,
+    });
+  }
+
+  private mapToDatabase(
+    domainTask: DomainTask,
+  ): Omit<
+    DatabaseTask,
+    "createdAt" | "updatedAt" | "goal" | "context" | "user"
+  > {
+    return {
+      id: domainTask.identity.toString(),
+      description: domainTask.description.toString(),
+      orderKey: domainTask.orderKey,
+      goalId: domainTask.goal.toString(),
+      contextId: domainTask.context.toString(),
+      userId: domainTask.assigned.toString(),
+    };
   }
 }

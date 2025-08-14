@@ -11,8 +11,8 @@ export const taskMother = (params: Partial<TTaskConstructorParam> = {}) => {
     identity: IdentityValue.create(),
     assigned: assignedMother().identity,
     description: DescriptionValue.fromString("example task"),
-    goal: goalMother(),
-    context: contextMother(),
+    goal: goalMother().identity,
+    context: contextMother().identity,
     orderKey: "Z",
     ...params,
   });

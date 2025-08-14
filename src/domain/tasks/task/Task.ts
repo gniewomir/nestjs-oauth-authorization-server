@@ -3,9 +3,7 @@ import { OrderedEntity } from "@domain/tasks/order/OrderedEntity.abstract";
 import { TasksInterface } from "@domain/tasks/task/Tasks.interface";
 
 import { IdentityValue } from "../../IdentityValue";
-import { Context } from "../context/Context";
 import { DescriptionValue } from "../DescriptionValue";
-import { Goal } from "../goal/Goal";
 
 export type TTaskConstructorArgs = ConstructorParameters<typeof Task>;
 export type TTaskConstructorParam = TTaskConstructorArgs[0];
@@ -13,15 +11,15 @@ export type TTaskConstructorParam = TTaskConstructorArgs[0];
 export class Task extends OrderedEntity<TasksInterface> {
   public readonly identity: IdentityValue;
   public readonly description: DescriptionValue;
-  public readonly goal: Goal;
-  public readonly context: Context;
+  public readonly goal: IdentityValue;
+  public readonly context: IdentityValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
     assigned: IdentityValue;
-    goal: Goal;
-    context: Context;
+    goal: IdentityValue;
+    context: IdentityValue;
     orderKey: string;
   }) {
     super({
