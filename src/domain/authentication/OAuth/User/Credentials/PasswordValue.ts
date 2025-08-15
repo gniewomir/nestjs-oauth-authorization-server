@@ -1,4 +1,5 @@
 import { Assert } from "@domain/Assert";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 
 export class PasswordValue {
@@ -8,11 +9,18 @@ export class PasswordValue {
   private constructor(private readonly password: string) {
     Assert(
       password.length === password.trim().length,
-      "Password cannot start and/or end with a space character(s)",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription:
+            "Password cannot start and/or end with a space character(s)",
+        }),
     );
     Assert(
       password.length >= PasswordValue.minPasswordLength,
-      `Minimal password length is ${PasswordValue.minPasswordLength}`,
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `Minimal password length is ${PasswordValue.minPasswordLength}`,
+        }),
     );
     Assert(
       password.split("").reduce((acc, char) => {
@@ -21,12 +29,18 @@ export class PasswordValue {
         }
         return acc + char;
       }, "").length >= PasswordValue.minUniqueCharacters,
-      `Minimal number of unique characters in password is ${PasswordValue.minUniqueCharacters}`,
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `Minimal number of unique characters in password is ${PasswordValue.minUniqueCharacters}`,
+        }),
     );
     // ref https://www.npmjs.com/package/bcrypt#user-content-security-issues-and-concerns
     Assert(
       new Blob([password]).size <= 72, // size in bytes
-      "Password should not be longer than 72 bytes",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "Password should not be longer than 72 bytes",
+        }),
     );
   }
 

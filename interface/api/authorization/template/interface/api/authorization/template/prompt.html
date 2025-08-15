@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization Required</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #000;
+            color: white;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 32px 24px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            transition: border-color 0.2s ease;
+        }
+
+        .checkbox-group:hover {
+            border-color: #000;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: #000;
+        }
+
+        .checkbox-group label {
+            flex: 1;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .scope-name {
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .scope-description {
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #000;
+        }
+
+        .remember-me label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #000;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #000;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .client-info {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid #000;
+        }
+
+        .client-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        .client-info p {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                border-radius: 8px;
+            }
+
+            .header {
+                padding: 24px 20px;
+            }
+
+            .form-container {
+                padding: 24px 20px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Authorization Required</h1>
+            <p>{{clientName}} is requesting access to your account</p>
+        </div>
+
+        <div class="form-container">
+            <div class="client-info">
+                <h3>Application Details</h3>
+                <p><strong>Application:</strong> {{clientName}}</p>
+                <p><strong>Redirect URI:</strong> {{redirectUri}}</p>
+                <p><strong>Requested Permissions:</strong> {{requestedScopes}}</p>
+            </div>
+
+            <form method="POST" action="/oauth/prompt" id="authForm">
+                <input type="hidden" name="request_id" value="{{requestId}}">
+                
+                <div class="section">
+                    <h2>Sign In</h2>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+                    
+                    <div class="remember-me">
+                        <input type="checkbox" id="remember_me" name="remember_me" value="true">
+                        <label for="remember_me">Remember me</label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Permissions</h2>
+                    <p style="font-size: 14px; color: #6c757d; margin-bottom: 16px;">
+                        Select the permissions you want to grant to this application:
+                    </p>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="scope_task_api" name="scopes" value="task:api" {{#if taskApi}}checked{{/if}}>
+                        <label for="scope_task_api">
+                            <div class="scope-name">Task API Access</div>
+                            <div class="scope-description">Allows the application to create, read, update, and delete your tasks</div>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="scope_admin_api" name="scopes" value="admin:api" {{#if adminApi}}checked{{/if}}>
+                        <label for="scope_admin_api">
+                            <div class="scope-name">Administrative Access</div>
+                            <div class="scope-description">Provides administrative capabilities and system-wide access</div>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="scope_token_authenticate" name="scopes" value="token:authenticate" {{#if tokenAuthenticate}}checked{{/if}}>
+                        <label for="scope_token_authenticate">
+                            <div class="scope-name">Token Authentication</div>
+                            <div class="scope-description">Allows the application to authenticate using tokens</div>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="scope_token_refresh" name="scopes" value="token:refresh" {{#if tokenRefresh}}checked{{/if}}>
+                        <label for="scope_token_refresh">
+                            <div class="scope-name">Token Refresh</div>
+                            <div class="scope-description">Allows the application to refresh access tokens</div>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="scope_token_refresh_large_ttl" name="scopes" value="token:refresh:issue-large-ttl" {{#if tokenRefreshLargeTtl}}checked{{/if}}>
+                        <label for="scope_token_refresh_large_ttl">
+                            <div class="scope-name">Extended Token Lifetime</div>
+                            <div class="scope-description">Allows the application to request tokens with extended expiration times</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary" id="authorizeBtn">Authorize</button>
+                    <button type="button" class="btn btn-secondary" onclick="cancelAuthorization()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('authForm');
+            const authorizeBtn = document.getElementById('authorizeBtn');
+            
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const scopes = document.querySelectorAll('input[name="scopes"]:checked');
+                
+                if (!email) {
+                    showError('Please enter your email address');
+                    return;
+                }
+                
+                if (!password) {
+                    showError('Please enter your password');
+                    return;
+                }
+                
+                if (scopes.length === 0) {
+                    showError('Please select at least one permission');
+                    return;
+                }
+                
+                // Show loading state
+                authorizeBtn.disabled = true;
+                authorizeBtn.textContent = 'Authorizing...';
+                form.classList.add('loading');
+                
+                // Submit form
+                form.submit();
+            });
+            
+            // Real-time validation
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            
+            emailInput.addEventListener('blur', function() {
+                if (this.value.trim() && !isValidEmail(this.value)) {
+                    showError('Please enter a valid email address');
+                } else {
+                    clearError();
+                }
+            });
+            
+            passwordInput.addEventListener('blur', function() {
+                if (this.value && this.value.length < 6) {
+                    showError('Password must be at least 6 characters long');
+                } else {
+                    clearError();
+                }
+            });
+        });
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function showError(message) {
+            clearError();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            
+            const form = document.getElementById('authForm');
+            form.insertBefore(errorDiv, form.firstChild);
+        }
+        
+        function clearError() {
+            const existingError = document.querySelector('.error');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+        
+        function cancelAuthorization() {
+            if (confirm('Are you sure you want to cancel the authorization? This will redirect you back to the application.')) {
+                window.location.href = '{{redirectUri}}?error=access_denied&state={{state}}';
+            }
+        }
+        
+        // Handle browser back button
+        window.addEventListener('beforeunload', function(e) {
+            if (document.getElementById('authForm').classList.contains('loading')) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>

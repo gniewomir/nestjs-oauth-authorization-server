@@ -1,6 +1,7 @@
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
 import { requestMother } from "@test/domain/authentication/Request.mother";
 
+import { Assert } from "@domain/Assert";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
@@ -57,6 +58,8 @@ export const createAuthenticationTestContext = async ({
     clock,
     authConfig,
   );
+
+  Assert(authorizationCode !== null);
 
   const { accessToken, refreshToken, idToken } =
     await AuthorizationFacade.codeExchange(

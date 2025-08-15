@@ -50,8 +50,8 @@ export class AuthorizeRequestDto {
     example: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
   })
   @IsString()
-  @IsNotEmpty()
-  code_challenge: string;
+  @IsOptional()
+  code_challenge?: string;
 
   @ApiProperty({
     description: 'PKCE code challenge method (must be "S256")',
@@ -60,5 +60,6 @@ export class AuthorizeRequestDto {
   })
   @IsString()
   @IsIn(["S256"])
-  code_challenge_method: string;
+  @IsOptional()
+  code_challenge_method?: string;
 }

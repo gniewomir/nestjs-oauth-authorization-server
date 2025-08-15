@@ -1,4 +1,5 @@
 import { Assert } from "@domain/Assert";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
 import { UniqueEmailSpecification } from "@domain/authentication/OAuth/User/UniqueEmail.specification";
@@ -40,7 +41,11 @@ export class User {
   ): Promise<User> {
     Assert(
       await uniqueEmailSpecification.isSatisfied(params.email),
-      "User email have to be unique",
+      () =>
+        new OauthInvalidRequestException({
+          message: "User email have to be unique",
+          errorDescription: "user with this email already exists",
+        }),
     );
     return new User(params);
   }

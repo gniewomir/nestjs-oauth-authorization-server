@@ -1,10 +1,14 @@
 import { Assert } from "@domain/Assert";
+import { OauthUnsupportedResponseTypeException } from "@domain/authentication/OAuth/Errors/OauthUnsupportedResponseTypeException";
 
 export class ResponseTypeValue {
   private constructor(private readonly responseType: string) {
     Assert(
       responseType === "code",
-      "Only accepted authorization flow at the moment is Authorization Code flow with PKCE",
+      new OauthUnsupportedResponseTypeException({
+        message:
+          "Only accepted authorization flow at the moment is Authorization Code flow with PKCE",
+      }),
     );
   }
 

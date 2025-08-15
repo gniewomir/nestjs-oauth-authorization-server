@@ -1,4 +1,5 @@
 import { Assert } from "@domain/Assert";
+import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 
 export class ScopeValueImmutableSet {
@@ -31,12 +32,19 @@ export class ScopeValueImmutableSet {
     if (typeof scope === "string") {
       return ScopeValueImmutableSet.fromString(scope);
     }
-    Assert(Array.isArray(scope), "scope is not an array");
+    Assert(
+      Array.isArray(scope),
+      () =>
+        new OauthInvalidScopeException({ message: "scope is not an array" }),
+    );
     Assert(
       scope.every(
         (scope) => typeof scope === "string" || scope instanceof ScopeValue,
       ),
-      "scope is not an array of ScopeVale or strings",
+      () =>
+        new OauthInvalidScopeException({
+          message: "scope is not an array of ScopeVale or strings",
+        }),
     );
     return ScopeValueImmutableSet.fromArray(scope);
   }

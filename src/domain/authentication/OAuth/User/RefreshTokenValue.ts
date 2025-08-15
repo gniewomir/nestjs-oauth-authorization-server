@@ -1,4 +1,6 @@
 import { Assert } from "@domain/Assert";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
@@ -26,11 +28,32 @@ export class RefreshTokenValue {
   public static fromUnknown(value: unknown): RefreshTokenValue {
     Assert(
       !!value && typeof value === "object",
-      "UserRefreshTokenValue must be an object",
+      () =>
+        new OauthInvalidRequestException({
+          message: "UserRefreshTokenValue must be an object",
+        }),
     );
-    Assert("aud" in value, "UserRefreshTokenValue have to have a aud property");
-    Assert("jti" in value, "UserRefreshTokenValue have to have jti property");
-    Assert("exp" in value, "UserRefreshTokenValue have to have a exp property");
+    Assert(
+      "aud" in value,
+      () =>
+        new OauthInvalidRequestException({
+          message: "UserRefreshTokenValue have to have a aud property",
+        }),
+    );
+    Assert(
+      "jti" in value,
+      () =>
+        new OauthInvalidRequestException({
+          message: "UserRefreshTokenValue have to have jti property",
+        }),
+    );
+    Assert(
+      "exp" in value,
+      () =>
+        new OauthInvalidRequestException({
+          message: "UserRefreshTokenValue have to have a exp property",
+        }),
+    );
     return new RefreshTokenValue({
       aud: IdentityValue.fromUnknown(value.aud),
       jti: IdentityValue.fromUnknown(value.jti),
@@ -39,7 +62,10 @@ export class RefreshTokenValue {
   }
 
   public static fromTokenPayload(payload: TokenPayload): RefreshTokenValue {
-    Assert(payload.hasScope(ScopeValue.TOKEN_REFRESH()), "Not a refresh token");
+    Assert(
+      payload.hasScope(ScopeValue.TOKEN_REFRESH()),
+      () => new OauthInvalidScopeException({ message: "Not a refresh token" }),
+    );
     return new RefreshTokenValue({
       aud: IdentityValue.fromString(payload.aud),
       exp: NumericDateValue.fromNumber(payload.exp),

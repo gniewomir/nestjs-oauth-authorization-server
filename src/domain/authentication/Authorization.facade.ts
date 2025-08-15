@@ -8,6 +8,10 @@ import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
+import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
+import { OauthInvalidClientException } from "@domain/authentication/OAuth/Errors/OauthInvalidClientException";
+import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
+import { OauthRedirectUriMismatchException } from "@domain/authentication/OAuth/Errors/OauthRedirectUriMismatchException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
@@ -56,28 +60,33 @@ export class AuthorizationFacade {
     codes: CodeInterface,
     clock: ClockInterface,
     authConfig: AuthConfig,
-  ): Promise<{ authorizationCode: Code }> {
+  ): Promise<Request> {
     const request = await requests.retrieve(params.requestId);
     const user = await users.getByEmail(params.credentials.email);
 
-    Assert(params.credentials.email.isEqual(user.email), "Email mismatch");
+    Assert(
+      params.credentials.email.isEqual(user.email),
+      () =>
+        new OauthInvalidCredentialsException({
+          message: "Email mismatch",
+        }),
+    );
     Assert(
       await params.credentials.password.isEqualHashedPassword(
         user.password,
         passwords,
       ),
-      "Password mismatch",
+      () =>
+        new OauthInvalidCredentialsException({
+          message: "Password mismatch",
+        }),
     );
 
     request.issueAuthorizationCode(user.identity, codes, clock, authConfig);
 
     await requests.persist(request);
 
-    Assert(request.authorizationCode instanceof Code);
-
-    return {
-      authorizationCode: request.authorizationCode,
-    };
+    return request;
   }
 
   public static async codeExchange(
@@ -107,26 +116,41 @@ export class AuthorizationFacade {
   }> {
     const request = await requests.getByAuthorizationCode(code);
 
-    Assert(request.clientId.isEqual(clientId), "Invalid clientId");
+    Assert(
+      request.clientId.isEqual(clientId),
+      () =>
+        new OauthInvalidClientException({
+          message: "Invalid clientId",
+        }),
+    );
 
     Assert(
       request.redirectUri.isEqual(redirectUri),
-      "Mismatch between saved and provided redirectUri",
+      () =>
+        new OauthRedirectUriMismatchException({
+          message: "Mismatch between saved and provided redirectUri",
+        }),
     );
 
-    Assert(
-      PKCE.verify({
-        codeChallenge: request.codeChallenge,
-        codeVerifier,
-        method: request.codeChallengeMethod,
-      }),
-      "Failed PKCE code challenge",
-    );
+    if (
+      !request.codeChallengeMethod.isEqual(
+        CodeChallengeMethodValue.METHOD_NONE(),
+      )
+    ) {
+      Assert(
+        PKCE.verify({
+          codeChallenge: request.codeChallenge,
+          codeVerifier,
+          method: request.codeChallengeMethod,
+        }),
+        () =>
+          new OAuthAccessDeniedException({
+            message: "Failed PKCE code challenge",
+          }),
+      );
+    }
 
-    Assert(
-      request.useAuthorizationCode(code, clock),
-      "Authorization code validation failed",
-    );
+    request.useAuthorizationCode(code, clock);
 
     Assert(request.authorizationCode instanceof Code);
     const user = await users.retrieve(

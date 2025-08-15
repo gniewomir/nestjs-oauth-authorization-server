@@ -1,5 +1,8 @@
 import { Assert } from "@domain/Assert";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
+import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
+import { OauthInvalidTokenException } from "@domain/authentication/OAuth/Errors/OauthInvalidTokenException";
+import { OauthTokenExpiredException } from "@domain/authentication/OAuth/Errors/OauthTokenExpiredException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
@@ -18,11 +21,21 @@ export class AuthenticationFacade {
     authConfig: AuthConfig,
   ): Promise<TokenPayload> {
     const payload = await tokenPayloads.verify(token);
-    Assert(payload.hasValidIssuer(authConfig), "jwt has invalid issuer");
-    Assert(payload.hasNotExpired(clock), "jwt expired");
+    Assert(
+      payload.hasValidIssuer(authConfig),
+      () =>
+        new OauthInvalidTokenException({ message: "jwt has invalid issuer" }),
+    );
+    Assert(
+      payload.hasNotExpired(clock),
+      () => new OauthTokenExpiredException({ message: "jwt expired" }),
+    );
     Assert(
       payload.hasScope(ScopeValue.TOKEN_AUTHENTICATE()),
-      "jwt does not contain required scope",
+      () =>
+        new OauthInvalidScopeException({
+          message: "jwt does not contain required scope",
+        }),
     );
     return payload;
   }
@@ -46,20 +59,31 @@ export class AuthenticationFacade {
       IdentityValue.fromString(payload.aud),
     );
 
-    Assert(payload.hasNotExpired(clock), "jwt expired");
+    Assert(
+      payload.hasNotExpired(clock),
+      () => new OauthTokenExpiredException({ message: "jwt expired" }),
+    );
 
     Assert(
       ScopeValueImmutableSet.fromString(payload.scope).hasScope(
         ScopeValue.TOKEN_REFRESH(),
       ),
-      "jwt does not contain required scope",
+      () =>
+        new OauthInvalidScopeException({
+          message: "jwt does not contain required scope",
+        }),
     );
 
-    Assert(payload.hasValidIssuer(authConfig), "jwt has invalid issuer");
+    Assert(
+      payload.hasValidIssuer(authConfig),
+      () =>
+        new OauthInvalidTokenException({ message: "jwt has invalid issuer" }),
+    );
 
     Assert(
       user.hasRefreshToken(IdentityValue.fromString(payload.jti), clock),
-      "unknown refresh token",
+      () =>
+        new OauthInvalidTokenException({ message: "unknown refresh token" }),
     );
 
     const idTokenPayload = IdTokenPayload.createIdToken({

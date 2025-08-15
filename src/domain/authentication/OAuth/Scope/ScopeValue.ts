@@ -1,4 +1,5 @@
 import { Assert } from "@domain/Assert";
+import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 
 enum ScopeEnum {
   TASK_API = "task:api",
@@ -10,7 +11,10 @@ enum ScopeEnum {
 
 export class ScopeValue {
   private constructor(private readonly scope: ScopeEnum) {
-    Assert(Object.values(ScopeEnum).includes(scope), `Unknown scope`);
+    Assert(
+      Object.values(ScopeEnum).includes(scope),
+      () => new OauthInvalidScopeException({ message: "Unknown scope" }),
+    );
   }
 
   public static TASK_API() {

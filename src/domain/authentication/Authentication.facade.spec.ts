@@ -6,9 +6,9 @@ import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { IdentityValue } from "@domain/IdentityValue";
-import { JwtServiceFake } from "@infrastructure/authentication/jwt";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { plainToConfig } from "@infrastructure/config/configs/utility";
+import { JwtServiceFake } from "@infrastructure/security/jwt";
 
 describe("AuthenticationFacade", () => {
   describe("authenticate", () => {

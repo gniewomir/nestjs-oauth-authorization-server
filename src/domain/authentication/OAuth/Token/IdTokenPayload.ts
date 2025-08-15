@@ -1,5 +1,6 @@
 import { Assert } from "@domain/Assert";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
@@ -70,16 +71,28 @@ export class IdTokenPayload {
   }
 
   public static fromUnknown(payload: Record<string, unknown>) {
-    Assert(typeof payload.iss === "string", "Claim iss must be a string");
+    Assert(
+      typeof payload.iss === "string",
+      () =>
+        new OauthInvalidRequestException({
+          message: "Claim iss must be a string",
+        }),
+    );
     const exp = NumericDateValue.fromUnknown(payload.exp);
     const iat = NumericDateValue.fromUnknown(payload.iat);
     Assert(
       exp.toNumber() > iat.toNumber(),
-      "jwt cannot expire before it was issued",
+      () =>
+        new OauthInvalidRequestException({
+          message: "jwt cannot expire before it was issued",
+        }),
     );
     Assert(
       typeof payload.email_verified === "boolean",
-      "email_verified must be a boolean",
+      () =>
+        new OauthInvalidRequestException({
+          message: "email_verified must be a boolean",
+        }),
     );
 
     return new IdTokenPayload({

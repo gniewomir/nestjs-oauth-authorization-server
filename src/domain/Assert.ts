@@ -1,8 +1,15 @@
 export function Assert(
   condition: boolean,
-  message?: string,
+  message?: string | Error | (() => Error),
 ): asserts condition {
-  if (!condition) {
-    throw new Error(message || "Failed assertion");
+  if (condition) {
+    return;
   }
+  if (typeof message === "function") {
+    throw message();
+  }
+  if (message instanceof Error) {
+    throw message;
+  }
+  throw new Error(message || "Invalid assertion");
 }

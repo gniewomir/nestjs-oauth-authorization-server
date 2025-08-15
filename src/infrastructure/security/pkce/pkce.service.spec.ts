@@ -1,6 +1,6 @@
 import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
-import { PKCEService } from "@infrastructure/authentication/pkce/pkce.service";
-import { PKCEServiceFake } from "@infrastructure/authentication/pkce/pkce.service.fake";
+import { PKCEService } from "@infrastructure/security/pkce/pkce.service";
+import { PKCEServiceFake } from "@infrastructure/security/pkce/pkce.service.fake";
 
 describe("PKCEService", () => {
   it("is able to positively verify codeChallenge with codeVerifier", () => {

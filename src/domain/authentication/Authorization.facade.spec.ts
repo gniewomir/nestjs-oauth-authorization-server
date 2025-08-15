@@ -3,6 +3,7 @@ import * as assert from "node:assert";
 import { clientMother, requestMother } from "@test/domain/authentication";
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
 
+import { Assert } from "@domain/Assert";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
@@ -221,6 +222,8 @@ describe("AuthorizationFacade", () => {
         authConfig,
       );
 
+      Assert(authorizationCode !== null);
+
       const { idToken, accessToken, expiration, refreshToken } =
         await AuthorizationFacade.codeExchange(
           {
@@ -311,6 +314,8 @@ describe("AuthorizationFacade", () => {
         authConfig,
       );
 
+      Assert(authorizationCode !== null);
+
       const { idToken, accessToken, expiration, refreshToken } =
         await AuthorizationFacade.codeExchange(
           {
@@ -400,6 +405,8 @@ describe("AuthorizationFacade", () => {
         authConfig,
       );
 
+      Assert(authorizationCode !== null);
+
       await AuthorizationFacade.codeExchange(
         {
           clientId: client.id,
@@ -481,6 +488,8 @@ describe("AuthorizationFacade", () => {
         authConfig,
       );
 
+      Assert(authorizationCode !== null);
+
       clock.timeTravelSeconds(authorizationCode.exp);
 
       await expect(
@@ -550,6 +559,8 @@ describe("AuthorizationFacade", () => {
         authConfig,
       );
 
+      Assert(authorizationCode !== null);
+
       await expect(
         AuthorizationFacade.codeExchange(
           {
@@ -617,6 +628,8 @@ describe("AuthorizationFacade", () => {
         clock,
         authConfig,
       );
+
+      Assert(authorizationCode !== null);
 
       const { refreshToken } = await AuthorizationFacade.codeExchange(
         {

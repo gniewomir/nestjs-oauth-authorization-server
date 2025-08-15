@@ -1,3 +1,4 @@
+export { createAuthenticationTestContext } from "./Authentication.test-context";
 export { createAuthorizationTestContext } from "./Authorization.test-context";
 export { clientMother } from "./Client.mother";
 export { requestMother } from "./Request.mother";

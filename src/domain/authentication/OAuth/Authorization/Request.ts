@@ -6,6 +6,8 @@ import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authoriza
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
+import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
@@ -84,17 +86,22 @@ export class Request {
     );
   }
 
-  public useAuthorizationCode(code: string, clock: ClockInterface): boolean {
+  public useAuthorizationCode(code: string, clock: ClockInterface): void {
     const knownCode = this._authorizationCode;
     Assert(
       knownCode !== null,
-      "Authorisation code was not yet issued for this authorization request",
+      () =>
+        new OauthInvalidRequestException({
+          message:
+            "Authorization code was not yet issued for this authorization request",
+        }),
     );
     Assert(
       knownCode.use(clock) === code,
-      "Failed authorization code verification",
+      () =>
+        new OAuthAccessDeniedException({
+          message: "Failed authorization code verification",
+        }),
     );
-
-    return true;
   }
 }

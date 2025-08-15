@@ -3,8 +3,8 @@ import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/Pas
 import { User } from "@domain/authentication/OAuth/User/User";
 import { UserFacade } from "@domain/authentication/User.facade";
 import { IdentityValue } from "@domain/IdentityValue";
-import { PasswordServiceFake } from "@infrastructure/authentication/password/password.service.fake";
 import { UserDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.in-memory";
+import { PasswordServiceFake } from "@infrastructure/security/password/password.service.fake";
 
 describe("UserFacade", () => {
   describe("register", () => {

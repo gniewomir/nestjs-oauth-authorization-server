@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from "class-validator";
 
 export class PromptRequestDto {
   @ApiProperty({
@@ -34,4 +40,15 @@ export class PromptRequestDto {
   @IsBoolean()
   @IsOptional()
   remember_me?: boolean;
+
+  @ApiProperty({
+    description: "Selected scopes",
+    example: ["task:api", "token:authenticate"],
+    required: false,
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  scopes?: string[];
 }

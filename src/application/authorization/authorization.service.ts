@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 
+import { Assert } from "@domain/Assert";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
@@ -74,10 +75,10 @@ export class AuthorizationService {
     clientId: string;
     responseType: string;
     redirectUri: string;
-    scope: string;
-    state: string;
-    codeChallengeMethod: string;
-    codeChallenge: string;
+    scope?: string;
+    state?: string;
+    codeChallengeMethod?: string;
+    codeChallenge?: string;
   }): Promise<{
     requestId: string;
   }> {
@@ -87,11 +88,14 @@ export class AuthorizationService {
         responseType: ResponseTypeValue.fromString(responseType),
         id: IdentityValue.create(),
         redirectUri: HttpUrlValue.fromString(redirectUri),
-        scope: ScopeValueImmutableSet.fromUnknown(scope),
-        state,
-        codeChallenge,
-        codeChallengeMethod:
-          CodeChallengeMethodValue.fromString(codeChallengeMethod),
+        scope: scope
+          ? ScopeValueImmutableSet.fromString(scope)
+          : ScopeValueImmutableSet.fromArray([]),
+        state: state || "",
+        codeChallenge: codeChallenge || "",
+        codeChallengeMethod: codeChallengeMethod
+          ? CodeChallengeMethodValue.fromString(codeChallengeMethod)
+          : CodeChallengeMethodValue.METHOD_NONE(),
       },
       this.requests,
       this.clients,
@@ -102,16 +106,41 @@ export class AuthorizationService {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
-  async prompt(params: {
-    requestId: IdentityValue;
+  async preparePrompt(): Promise<void> {}
+
+  async submitPrompt(params: {
+    requestId: string;
     credentials: {
-      email: EmailValue;
-      password: PasswordValue;
-      rememberMe: boolean;
+      email: string;
+      password: string;
+      rememberMe?: boolean;
     };
-  }): Promise<{ authorizationCode: Code }> {
-    throw new Error("Not implemented");
+    scopes?: string[];
+  }): Promise<{
+    code: string;
+  }> {
+    const request = await AuthorizationFacade.prompt(
+      {
+        requestId: IdentityValue.fromString(params.requestId),
+        credentials: {
+          email: EmailValue.fromString(params.credentials.email),
+          password: PasswordValue.fromString(params.credentials.password),
+          rememberMe: params.credentials.rememberMe || false,
+        },
+      },
+      this.requests,
+      this.users,
+      this.passwords,
+      this.codes,
+      this.clock,
+      this.authConfig,
+    );
+
+    Assert(request.authorizationCode instanceof Code);
+
+    return {
+      code: request.authorizationCode.code,
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await

@@ -1,5 +1,3 @@
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-
 export const OAUTH_SWAGGER_TAGS = {
   OAUTH2: "OAuth2 Authorization",
 } as const;

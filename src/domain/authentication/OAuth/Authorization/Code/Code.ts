@@ -1,5 +1,8 @@
 import { Assert } from "@domain/Assert";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
+import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
@@ -21,7 +24,10 @@ export class Code {
   }) {
     Assert(
       params.iat.toNumber() < params.exp.toNumber(),
-      "Authorization code cannot expire before it was issued",
+      () =>
+        new OauthServerErrorException({
+          message: "Authorization code cannot expire before it was issued",
+        }),
     );
     this.sub = params.sub.toString();
     this.code = params.code;
@@ -49,18 +55,40 @@ export class Code {
   }
 
   public static fromUnknown(value: unknown): Code {
-    Assert(!!value && typeof value === "object", "Code have to be an object");
+    Assert(
+      !!value && typeof value === "object",
+      () =>
+        new OauthInvalidRequestException({
+          message: "Code have to be an object",
+        }),
+    );
     Assert(
       "code" in value && typeof value.code === "string",
-      "Code value must be a string",
+      () =>
+        new OauthInvalidRequestException({ message: "Code must be a string" }),
     );
-    Assert("iat" in value, "iat is missing");
-    Assert("exp" in value, "exp is missing");
+    Assert(
+      "iat" in value,
+      () => new OauthInvalidRequestException({ message: "iat is missing" }),
+    );
+    Assert(
+      "exp" in value,
+      () => new OauthInvalidRequestException({ message: "exp is missing" }),
+    );
     Assert(
       "used" in value && typeof value.used === "boolean",
-      "Used value must be a boolean",
+      () =>
+        new OauthInvalidRequestException({
+          message: "Used value must be a boolean",
+        }),
     );
-    Assert("sub" in value, "sub is missing");
+    Assert(
+      "sub" in value,
+      () =>
+        new OauthInvalidRequestException({
+          message: "sub is missing",
+        }),
+    );
     return new Code({
       sub: IdentityValue.fromUnknown(value.sub),
       code: value.code,
@@ -71,10 +99,19 @@ export class Code {
   }
 
   public use(clock: ClockInterface): string {
-    Assert(!this.used, "Authorization Code already used!");
+    Assert(
+      !this.used,
+      () =>
+        new OAuthAccessDeniedException({
+          message: "Authorization Code already used!",
+        }),
+    );
     Assert(
       this.exp > clock.nowAsSecondsSinceEpoch(),
-      "Authorization code expired!",
+      () =>
+        new OAuthAccessDeniedException({
+          message: "Authorization code expired!",
+        }),
     );
     this.used = true;
     return this.code;
