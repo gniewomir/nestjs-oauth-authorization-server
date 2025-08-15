@@ -1,6 +1,6 @@
 ---
 description: Ground rules for testing
-alwaysApply: always
+alwaysApply: true
 ---
 
 ## Requirements
