@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Initial1755207665692 implements MigrationInterface {
-  name = "Initial1755207665692";
+export class Initial1755296849004 implements MigrationInterface {
+  name = "Initial1755296849004";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`CREATE TABLE "user"
@@ -50,21 +50,26 @@ export class Initial1755207665692 implements MigrationInterface {
                              )`);
     await queryRunner.query(`CREATE TABLE "oauth_clients"
                              (
-                               "id"   uuid                   NOT NULL,
-                               "name" character varying(255) NOT NULL,
+                               "id"        uuid                   NOT NULL,
+                               "name"      character varying(255) NOT NULL,
+                               "scope"     text                   NOT NULL,
+                               "createdAt" TIMESTAMP              NOT NULL DEFAULT now(),
+                               "updatedAt" TIMESTAMP              NOT NULL DEFAULT now(),
                                CONSTRAINT "PK_c4759172d3431bae6f04e678e0d" PRIMARY KEY ("id")
                              )`);
     await queryRunner.query(`CREATE TABLE "authorization_request"
                              (
-                               "id"                uuid                    NOT NULL,
-                               "clientId"          uuid                    NOT NULL,
-                               "redirectUri"       character varying(2048) NOT NULL,
-                               "state"             character varying(255)  NOT NULL,
-                               "codeChallenge"     character varying(255)  NOT NULL,
-                               "scope"             text                    NOT NULL,
-                               "authorizationCode" jsonb,
-                               "createdAt"         TIMESTAMP               NOT NULL DEFAULT now(),
-                               "updatedAt"         TIMESTAMP               NOT NULL DEFAULT now(),
+                               "id"                  uuid                    NOT NULL,
+                               "clientId"            uuid                    NOT NULL,
+                               "redirectUri"         character varying(2048) NOT NULL,
+                               "responseType"        character varying(64)   NOT NULL,
+                               "state"               character varying(255)  NOT NULL,
+                               "codeChallenge"       character varying(255)  NOT NULL,
+                               "codeChallengeMethod" character varying(16)   NOT NULL,
+                               "scope"               text                    NOT NULL,
+                               "authorizationCode"   jsonb,
+                               "createdAt"           TIMESTAMP               NOT NULL DEFAULT now(),
+                               "updatedAt"           TIMESTAMP               NOT NULL DEFAULT now(),
                                CONSTRAINT "PK_a5f71bde33c44d6d8c40aca488b" PRIMARY KEY ("id")
                              )`);
     await queryRunner.query(`ALTER TABLE "context"
