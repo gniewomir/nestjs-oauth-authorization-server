@@ -2,7 +2,7 @@
 
 ## Overview
 
-The domain model represents the core business concepts and rules of the task management system. It is designed using Domain-Driven Design principles to capture the essential business knowledge and ensure that business rules are enforced at the domain level.
+The domain model represents the core business concepts and rules of the task management system with OAuth authentication capabilities. It is designed using Domain-Driven Design principles to capture the essential business knowledge and ensure that business rules are enforced at the domain level.
 
 ## Core Domain Concepts
 
@@ -18,45 +18,53 @@ The domain model represents the core business concepts and rules of the task man
 - `assigned`: Person responsible for completing the task
 - `goal`: The broader objective this task contributes to
 - `context`: The environment or situation where the task can be performed
-- `ordinalNumber`: Position in the task ordering system
+- `orderKey`: Position in the task ordering system using LexoRank-style string keys
 
 **Business Rules**:
 - Every task must have a description
 - Every task must be assigned to someone
 - Every task must contribute to a goal
 - Every task must have a context where it can be performed
-- Tasks have a specific order that can be changed
+- Tasks have a specific order that can be changed using LexoRank-style ordering
+- Task descriptions are sanitized to prevent XSS attacks
 
 ```typescript
-export class Task {
+export class Task extends OrderedEntity<TasksInterface> {
   public readonly identity: IdentityValue;
   public readonly description: DescriptionValue;
-  public readonly assigned: Assigned;
-  public readonly goal: Goal;
-  public readonly context: Context;
+  public readonly goal: IdentityValue;
+  public readonly context: IdentityValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
-    assigned: Assigned;
-    goal: Goal;
-    context: Context;
-    ordinalNumber: number;
+    assigned: IdentityValue;
+    goal: IdentityValue;
+    context: IdentityValue;
+    orderKey: string;
   }) {
+    super({
+      assigned: parameters.assigned,
+    });
+
     this.identity = parameters.identity;
     this.description = parameters.description;
-    this.assigned = parameters.assigned;
     this.goal = parameters.goal;
     this.context = parameters.context;
-    this._ordinalNumber = parameters.ordinalNumber;
+    this._orderKey = parameters.orderKey;
+  }
+
+  public get orderKey(): string {
+    return this._orderKey;
   }
 
   public async moveBefore(
     referenceEntityIdentity: IdentityValue,
     orderingService: OrderService<TasksInterface>,
   ): Promise<void> {
-    this._ordinalNumber = await orderingService.nextAvailableOrdinalNumber(
+    this._orderKey = await orderingService.nextAvailableOrderKeyBefore(
       referenceEntityIdentity,
+      this.assigned,
     );
   }
 }
@@ -69,26 +77,35 @@ export class Task {
 **Properties**:
 - `identity`: Unique identifier for the goal
 - `description`: Human-readable description of the desired outcome
-- `ordinalNumber`: Position in the goal ordering system
+- `orderKey`: Position in the goal ordering system using LexoRank-style string keys
 
 **Business Rules**:
 - Goals can be archived by completing enough tasks
-- Goals have a specific order that can be changed
+- Goals have a specific order that can be changed using LexoRank-style ordering
 - Goals provide context and motivation for tasks
 
 ```typescript
-export class Goal {
+export class Goal extends OrderedEntity<GoalsInterface> {
   public readonly identity: IdentityValue;
   public readonly description: DescriptionValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
-    ordinalNumber: number;
+    assigned: IdentityValue;
+    orderKey: string;
   }) {
+    super({
+      assigned: parameters.assigned,
+    });
+
     this.identity = parameters.identity;
     this.description = parameters.description;
-    this._ordinalNumber = parameters.ordinalNumber;
+    this._orderKey = parameters.orderKey;
+  }
+
+  public get orderKey(): string {
+    return this._orderKey;
   }
 }
 ```
@@ -100,7 +117,7 @@ export class Goal {
 **Properties**:
 - `identity`: Unique identifier for the context
 - `description`: Human-readable description of the context
-- `ordinalNumber`: Position in the context ordering system
+- `orderKey`: Position in the context ordering system using LexoRank-style string keys
 
 **Business Rules**:
 - Contexts define where and when tasks can be performed
@@ -114,18 +131,27 @@ export class Goal {
 - "When I have internet access"
 
 ```typescript
-export class Context {
+export class Context extends OrderedEntity<ContextsInterface> {
   public readonly identity: IdentityValue;
   public readonly description: DescriptionValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
-    ordinalNumber: number;
+    assigned: IdentityValue;
+    orderKey: string;
   }) {
+    super({
+      assigned: parameters.assigned,
+    });
+
     this.identity = parameters.identity;
     this.description = parameters.description;
-    this._ordinalNumber = parameters.ordinalNumber;
+    this._orderKey = parameters.orderKey;
+  }
+
+  public get orderKey(): string {
+    return this._orderKey;
   }
 }
 ```
@@ -175,6 +201,7 @@ export class Assigned {
 - Email addresses must be verified before certain operations
 - Users can have multiple active refresh tokens for different clients
 - Refresh tokens expire and must be managed
+- Passwords must be properly hashed and validated
 
 ```typescript
 export class User {
@@ -196,6 +223,10 @@ export class User {
     this.emailVerified = parameters.emailVerified;
     this.password = parameters.password;
     this._refreshTokens = parameters.refreshTokens;
+  }
+
+  public get refreshTokens(): RefreshTokenValue[] {
+    return [...this._refreshTokens];
   }
 
   public static async create(
@@ -256,6 +287,7 @@ export class User {
 - Clients must be registered before they can authenticate users
 - Each client has its own set of refresh tokens
 - Clients are responsible for managing their own OAuth flows
+- Redirect URIs must be valid HTTP URLs
 
 ```typescript
 export class Client {
@@ -271,6 +303,56 @@ export class Client {
     this.identity = parameters.identity;
     this.name = parameters.name;
     this.redirectUri = parameters.redirectUri;
+  }
+}
+```
+
+#### Request Entity
+
+**Purpose**: Represents an OAuth authorization request during the PKCE flow.
+
+**Properties**:
+- `id`: Unique identifier for the request
+- `clientId`: Identifier of the requesting client
+- `redirectUri`: Redirect URI for the authorization response
+- `scope`: Requested permissions and access levels
+- `state`: CSRF protection token
+- `codeChallenge`: PKCE code challenge for security
+- `authorizationCode`: Generated authorization code (nullable)
+
+**Business Rules**:
+- Requests must be associated with a valid client
+- Redirect URI must match the client's registered URI
+- State parameter provides CSRF protection
+- Code challenge implements PKCE security
+- Authorization codes are single-use and time-limited
+
+```typescript
+export class Request {
+  public readonly id: IdentityValue;
+  public readonly clientId: IdentityValue;
+  public readonly redirectUri: HttpUrlValue;
+  public readonly scope: ScopeValueImmutableSet;
+  public readonly state: string;
+  public readonly codeChallenge: string;
+  public authorizationCode: string | null;
+
+  constructor(parameters: {
+    id: IdentityValue;
+    clientId: IdentityValue;
+    redirectUri: HttpUrlValue;
+    scope: ScopeValueImmutableSet;
+    state: string;
+    codeChallenge: string;
+    authorizationCode: string | null;
+  }) {
+    this.id = parameters.id;
+    this.clientId = parameters.clientId;
+    this.redirectUri = parameters.redirectUri;
+    this.scope = parameters.scope;
+    this.state = parameters.state;
+    this.codeChallenge = parameters.codeChallenge;
+    this.authorizationCode = parameters.authorizationCode;
   }
 }
 ```
@@ -305,6 +387,10 @@ export class IdentityValue {
 
   public isEqual(otherIdentity: IdentityValue): boolean {
     return this.identity.toString() === otherIdentity.toString();
+  }
+
+  public toString(): string {
+    return this.identity;
   }
 }
 ```
@@ -348,6 +434,7 @@ export class EmailValue {
 - Must not be empty
 - Must have reasonable length limits
 - Immutable once created
+- Sanitized to prevent XSS attacks
 
 ```typescript
 export class DescriptionValue {
@@ -366,50 +453,165 @@ export class DescriptionValue {
 }
 ```
 
+### HttpUrlValue
+
+**Purpose**: Represents a valid HTTP URL.
+
+**Properties**:
+- `url`: String representation of the URL
+
+**Business Rules**:
+- Must be a valid HTTP/HTTPS URL
+- Immutable once created
+- Used for redirect URIs and external links
+
+```typescript
+export class HttpUrlValue {
+  private constructor(public readonly url: string) {
+    Assert(isURL(url, { protocols: ['http', 'https'] }));
+  }
+
+  public static fromString(url: string): HttpUrlValue {
+    return new HttpUrlValue(url);
+  }
+
+  public toString(): string {
+    return this.url;
+  }
+}
+```
+
+### ScopeValue
+
+**Purpose**: Represents OAuth scopes and permissions.
+
+**Properties**:
+- `scope`: String representation of the scope
+
+**Business Rules**:
+- Must be a valid scope format
+- Immutable once created
+- Used for authorization and access control
+
+```typescript
+export class ScopeValue {
+  private constructor(public readonly scope: string) {
+    Assert(scope.length > 0, "Scope cannot be empty");
+  }
+
+  public static TASK_API(): ScopeValue {
+    return new ScopeValue("task:api");
+  }
+
+  public static TOKEN_AUTHENTICATE(): ScopeValue {
+    return new ScopeValue("token:authenticate");
+  }
+
+  public static fromString(scope: string): ScopeValue {
+    return new ScopeValue(scope);
+  }
+
+  public toString(): string {
+    return this.scope;
+  }
+}
+```
+
+### ScopeValueImmutableSet
+
+**Purpose**: Represents an immutable set of OAuth scopes.
+
+**Properties**:
+- `scopes`: Set of scope values
+
+**Business Rules**:
+- Immutable collection of scopes
+- No duplicate scopes allowed
+- Used for managing multiple permissions
+
+```typescript
+export class ScopeValueImmutableSet {
+  private constructor(private readonly scopes: Set<ScopeValue>) {}
+
+  public static fromArray(scopes: ScopeValue[]): ScopeValueImmutableSet {
+    return new ScopeValueImmutableSet(new Set(scopes));
+  }
+
+  public static fromString(scopesString: string): ScopeValueImmutableSet {
+    const scopes = scopesString.split(' ').map(ScopeValue.fromString);
+    return ScopeValueImmutableSet.fromArray(scopes);
+  }
+
+  public toArray(): ScopeValue[] {
+    return Array.from(this.scopes);
+  }
+
+  public toString(): string {
+    return Array.from(this.scopes).map(s => s.toString()).join(' ');
+  }
+
+  public has(scope: ScopeValue): boolean {
+    return this.scopes.has(scope);
+  }
+}
+```
+
 ## Domain Services
 
 ### OrderService
 
-**Purpose**: Manages the ordering of entities using spaced integer indexing.
+**Purpose**: Manages the ordering of entities using LexoRank-style string-based ordering.
 
 **Responsibilities**:
-- Calculate new ordinal numbers for entities
+- Calculate new order keys for entities
 - Handle task reordering operations
 - Maintain proper spacing between ordered items
+- Implement efficient LexoRank-style ordering algorithms
 
 **Business Rules**:
-- Uses spaced integer indexing to avoid frequent reordering
+- Uses LexoRank-style string-based ordering to avoid frequent reordering
 - Calculates optimal positions for moved items
 - Handles edge cases like first and last positions
+- Maintains consistent ordering across all ordered entities
 
 ```typescript
 export class OrderService<T extends OrderInterface> {
-  constructor(
-    private readonly orderingConfig: OrderingConfig,
-    private readonly entities: T,
-  ) {}
+  public static readonly START_ORDER_KEY = "U";
 
-  public async newOrdinalNumber(): Promise<number> {
-    const lowestOrdinalNumber = await this.entities.searchForLowestOrdinalNumber();
-    return lowestOrdinalNumber === null
-      ? this.orderingConfig.maxOrdinalNumber
-      : lowestOrdinalNumber - this.orderingConfig.ordinalNumbersSpacing;
+  constructor(private readonly entities: T) {}
+
+  public async newOrderKey(assignedIdentity: IdentityValue): Promise<string> {
+    const highest = await this.entities.searchForHighestOrderKey(assignedIdentity);
+    return this.between(highest ?? undefined, undefined);
   }
 
-  public async nextAvailableOrdinalNumber(
-    taskIdentity: IdentityValue,
-  ): Promise<number> {
-    const taskOrdinalNumber = await this.entities.getOrdinalNumber(taskIdentity);
-    const boundaryOrdinalNumber = await this.entities.searchForLowerOrdinalNumber(taskOrdinalNumber);
-
-    if (boundaryOrdinalNumber === null) {
-      return taskOrdinalNumber - this.orderingConfig.ordinalNumbersSpacing;
-    }
-
-    return (
-      taskOrdinalNumber -
-      Math.floor((taskOrdinalNumber - boundaryOrdinalNumber) / 2)
+  public async nextAvailableOrderKeyBefore(
+    referenceIdentity: IdentityValue,
+    assignedIdentity: IdentityValue,
+  ): Promise<string> {
+    const referenceKey = await this.entities.getOrderKey(referenceIdentity);
+    const lowerKey = await this.entities.searchForLowerOrderKey(
+      assignedIdentity,
+      referenceKey,
     );
+    return this.between(lowerKey ?? undefined, referenceKey);
+  }
+
+  public async nextAvailableOrderKeyAfter(
+    referenceIdentity: IdentityValue,
+    assignedIdentity: IdentityValue,
+  ): Promise<string> {
+    const referenceKey = await this.entities.getOrderKey(referenceIdentity);
+    const higherKey = await this.entities.searchForHigherOrderKey(
+      assignedIdentity,
+      referenceKey,
+    );
+    return this.between(referenceKey, higherKey ?? undefined);
+  }
+
+  public between(a?: string, b?: string): string {
+    // LexoRank-style algorithm implementation
+    // Generates a string key between two existing keys
   }
 }
 ```
@@ -500,6 +702,8 @@ export interface TasksInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Task>;
   persist(task: Task): Promise<void>;
 }
+
+export const TasksInterfaceSymbol = Symbol('TasksInterface');
 ```
 
 #### UsersInterface
@@ -510,6 +714,8 @@ export interface UsersInterface {
   persist(user: User): Promise<void>;
   countByEmail(email: EmailValue): Promise<number>;
 }
+
+export const UsersInterfaceSymbol = Symbol('UsersInterface');
 ```
 
 #### GoalsInterface
@@ -519,6 +725,8 @@ export interface GoalsInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Goal>;
   persist(goal: Goal): Promise<void>;
 }
+
+export const GoalsInterfaceSymbol = Symbol('GoalsInterface');
 ```
 
 #### ContextsInterface
@@ -527,6 +735,27 @@ export interface GoalsInterface extends OrderInterface {
 export interface ContextsInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Context>;
   persist(context: Context): Promise<void>;
+}
+
+export const ContextsInterfaceSymbol = Symbol('ContextsInterface');
+```
+
+#### OrderInterface
+
+```typescript
+export interface OrderInterface {
+  getOrderKey(identity: IdentityValue): Promise<string>;
+  searchForLowerOrderKey(
+    assignedIdentity: IdentityValue,
+    orderKey: string,
+  ): Promise<string | null>;
+  searchForHigherOrderKey(
+    assignedIdentity: IdentityValue,
+    orderKey: string,
+  ): Promise<string | null>;
+  searchForHighestOrderKey(
+    assignedIdentity: IdentityValue,
+  ): Promise<string | null>;
 }
 ```
 
@@ -541,6 +770,8 @@ export interface ClockInterface {
   nowAsMillisecondsSinceEpoch(): number;
   nowAsSecondsSinceEpoch(): number;
 }
+
+export const ClockInterfaceSymbol = Symbol('ClockInterface');
 ```
 
 #### TokenPayloadInterface
@@ -550,6 +781,8 @@ export interface TokenPayloadInterface {
   verify(token: string): Promise<TokenPayload>;
   sign(tokenPayload: Record<string, unknown>): Promise<string>;
 }
+
+export const TokenPayloadInterfaceSymbol = Symbol('TokenPayloadInterface');
 ```
 
 ## Business Rules and Invariants
@@ -559,8 +792,9 @@ export interface TokenPayloadInterface {
 1. **Task Assignment**: Every task must be assigned to a person
 2. **Task Context**: Every task must have a context where it can be performed
 3. **Task Goal**: Every task must contribute to a goal
-4. **Task Ordering**: Tasks have a specific order that can be changed
+4. **Task Ordering**: Tasks have a specific order that can be changed using LexoRank-style ordering
 5. **Task Description**: Every task must have a meaningful description
+6. **Input Sanitization**: All user input must be sanitized to prevent XSS attacks
 
 ### Authentication Rules
 
@@ -569,13 +803,23 @@ export interface TokenPayloadInterface {
 3. **Scope Validation**: Tokens must have appropriate scopes for operations
 4. **Refresh Token Management**: Refresh tokens are managed per client and user
 5. **Password Security**: Passwords must be properly hashed and validated
+6. **OAuth Security**: PKCE flow must be used for authorization code flow
 
 ### Ordering Rules
 
-1. **Spaced Indexing**: Uses spaced integer indexing to minimize reordering
+1. **LexoRank-style Ordering**: Uses string-based LexoRank-style ordering to minimize reordering overhead
 2. **Position Calculation**: Calculates optimal positions for moved items
 3. **Boundary Handling**: Properly handles first and last positions
 4. **Consistency**: Maintains consistent ordering across all ordered entities
+5. **Performance**: Optimized for read and write operations
+
+### Security Rules
+
+1. **Input Validation**: All external input must be validated at domain boundaries
+2. **XSS Prevention**: User input must be sanitized before storage
+3. **CSRF Protection**: State parameters must be used in OAuth flows
+4. **Token Security**: Access tokens stored in memory, refresh tokens in HTTP-only cookies
+5. **URL Validation**: All URLs must be validated and use HTTPS in production
 
 ## Domain Events
 
@@ -588,6 +832,8 @@ While not currently implemented, the domain model could benefit from domain even
 3. **TaskCompleted**: When a task is marked as complete
 4. **UserRegistered**: When a new user registers
 5. **TokenRefreshed**: When authentication tokens are refreshed
+6. **OAuthRequestCreated**: When an OAuth authorization request is created
+7. **EmailVerified**: When a user's email is verified
 
 ## Benefits of This Domain Model
 
@@ -600,7 +846,7 @@ While not currently implemented, the domain model could benefit from domain even
 ### 2. Maintainability
 
 - Clear separation of concerns
-- Well-defined interfaces
+- Well-defined interfaces with symbols
 - Easy to understand and modify
 
 ### 3. Testability
@@ -615,6 +861,18 @@ While not currently implemented, the domain model could benefit from domain even
 - Supports multiple implementation strategies
 - Allows for future extensions
 
+### 5. Security
+
+- Built-in security measures
+- Input validation and sanitization
+- Secure authentication patterns
+
+### 6. Performance
+
+- Efficient LexoRank-style ordering algorithms
+- Optimized data structures
+- Minimal reordering overhead
+
 ## Conclusion
 
-The domain model provides a solid foundation for the task management system by capturing the essential business concepts and rules. It follows Domain-Driven Design principles to ensure that business logic is centralized, well-organized, and easy to understand. The model supports the layered architecture by providing clear contracts for other layers to implement, while maintaining independence from technical concerns.
+The domain model provides a solid foundation for the task management system with OAuth authentication by capturing the essential business concepts and rules. It follows Domain-Driven Design principles to ensure that business logic is centralized, well-organized, and easy to understand. The model supports the layered architecture by providing clear contracts with symbols for other layers to implement, while maintaining independence from technical concerns. The addition of security measures, efficient LexoRank-style ordering systems, and comprehensive OAuth support ensures the domain model is both robust and secure.

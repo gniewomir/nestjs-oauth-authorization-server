@@ -2,7 +2,7 @@
 
 ## Overview
 
-This codebase implements a strict **Layered Architecture** pattern with clear separation of concerns across four distinct layers. Each layer has specific responsibilities and dependencies, following the Dependency Inversion Principle.
+This codebase implements a strict **Layered Architecture** pattern with clear separation of concerns across four distinct layers. Each layer has specific responsibilities and dependencies, following the Dependency Inversion Principle with symbol-based interface injection.
 
 ## Layer Structure
 
@@ -30,6 +30,7 @@ This codebase implements a strict **Layered Architecture** pattern with clear se
 - Input validation and transformation
 - Error handling for external clients
 - API documentation and contracts
+- Security headers and CORS configuration
 
 **Dependencies**:
 - Can depend on Application Layer
@@ -60,6 +61,7 @@ export class ApiModule {}
 - No business logic
 - Handles HTTP-specific concerns
 - Maps external requests to application services
+- Implements security measures (CSP, CORS)
 
 ### 2. Application Layer (`src/application/`)
 
@@ -71,6 +73,7 @@ export class ApiModule {}
 - Coordination between domain objects
 - Application-specific business rules
 - Workflow orchestration
+- Authorization and authentication coordination
 
 **Dependencies**:
 - Can depend on Domain Layer
@@ -85,6 +88,19 @@ export class ApiModule {}
   providers: [],
 })
 export class AppModule {}
+
+// Authorization Service
+@Injectable()
+export class AuthorizationService {
+  constructor(
+    @Inject(UsersInterfaceSymbol)
+    private readonly users: UsersInterface,
+    @Inject(ClockInterfaceSymbol)
+    private readonly clock: ClockInterface,
+  ) {}
+  
+  // Authorization logic
+}
 ```
 
 **Key Characteristics**:
@@ -92,6 +108,7 @@ export class AppModule {}
 - Orchestrates domain objects
 - Manages transactions and workflows
 - Implements use cases
+- Handles cross-cutting concerns
 
 ### 3. Domain Layer (`src/domain/`)
 
@@ -101,62 +118,82 @@ export class AppModule {}
 - Business entities and value objects
 - Domain services
 - Business rules and invariants
-- Domain interfaces (repositories, services)
+- Domain interfaces (repositories, services) with symbols
 - Domain events
+- Specifications for complex business rules
 
 **Dependencies**:
 - No dependencies on other layers
-- Defines interfaces that other layers implement
+- Defines interfaces with symbols that other layers implement
 
 **Examples**:
 ```typescript
 // Domain Entity
-export class Task {
+export class Task extends OrderedEntity<TasksInterface> {
   public readonly identity: IdentityValue;
   public readonly description: DescriptionValue;
-  public readonly assigned: Assigned;
-  public readonly goal: Goal;
-  public readonly context: Context;
+  public readonly goal: IdentityValue;
+  public readonly context: IdentityValue;
 
   constructor(parameters: {
     identity: IdentityValue;
     description: DescriptionValue;
-    assigned: Assigned;
-    goal: Goal;
-    context: Context;
-    ordinalNumber: number;
+    assigned: IdentityValue;
+    goal: IdentityValue;
+    context: IdentityValue;
+    orderKey: string;
   }) {
-    // Constructor implementation
+    super({
+      assigned: parameters.assigned,
+    });
+
+    this.identity = parameters.identity;
+    this.description = parameters.description;
+    this.goal = parameters.goal;
+    this.context = parameters.context;
+    this._orderKey = parameters.orderKey;
   }
 
   public async moveBefore(
     referenceEntityIdentity: IdentityValue,
     orderingService: OrderService<TasksInterface>,
   ): Promise<void> {
-    this._ordinalNumber = await orderingService.nextAvailableOrdinalNumber(
+    this._orderKey = await orderingService.nextAvailableOrderKeyBefore(
       referenceEntityIdentity,
+      this.assigned,
     );
   }
 }
 
-// Domain Interface
+// Domain Interface with Symbol
 export interface TasksInterface extends OrderInterface {
   retrieve(identity: IdentityValue): Promise<Task>;
   persist(task: Task): Promise<void>;
 }
 
+export const TasksInterfaceSymbol = Symbol('TasksInterface');
+
 // Domain Service
 export class OrderService<T extends OrderInterface> {
-  constructor(
-    private readonly orderingConfig: OrderingConfig,
-    private readonly entities: T,
-  ) {}
+  public static readonly START_ORDER_KEY = "U";
 
-  public async newOrdinalNumber(): Promise<number> {
-    const lowestOrdinalNumber = await this.entities.searchForLowestOrdinalNumber();
-    return lowestOrdinalNumber === null
-      ? this.orderingConfig.maxOrdinalNumber
-      : lowestOrdinalNumber - this.orderingConfig.ordinalNumbersSpacing;
+  constructor(private readonly entities: T) {}
+
+  public async newOrderKey(assignedIdentity: IdentityValue): Promise<string> {
+    const highest = await this.entities.searchForHighestOrderKey(assignedIdentity);
+    return this.between(highest ?? undefined, undefined);
+  }
+
+  public async nextAvailableOrderKeyBefore(
+    referenceIdentity: IdentityValue,
+    assignedIdentity: IdentityValue,
+  ): Promise<string> {
+    const referenceKey = await this.entities.getOrderKey(referenceIdentity);
+    const lowerKey = await this.entities.searchForLowerOrderKey(
+      assignedIdentity,
+      referenceKey,
+    );
+    return this.between(lowerKey ?? undefined, referenceKey);
   }
 }
 
@@ -178,13 +215,24 @@ export class AuthenticationFacade {
     return payload;
   }
 }
+
+// Specification Pattern
+export class UniqueEmailSpecification {
+  constructor(private readonly users: UsersInterface) {}
+
+  public async isSatisfied(email: EmailValue): Promise<boolean> {
+    const count = await this.users.countByEmail(email);
+    return count === 0;
+  }
+}
 ```
 
 **Key Characteristics**:
 - Pure business logic
 - No technical concerns
 - Self-contained and testable
-- Defines contracts for other layers
+- Defines contracts with symbols for other layers
+- Enforces business invariants
 
 ### 4. Infrastructure Layer (`src/infrastructure/`)
 
@@ -193,10 +241,11 @@ export class AuthenticationFacade {
 **Responsibilities**:
 - Database access and persistence
 - External service integrations
-- Configuration management
+- Configuration management with validation
 - Logging and monitoring
 - Security implementations
 - Cross-cutting concerns
+- Sanitization and validation services
 
 **Dependencies**:
 - Implements Domain Layer interfaces
@@ -229,17 +278,82 @@ export class AuthenticationFacade {
 export class DatabaseModule {}
 
 // Domain Repository Implementation
+@Injectable()
 export class TasksDomainRepository implements TasksInterface {
-  persist(_task: Task): Promise<void> {
-    throw new Error("Method not implemented.");
+  constructor(
+    @InjectRepository(TaskEntity)
+    private readonly taskRepository: Repository<TaskEntity>,
+  ) {}
+
+  async persist(task: Task): Promise<void> {
+    const databaseEntity = this.mapToDatabase(task);
+    await this.taskRepository.save(databaseEntity);
   }
 
-  retrieve(_identity: IdentityValue): Promise<Task> {
-    throw new Error("Method not implemented.");
+  async retrieve(identity: IdentityValue): Promise<Task> {
+    const databaseEntity = await this.taskRepository.findOne({
+      where: { id: identity.toString() },
+    });
+    
+    if (!databaseEntity) {
+      throw new Error("Task not found");
+    }
+    
+    return this.mapToDomain(databaseEntity);
+  }
+
+  async getOrderKey(identity: IdentityValue): Promise<string> {
+    const task = await this.retrieve(identity);
+    return task.orderKey;
+  }
+
+  async searchForLowerOrderKey(
+    assignedIdentity: IdentityValue,
+    orderKey: string,
+  ): Promise<string | null> {
+    const tasks = await this.taskRepository.find({
+      where: { assignedId: assignedIdentity.toString() },
+      order: { orderKey: 'ASC' },
+    });
+
+    let previous: string | null = null;
+    for (const task of tasks) {
+      if (orderKey > task.orderKey) {
+        previous = task.orderKey;
+      } else if (orderKey === task.orderKey) {
+        return previous;
+      } else {
+        break;
+      }
+    }
+
+    return previous;
+  }
+
+  private mapToDatabase(task: Task): Omit<TaskEntity, "createdAt" | "updatedAt"> {
+    return {
+      id: task.identity.toString(),
+      description: task.description.toString(),
+      assignedId: task.assigned.toString(),
+      goalId: task.goal.toString(),
+      contextId: task.context.toString(),
+      orderKey: task.orderKey,
+    };
+  }
+
+  private mapToDomain(databaseEntity: TaskEntity): Task {
+    return new Task({
+      identity: IdentityValue.fromString(databaseEntity.id),
+      description: DescriptionValue.fromString(databaseEntity.description),
+      assigned: IdentityValue.fromString(databaseEntity.assignedId),
+      goal: IdentityValue.fromString(databaseEntity.goalId),
+      context: IdentityValue.fromString(databaseEntity.contextId),
+      orderKey: databaseEntity.orderKey,
+    });
   }
 }
 
-// Configuration Module
+// Configuration Module with Deep Freezing
 @Module({
   imports: [LoggerModule, NestConfigModule.forRoot()],
   providers: [
@@ -253,6 +367,7 @@ export class TasksDomainRepository implements TasksInterface {
 export class ConfigModule {}
 
 // JWT Service (Adapter Pattern)
+@Injectable()
 export class JwtService implements TokenPayloadInterface {
   constructor(
     private readonly jwtService: NestJwtService,
@@ -269,6 +384,14 @@ export class JwtService implements TokenPayloadInterface {
     );
   }
 }
+
+// Sanitization Service
+@Injectable()
+export class SanitizationService {
+  public sanitizeString(input: string): string {
+    return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] });
+  }
+}
 ```
 
 **Key Characteristics**:
@@ -276,6 +399,7 @@ export class JwtService implements TokenPayloadInterface {
 - Provides concrete implementations of domain interfaces
 - Handles external integrations
 - Manages configuration and cross-cutting concerns
+- Implements security measures
 
 ## Dependency Rules
 
@@ -287,18 +411,22 @@ export class JwtService implements TokenPayloadInterface {
 
 ### Dependency Inversion Principle
 
-- Domain Layer defines interfaces
+- Domain Layer defines interfaces with symbols
 - Infrastructure Layer implements these interfaces
 - Application Layer depends on abstractions, not concretions
+- Symbol-based injection ensures type safety
 
 ```typescript
-// Domain defines the interface
+// Domain defines the interface with symbol
 export interface ClockInterface {
   nowAsMillisecondsSinceEpoch(): number;
   nowAsSecondsSinceEpoch(): number;
 }
 
+export const ClockInterfaceSymbol = Symbol('ClockInterface');
+
 // Infrastructure implements the interface
+@Injectable()
 export class ClockService implements ClockInterface {
   nowAsSecondsSinceEpoch(): number {
     return Math.floor(Date.now() / 1000);
@@ -308,16 +436,25 @@ export class ClockService implements ClockInterface {
   }
 }
 
-// Application uses the interface
-export class AuthenticationFacade {
-  public static async authenticate(
-    token: string,
-    tokenPayloads: TokenPayloadInterface,
-    clock: ClockInterface, // Depends on interface, not implementation
-    authConfig: AuthConfig,
-  ): Promise<TokenPayload> {
-    // Implementation
-  }
+// Module provides the symbol
+@Module({
+  providers: [
+    {
+      provide: ClockInterfaceSymbol,
+      useClass: ClockService,
+    },
+  ],
+  exports: [ClockInterfaceSymbol],
+})
+export class ClockModule {}
+
+// Application uses the interface through symbol injection
+@Injectable()
+export class AuthenticationService {
+  constructor(
+    @Inject(ClockInterfaceSymbol)
+    private readonly clock: ClockInterface, // Depends on interface, not implementation
+  ) {}
 }
 ```
 
@@ -356,6 +493,94 @@ export class ApiModule {}
   exports: [AppConfig, AuthConfig, DatabaseConfig, OrderingConfig],
 })
 export class ConfigModule {}
+
+// Domain Repository Module
+@Module({
+  imports: [TypeOrmModule.forFeature([TaskEntity])],
+  providers: [
+    {
+      provide: TasksInterfaceSymbol,
+      useClass: TasksDomainRepository,
+    },
+  ],
+  exports: [TasksInterfaceSymbol],
+})
+export class TasksDomainRepositoryModule {}
+```
+
+## Configuration Management
+
+### Configuration Objects
+
+Configuration is managed through validated, deeply frozen objects:
+
+```typescript
+export class AuthConfig {
+  public readonly jwtSecret: string;
+  public readonly jwtAlgorithm: string;
+  public readonly issuer: string;
+  public readonly accessTokenExpirationSeconds: number;
+
+  private constructor(config: {
+    jwtSecret: string;
+    jwtAlgorithm: string;
+    issuer: string;
+    accessTokenExpirationSeconds: number;
+  }) {
+    this.jwtSecret = config.jwtSecret;
+    this.jwtAlgorithm = config.jwtAlgorithm;
+    this.issuer = config.issuer;
+    this.accessTokenExpirationSeconds = config.accessTokenExpirationSeconds;
+  }
+
+  public static provider() {
+    return {
+      provide: AuthConfig,
+      useFactory: (configService: ConfigService) => {
+        const config = new AuthConfig({
+          jwtSecret: configService.getOrThrow("JWT_SECRET"),
+          jwtAlgorithm: configService.getOrThrow("JWT_ALGORITHM"),
+          issuer: configService.getOrThrow("JWT_ISSUER"),
+          accessTokenExpirationSeconds: configService.getOrThrow("JWT_ACCESS_TOKEN_EXPIRATION_SECONDS"),
+        });
+        return deepFreeze(config);
+      },
+      inject: [ConfigService],
+    };
+  }
+}
+```
+
+## Security Implementation
+
+### Input Sanitization
+
+All user input is sanitized to prevent XSS attacks:
+
+```typescript
+@Injectable()
+export class SanitizationService {
+  public sanitizeString(input: string): string {
+    return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] });
+  }
+}
+```
+
+### Value Object Validation
+
+Value objects validate input at domain boundaries:
+
+```typescript
+export class DescriptionValue {
+  private constructor(public readonly description: string) {
+    Assert(description.length > 0, "Description cannot be empty");
+    Assert(description.length <= 1000, "Description too long");
+  }
+
+  public static fromString(description: string): DescriptionValue {
+    return new DescriptionValue(description);
+  }
+}
 ```
 
 ## Benefits of Layered Architecture
@@ -385,6 +610,11 @@ export class ConfigModule {}
 - New features can be added without affecting existing code
 - Team members can work on different layers simultaneously
 
+### 6. Type Safety
+- Symbol-based injection ensures compile-time type checking
+- Interface contracts are enforced at the type level
+- Refactoring is safer with TypeScript support
+
 ## Trade-offs
 
 ### 1. Complexity
@@ -402,6 +632,11 @@ export class ConfigModule {}
 - Strict rules may slow down initial development
 - Requires discipline to maintain layer boundaries
 
+### 4. Symbol Management
+- Need to manage symbols for all interfaces
+- Additional complexity in module configuration
+- Potential for symbol naming conflicts
+
 ## Best Practices
 
 ### 1. Layer Boundaries
@@ -410,7 +645,7 @@ export class ConfigModule {}
 - Keep layer responsibilities clear and focused
 
 ### 2. Dependency Management
-- Use dependency injection for loose coupling
+- Use symbol-based dependency injection for loose coupling
 - Implement interfaces in infrastructure layer
 - Keep domain layer pure and independent
 
@@ -424,6 +659,16 @@ export class ConfigModule {}
 - Convert to domain errors when crossing layer boundaries
 - Provide meaningful error messages to interface layer
 
+### 5. Configuration Management
+- Use validated configuration objects
+- Implement deep freezing for configuration immutability
+- Centralize configuration validation
+
+### 6. Security Implementation
+- Sanitize all user input
+- Validate at domain boundaries
+- Implement security headers and policies
+
 ## Conclusion
 
-The layered architecture in this codebase provides a solid foundation for building maintainable, testable, and scalable applications. By following strict dependency rules and clear separation of concerns, the codebase achieves high cohesion and low coupling, making it easier to understand, modify, and extend over time.
+The layered architecture in this codebase provides a solid foundation for building maintainable, testable, and scalable applications. By following strict dependency rules and clear separation of concerns, the codebase achieves high cohesion and low coupling, making it easier to understand, modify, and extend over time. The addition of symbol-based dependency injection, comprehensive configuration management, and security measures ensures the architecture is both robust and secure.
