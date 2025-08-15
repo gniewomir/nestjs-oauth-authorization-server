@@ -1,6 +1,6 @@
 # Technical Design Document—Tasks Order
 
-## Problemsto solve
+## Problems to solve
 
 * [As discovered](DDD-tasks.md) I need to find a solution allowing to keep `Tasks` globally ordered [as decided](DDD-tasks-order.md).
 
