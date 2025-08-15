@@ -66,4 +66,6 @@ model time, location, dependencies between tasks, etc. and other constraints tha
             * chosen `Goal` alone?
 * Domain decisions to be made: 
   * What will happen when `Context` for the `Task` is deleted? 
+    * We do not delete anything 
   * What will happen when `Goal` for the `Task` is deleted?
+    * We do not delete anything   
