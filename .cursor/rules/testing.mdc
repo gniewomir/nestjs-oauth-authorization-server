@@ -1,0 +1,7 @@
+---
+description: Ground rules for testing
+alwaysApply: always
+---
+
+Requirements: 
+* Avoid mocking. Instead, use in memory infrastructure or service fake.
