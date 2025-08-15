@@ -5,7 +5,7 @@ import { AuthConfig } from "@infrastructure/config/configs/auth.config";
 
 import { LoggerModule } from "../logger";
 
-import { AppConfig, DatabaseConfig } from "./configs";
+import { AppConfig, DatabaseConfig, OpenApiConfig } from "./configs";
 
 @Module({
   imports: [LoggerModule, NestConfigModule.forRoot()],
@@ -13,7 +13,8 @@ import { AppConfig, DatabaseConfig } from "./configs";
     AppConfig.provider(),
     AuthConfig.provider(),
     DatabaseConfig.provider(),
+    OpenApiConfig.provider(),
   ],
-  exports: [AppConfig, AuthConfig, DatabaseConfig],
+  exports: [AppConfig, AuthConfig, DatabaseConfig, OpenApiConfig],
 })
 export class ConfigModule {}

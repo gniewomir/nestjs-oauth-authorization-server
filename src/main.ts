@@ -1,11 +1,11 @@
 import "reflect-metadata"; // as required by class-transformer
 
 import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
-import { AppConfig } from "@infrastructure/config/configs";
+import { AppModule } from "@application/app";
+import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
-
-import { AppModule } from "./application/app";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -18,9 +18,33 @@ async function bootstrap() {
   logger.setContext("bootstrap");
   app.useLogger(logger);
 
-  const appConfig = app.get(AppConfig);
+  const openApiConfig = app.get(OpenApiConfig);
 
+  if (openApiConfig.exposed) {
+    const options = new DocumentBuilder()
+      .setTitle("Core")
+      .setVersion("v1")
+      .addOAuth2({
+        type: "oauth2",
+        flows: {
+          authorizationCode: {
+            authorizationUrl: openApiConfig.authorizationUrl,
+            tokenUrl: openApiConfig.tokenUrl,
+            scopes: openApiConfig.scopes,
+            refreshUrl: openApiConfig.tokenUrl,
+          },
+        },
+      })
+      .addBearerAuth()
+      .build();
+
+    const document = SwaggerModule.createDocument(app, options);
+    SwaggerModule.setup(openApiConfig.path, app, document);
+  }
+
+  const appConfig = app.get(AppConfig);
   await app.listen(appConfig.port);
+
   return app;
 }
 
@@ -29,7 +53,5 @@ void bootstrap().then(async (app) => {
     LoggerInterfaceSymbol,
   );
   logger.setContext("bootstrap");
-
-  const appConfig = app.get(AppConfig);
-  logger.log(`Server is running on port ${appConfig.port}`);
+  logger.log(`Server is running on ${await app.getUrl()}`);
 });

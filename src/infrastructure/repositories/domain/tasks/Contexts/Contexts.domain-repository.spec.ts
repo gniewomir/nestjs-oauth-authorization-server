@@ -4,8 +4,10 @@ import { userMother } from "@test/domain/authentication";
 import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { contextMother } from "@test/domain/tasks/Context.mother";
 
+import { UsersInterfaceSymbol } from "@domain/authentication/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { Context as DomainContext } from "@domain/tasks/context/Context";
+import { ContextsInterfaceSymbol } from "@domain/tasks/context/Contexts.interface";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
@@ -13,6 +15,7 @@ import { User as DatabaseUser } from "@infrastructure/database/entities";
 import { Context as DatabaseContext } from "@infrastructure/database/entities/context.entity";
 import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository";
 import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
+import { ContextsDomainRepositoryModule } from "@infrastructure/repositories/domain/tasks/Contexts/Contexts.domain-repository.module";
 
 import { ContextsDomainRepository } from "./Contexts.domain-repository";
 
@@ -27,14 +30,15 @@ describe("ContextsDomainRepository", () => {
         ConfigModule,
         DatabaseModule,
         TypeOrmModule.forFeature([DatabaseContext, DatabaseUser]),
+        ContextsDomainRepositoryModule,
         UserDomainRepositoryModule,
       ],
       providers: [ContextsDomainRepository],
     }).compile();
 
-    repository = module.get<ContextsDomainRepository>(ContextsDomainRepository);
+    repository = module.get<ContextsDomainRepository>(ContextsInterfaceSymbol);
     userDomainRepository =
-      module.get<UserDomainRepository>(UserDomainRepository);
+      module.get<UserDomainRepository>(UsersInterfaceSymbol);
   });
 
   afterAll(async () => {

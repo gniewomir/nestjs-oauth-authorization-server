@@ -9,6 +9,10 @@ import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
 import { configValidator } from "./utility/configValidator";
 import { deepFreeze } from "./utility/deepFreeze";
 
+const appConfigDefaults = {
+  port: 3000,
+} satisfies AppConfig;
+
 @Injectable()
 export class AppConfig {
   @IsNotEmpty()
@@ -26,6 +30,7 @@ export class AppConfig {
         const config = plainToInstance<AppConfig, Record<string, unknown>>(
           AppConfig,
           {
+            ...appConfigDefaults,
             port: parseInt(nestConfigService.get("APP_PORT") || "", 10),
           },
         );

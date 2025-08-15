@@ -15,7 +15,7 @@
       "@infrastructure/*": ["src/infrastructure/*"],
       "@interface/*": ["src/interface/*"],
       "@test/*": ["src/test/*"],
-      "@application/*": ["src/test/*"]
+      "@application/*": ["src/application/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

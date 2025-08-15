@@ -4,15 +4,18 @@ import { userMother } from "@test/domain/authentication";
 import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { goalMother } from "@test/domain/tasks/Goal.mother";
 
+import { UsersInterfaceSymbol } from "@domain/authentication/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
 import { Goal as DomainGoal } from "@domain/tasks/goal/Goal";
+import { GoalsInterfaceSymbol } from "@domain/tasks/goal/Goals.interface";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
 import { User as DatabaseUser } from "@infrastructure/database/entities";
 import { Goal as DatabaseGoal } from "@infrastructure/database/entities/goal.entity";
 import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository";
 import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
+import { GoalsDomainRepositoryModule } from "@infrastructure/repositories/domain/tasks/Goals/Goals.domain-repository.module";
 
 import { GoalsDomainRepository } from "./Goals.domain-repository";
 
@@ -26,15 +29,16 @@ describe("GoalsDomainRepository", () => {
       imports: [
         ConfigModule,
         DatabaseModule,
-        TypeOrmModule.forFeature([DatabaseGoal, DatabaseUser]),
         UserDomainRepositoryModule,
+        GoalsDomainRepositoryModule,
+        TypeOrmModule.forFeature([DatabaseGoal, DatabaseUser]),
       ],
       providers: [GoalsDomainRepository],
     }).compile();
 
-    repository = module.get<GoalsDomainRepository>(GoalsDomainRepository);
+    repository = module.get<GoalsDomainRepository>(GoalsInterfaceSymbol);
     userDomainRepository =
-      module.get<UserDomainRepository>(UserDomainRepository);
+      module.get<UserDomainRepository>(UsersInterfaceSymbol);
   });
 
   afterAll(async () => {
