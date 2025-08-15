@@ -1,5 +1,9 @@
-import { clientMother } from "@test/domain/authentication";
 import { createAuthenticationTestContext } from "@test/domain/authentication/Authentication.test-context";
+import {
+  accessTokenScopesMother,
+  defaultTestClientScopesMother,
+  rememberMeTestClientScopesMother,
+} from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import { randomString } from "@test/utility/randomString";
 
 import { Assert } from "@domain/Assert";
@@ -103,9 +107,7 @@ describe("AuthenticationFacade", () => {
         user,
         authConfig,
         clock,
-        scope: clientMother()
-          .scope.add(ScopeValue.TOKEN_AUTHENTICATE())
-          .remove(ScopeValue.TOKEN_REFRESH()),
+        scope: accessTokenScopesMother(),
         client,
       });
       const accessTokenWithInvalidSignature = await newToken.sign(
@@ -138,9 +140,7 @@ describe("AuthenticationFacade", () => {
       const newToken = TokenPayload.createAccessToken({
         user,
         authConfig: modifiedAuthConfig,
-        scope: clientMother()
-          .scope.add(ScopeValue.TOKEN_AUTHENTICATE())
-          .remove(ScopeValue.TOKEN_REFRESH()),
+        scope: accessTokenScopesMother(),
         clock,
         client,
       });
@@ -204,6 +204,7 @@ describe("AuthenticationFacade", () => {
       ).resolves.not.toThrow();
     });
     it("issues new idToken, accessToken and refresh token and provides accessToken expiration", async () => {
+      const scope = defaultTestClientScopesMother();
       const {
         tokenPayloads,
         clock,
@@ -212,7 +213,7 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
       } = await createAuthenticationTestContext({
-        requestedScopes: clientMother().scope,
+        requestedScopes: scope,
       });
 
       Assert(typeof receivedRefreshToken !== "undefined");
@@ -231,9 +232,7 @@ describe("AuthenticationFacade", () => {
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
-        scope: clientMother()
-          .scope.remove(ScopeValue.TOKEN_REFRESH())
-          .toString(),
+        scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
@@ -241,12 +240,11 @@ describe("AuthenticationFacade", () => {
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
-        scope: clientMother()
-          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
-          .toString(),
+        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
       });
     });
     it("passes on scopes contained in received refresh token", async () => {
+      const scope = defaultTestClientScopesMother();
       const {
         tokenPayloads,
         clock,
@@ -255,7 +253,7 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
       } = await createAuthenticationTestContext({
-        requestedScopes: clientMother().scope,
+        requestedScopes: scope,
       });
 
       Assert(typeof receivedRefreshToken !== "undefined");
@@ -270,17 +268,14 @@ describe("AuthenticationFacade", () => {
       );
 
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        scope: clientMother()
-          .scope.remove(ScopeValue.TOKEN_REFRESH())
-          .toString(),
+        scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
-        scope: clientMother()
-          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
-          .toString(),
+        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
       });
     });
     it("issues refresh token with longer ttl, if refresh token contained required scope", async () => {
+      const scope = rememberMeTestClientScopesMother();
       const {
         tokenPayloads,
         clock,
@@ -289,9 +284,7 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
       } = await createAuthenticationTestContext({
-        requestedScopes: clientMother().scope.add(
-          ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
-        ),
+        requestedScopes: scope,
       });
 
       Assert(typeof receivedRefreshToken !== "undefined");
@@ -307,20 +300,14 @@ describe("AuthenticationFacade", () => {
         );
 
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        scope: clientMother()
-          .scope.remove(ScopeValue.TOKEN_REFRESH())
-          .add(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
-          .toString(),
+        scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         exp:
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
-        scope: clientMother()
-          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
-          .add(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
-          .toString(),
+        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
       });
     });
     it("rejects idToken", async () => {
@@ -410,7 +397,7 @@ describe("AuthenticationFacade", () => {
         clock,
         authConfig,
         user,
-        scope: clientMother().scope,
+        scope: defaultTestClientScopesMother(),
         client,
       });
       const accessTokenWithInvalidSignature = await newRefreshToken.sign(
@@ -445,7 +432,7 @@ describe("AuthenticationFacade", () => {
       const newRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig: modifiedAuthConfig,
-        scope: clientMother().scope,
+        scope: defaultTestClientScopesMother(),
         clock,
         client,
       });
@@ -471,7 +458,9 @@ describe("AuthenticationFacade", () => {
       const newRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig,
-        scope: clientMother().scope.remove(ScopeValue.TOKEN_REFRESH()),
+        scope: defaultTestClientScopesMother().remove(
+          ScopeValue.TOKEN_REFRESH(),
+        ),
         clock,
         client,
       });
@@ -495,7 +484,7 @@ describe("AuthenticationFacade", () => {
       const notStoredRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig,
-        scope: clientMother().scope,
+        scope: defaultTestClientScopesMother(),
         clock,
         client,
       });

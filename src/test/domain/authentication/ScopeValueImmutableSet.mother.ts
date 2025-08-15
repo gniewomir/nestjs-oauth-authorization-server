@@ -29,13 +29,3 @@ export const refreshTokenScopesMother = () => {
     ScopeValue.TOKEN_AUTHENTICATE(),
   );
 };
-
-export const rememberMeAccessTokenScopesMother = () => {
-  return defaultTestClientScopesMother().remove(ScopeValue.TOKEN_REFRESH());
-};
-
-export const rememberMeRefreshTokenScopesMother = () => {
-  return defaultTestClientScopesMother().remove(
-    ScopeValue.TOKEN_AUTHENTICATE(),
-  );
-};
