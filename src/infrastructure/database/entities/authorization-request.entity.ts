@@ -24,6 +24,12 @@ export class AuthorizationRequest {
 
   @Column({
     type: "varchar",
+    length: 64,
+  })
+  responseType: string;
+
+  @Column({
+    type: "varchar",
     length: 255,
   })
   state: string;
@@ -33,6 +39,12 @@ export class AuthorizationRequest {
     length: 255,
   })
   codeChallenge: string;
+
+  @Column({
+    type: "varchar",
+    length: 16,
+  })
+  codeChallengeMethod: string;
 
   @Column({
     type: "text",

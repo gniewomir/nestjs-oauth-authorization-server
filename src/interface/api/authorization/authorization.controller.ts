@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  Redirect,
 } from "@nestjs/common";
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 
@@ -34,11 +35,38 @@ export class AuthorizationController {
   @ApiQuery({ name: "code_challenge", required: true })
   @ApiQuery({ name: "code_challenge_method", required: true })
   @ApiResponse({
-    status: 501,
-    description: "Not implemented",
+    status: 302,
+    description: "Redirect to authorization prompt",
   })
-  async authorize(@Query() query: AuthorizeRequestDto): Promise<void> {
-    throw new HttpException("Not implemented", HttpStatus.NOT_IMPLEMENTED);
+  @ApiResponse({
+    status: 400,
+    description: "Invalid request parameters",
+  })
+  @Redirect()
+  async authorize(
+    @Query() query: AuthorizeRequestDto,
+  ): Promise<{ url: string }> {
+    try {
+      const request = await this.authorizationService.request({
+        clientId: query.client_id,
+        redirectUri: query.redirect_uri,
+        scope: query.scope || "",
+        state: query.state || "",
+        codeChallenge: query.code_challenge,
+        codeChallengeMethod: query.code_challenge_method,
+        responseType: query.response_type,
+      });
+
+      // Redirect to authorization prompt with request ID
+      const promptUrl = `/oauth/prompt?request_id=${request.requestId}`;
+
+      return { url: promptUrl };
+    } catch {
+      throw new HttpException(
+        `Invalid authorization request`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @Post("prompt")

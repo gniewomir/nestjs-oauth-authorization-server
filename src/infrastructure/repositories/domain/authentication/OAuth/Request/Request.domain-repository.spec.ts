@@ -66,15 +66,12 @@ describe("RequestDomainRepository", () => {
       await repository.persist(originalRequest);
 
       // Act - create updated request with same id but different state
-      const updatedRequest = new DomainAuthorizationRequest({
+      const updatedRequest = requestMother({
+        ...originalRequest,
         id: originalRequest.id, // Same id
-        clientId: originalRequest.clientId,
-        redirectUri: originalRequest.redirectUri,
-        scope: originalRequest.scope,
-        codeChallenge: originalRequest.codeChallenge,
         state: "updated-state", // Changed property
-        authorizationCode: null,
       });
+
       await repository.persist(updatedRequest);
 
       // Assert

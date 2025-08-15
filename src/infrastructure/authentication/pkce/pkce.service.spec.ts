@@ -1,3 +1,4 @@
+import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { PKCEService } from "@infrastructure/authentication/pkce/pkce.service";
 import { PKCEServiceFake } from "@infrastructure/authentication/pkce/pkce.service.fake";
 
@@ -11,6 +12,7 @@ describe("PKCEService", () => {
       sut.verify({
         codeVerifier,
         codeChallenge,
+        method: CodeChallengeMethodValue.METHOD_S256(),
       }),
     ).toEqual(true);
   });
@@ -23,6 +25,7 @@ describe("PKCEService", () => {
       sut.verify({
         codeVerifier,
         codeChallenge,
+        method: CodeChallengeMethodValue.METHOD_S256(),
       }),
     ).toEqual(false);
   });

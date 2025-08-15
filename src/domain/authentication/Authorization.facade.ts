@@ -2,9 +2,11 @@ import { Assert } from "@domain/Assert";
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
-import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE.interface";
+import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE/PKCE.interface";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
+import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -23,11 +25,13 @@ export class AuthorizationFacade {
   public static async request(
     params: {
       id: IdentityValue;
+      responseType: ResponseTypeValue;
       clientId: IdentityValue;
       redirectUri: HttpUrlValue;
       scope: ScopeValueImmutableSet;
       state: string;
       codeChallenge: string;
+      codeChallengeMethod: CodeChallengeMethodValue;
     },
     requests: RequestInterface,
     clients: ClientInterface,
@@ -111,7 +115,11 @@ export class AuthorizationFacade {
     );
 
     Assert(
-      PKCE.verify({ codeChallenge: request.codeChallenge, codeVerifier }),
+      PKCE.verify({
+        codeChallenge: request.codeChallenge,
+        codeVerifier,
+        method: request.codeChallengeMethod,
+      }),
       "Failed PKCE code challenge",
     );
 
