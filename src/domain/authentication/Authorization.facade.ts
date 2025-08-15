@@ -11,6 +11,7 @@ import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.inte
 import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
 import { OauthInvalidClientException } from "@domain/authentication/OAuth/Errors/OauthInvalidClientException";
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
+import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { OauthRedirectUriMismatchException } from "@domain/authentication/OAuth/Errors/OauthRedirectUriMismatchException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -24,6 +25,13 @@ import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interfac
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthConfig } from "@infrastructure/config/configs";
+
+type TSignedTokens = {
+  accessToken: string;
+  expiration: number;
+  refreshToken?: string;
+  idToken?: string;
+};
 
 export class AuthorizationFacade {
   public static async request(
@@ -40,6 +48,14 @@ export class AuthorizationFacade {
     requests: RequestInterface,
     clients: ClientInterface,
   ): Promise<Request> {
+    const client = await clients.retrieve(params.clientId);
+    Assert(
+      client.scope.isSupersetOf(params.scope),
+      () =>
+        new OauthInvalidScopeException({
+          message: "Client do not have authorization for requested scope",
+        }),
+    );
     const request = await Request.create(params, clients);
     await requests.persist(request);
     return request;
@@ -108,12 +124,7 @@ export class AuthorizationFacade {
     users: UsersInterface,
     tokenPayloads: TokenPayloadInterface,
     clients: ClientInterface,
-  ): Promise<{
-    accessToken: string;
-    expiration: number;
-    refreshToken: string;
-    idToken: string;
-  }> {
+  ): Promise<TSignedTokens> {
     const request = await requests.getByAuthorizationCode(code);
 
     Assert(
@@ -158,19 +169,23 @@ export class AuthorizationFacade {
     );
     const client = await clients.retrieve(clientId);
 
-    /**
-     * idToken is intended as proof of authentication.
-     * It can contain information's about authenticated user.
-     * It cannot be used to authenticate api requests therefore it cannot contain scope.
-     * It can be inspected by the client.
-     */
-    const idTokenPayload = IdTokenPayload.createIdToken({
-      clock,
-      authConfig,
-      user,
-      client,
-    });
-    const signedIdToken = await idTokenPayload.sign(tokenPayloads);
+    const tokens: Partial<TSignedTokens> = {};
+
+    if (request.scope.hasScope(ScopeValue.PROFILE())) {
+      /**
+       * idToken is intended as proof of authentication.
+       * It can contain information's about authenticated user.
+       * It cannot be used to authenticate api requests therefore it cannot contain scope.
+       * It can be inspected by the client.
+       */
+      const idTokenPayload = IdTokenPayload.createIdToken({
+        clock,
+        authConfig,
+        user,
+        client,
+      });
+      tokens.idToken = await idTokenPayload.sign(tokenPayloads);
+    }
 
     /**
      * accessToken is intended to authenticate api calls.
@@ -185,34 +200,34 @@ export class AuthorizationFacade {
       clock,
       client,
     });
-    const signedAccessToken = await accessTokenPayload.sign(tokenPayloads);
+    tokens.accessToken = await accessTokenPayload.sign(tokenPayloads);
 
-    /**
-     * refreshToken is intended to obtain new access token before or after previous expired.
-     * It cannot be used to authenticate api calls - only to obtain access token.
-     * It should not be inspected by client.
-     */
-    const refreshTokenPayload = TokenPayload.createRefreshToken({
-      authConfig,
-      user,
-      scope: request.scope
-        .add(ScopeValue.TOKEN_REFRESH())
-        .remove(ScopeValue.TOKEN_AUTHENTICATE()),
-      clock,
-      client,
-    });
-    const signedRefreshToken = await refreshTokenPayload.sign(tokenPayloads);
+    if (request.scope.hasScope(ScopeValue.TOKEN_REFRESH())) {
+      /**
+       * refreshToken is intended to obtain new access token before or after previous expired.
+       * It cannot be used to authenticate api calls - only to obtain access token.
+       * It should not be inspected by client.
+       */
+      const refreshTokenPayload = TokenPayload.createRefreshToken({
+        authConfig,
+        user,
+        scope: request.scope
+          .add(ScopeValue.TOKEN_REFRESH())
+          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
+        clock,
+        client,
+      });
+      tokens.refreshToken = await refreshTokenPayload.sign(tokenPayloads);
+      user.rotateRefreshToken(refreshTokenPayload, clock);
+    }
 
     await requests.persist(request);
-
-    user.rotateRefreshToken(refreshTokenPayload, clock);
     await users.persist(user);
 
     return {
-      idToken: signedIdToken,
-      accessToken: signedAccessToken,
+      ...tokens,
+      accessToken: tokens.accessToken,
       expiration: accessTokenPayload.exp,
-      refreshToken: signedRefreshToken,
-    };
+    } satisfies TSignedTokens;
   }
 }

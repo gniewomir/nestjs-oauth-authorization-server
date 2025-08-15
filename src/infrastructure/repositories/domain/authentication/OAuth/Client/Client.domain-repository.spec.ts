@@ -57,10 +57,12 @@ describe("ClientDomainRepository", () => {
       await repository.persist(originalClient);
 
       // Act - create updated client with same id
-      const updatedClient = new DomainClient({
+      const updatedClient = clientMother({
+        ...originalClient,
         id: originalClient.id, // Same id
         name: "updated-name", // Changed property
       });
+
       await repository.persist(updatedClient);
 
       // Assert

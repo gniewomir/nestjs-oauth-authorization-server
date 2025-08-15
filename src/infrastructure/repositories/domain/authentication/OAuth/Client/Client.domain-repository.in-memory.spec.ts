@@ -1,6 +1,5 @@
 import { clientMother } from "@test/domain/authentication/Client.mother";
 
-import { Client as DomainClient } from "@domain/authentication/OAuth/Client/Client";
 import { IdentityValue } from "@domain/IdentityValue";
 
 import { ClientDomainRepositoryInMemory } from "./Client.domain-repository.in-memory";
@@ -35,10 +34,12 @@ describe("ClientDomainRepositoryInMemory", () => {
       await repository.persist(originalClient);
 
       // Act - create new client with same id but different name
-      const updatedClient = new DomainClient({
+      const updatedClient = clientMother({
+        ...originalClient,
         id: originalClient.id, // Same id
         name: "updated-name", // Different name
       });
+
       await repository.persist(updatedClient);
 
       // Assert

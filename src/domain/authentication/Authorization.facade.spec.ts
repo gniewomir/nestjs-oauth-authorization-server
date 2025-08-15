@@ -7,6 +7,7 @@ import { Assert } from "@domain/Assert";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
@@ -42,6 +43,24 @@ describe("AuthorizationFacade", () => {
           new ClientDomainRepositoryInMemory(),
         ),
       ).rejects.toThrow("Client not found");
+    });
+    it("rejects request, if it contains scopes not available to the client", async () => {
+      const clients = new ClientDomainRepositoryInMemory();
+      const client = clientMother({
+        scope: ScopeValueImmutableSet.fromArray([
+          "profile",
+          "token:authenticate",
+        ]),
+      });
+      await clients.persist(client);
+
+      await expect(() =>
+        AuthorizationFacade.request(
+          { ...requestMother(), clientId: client.id },
+          new RequestDomainRepositoryInMemory(),
+          clients,
+        ),
+      ).rejects.toThrow("Client do not have authorization for requested scope");
     });
   });
   describe("prompt", () => {
@@ -192,14 +211,13 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeValueImmutableSet.fromString("task:api");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
           id: requestId,
           codeChallenge,
-          scope,
+          scope: clientMother().scope,
         },
         requests,
         clients,
@@ -241,14 +259,17 @@ describe("AuthorizationFacade", () => {
           clients,
         );
 
+      Assert(typeof idToken !== "undefined");
+      Assert(typeof refreshToken !== "undefined");
+
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:authenticate",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_REFRESH())
+          .add(ScopeValue.TOKEN_AUTHENTICATE())
+          .toString(),
       });
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
@@ -256,13 +277,16 @@ describe("AuthorizationFacade", () => {
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:refresh",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
+          .add(ScopeValue.TOKEN_REFRESH())
+          .toString(),
       });
     });
     it("if user indicated that he wants to stay being logged - refresh token will have longer ttl", async () => {
+      const scope = clientMother().scope.add(
+        ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
+      );
       const {
         requests,
         requestId,
@@ -279,19 +303,17 @@ describe("AuthorizationFacade", () => {
         tokenPayloads,
         codeChallenge,
         codeVerifier,
-      } = await createAuthorizationTestContext();
+      } = await createAuthorizationTestContext({
+        clientScope: scope,
+      });
 
-      const scope = ScopeValueImmutableSet.fromArray([
-        "task:api",
-        "token:refresh:issue-large-ttl",
-      ]);
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
           id: requestId,
           codeChallenge,
-          scope,
+          scope: scope.add(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL()),
         },
         requests,
         clients,
@@ -333,15 +355,14 @@ describe("AuthorizationFacade", () => {
           clients,
         );
 
+      Assert(typeof idToken !== "undefined");
+      Assert(typeof refreshToken !== "undefined");
+
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:authenticate",
-          "token:refresh:issue-large-ttl",
-        ]).toString(),
+        scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
@@ -349,11 +370,7 @@ describe("AuthorizationFacade", () => {
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:refresh",
-          "token:refresh:issue-large-ttl",
-        ]).toString(),
+        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
       });
     });
     it("authorization code can be used only once", async () => {
@@ -599,7 +616,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const scope = ScopeValueImmutableSet.fromString("task:api");
+      const scope = ScopeValueImmutableSet.fromString("token:refresh");
       const request = await AuthorizationFacade.request(
         {
           ...requestMother(),
@@ -648,6 +665,8 @@ describe("AuthorizationFacade", () => {
       );
 
       const freshUser = await users.retrieve(user.identity);
+
+      Assert(typeof refreshToken !== "undefined");
       const decodedRefreshToken = await tokenPayloads.decode(refreshToken);
 
       expect(

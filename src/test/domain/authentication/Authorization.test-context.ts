@@ -1,6 +1,7 @@
 import { clientMother } from "@test/domain/authentication/Client.mother";
 import { userMother } from "@test/domain/authentication/User.mother";
 
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { AuthConfig, authConfigDefaults } from "@infrastructure/config/configs";
@@ -13,9 +14,15 @@ import { JwtServiceFake } from "@infrastructure/security/jwt";
 import { PasswordService } from "@infrastructure/security/password";
 import { PKCEServiceFake } from "@infrastructure/security/pkce";
 
-export const createAuthorizationTestContext = async () => {
+export const createAuthorizationTestContext = async ({
+  clientScope,
+}: {
+  clientScope?: ScopeValueImmutableSet;
+} = {}) => {
   const clients = new ClientDomainRepositoryInMemory();
-  const client = clientMother();
+  const client = clientScope
+    ? clientMother({ scope: clientScope })
+    : clientMother();
   await clients.persist(client);
 
   const requests = new RequestDomainRepositoryInMemory();

@@ -1,6 +1,8 @@
+import { clientMother } from "@test/domain/authentication";
 import { createAuthenticationTestContext } from "@test/domain/authentication/Authentication.test-context";
 import { randomString } from "@test/utility/randomString";
 
+import { Assert } from "@domain/Assert";
 import { AuthenticationFacade } from "@domain/authentication/Authentication.facade";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -14,9 +16,7 @@ describe("AuthenticationFacade", () => {
   describe("authenticate", () => {
     it("accept valid access token", async () => {
       const { accessToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
@@ -29,13 +29,11 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects idToken", async () => {
       const { idToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
-          idToken,
+          idToken || "",
           tokenPayloads,
           clock,
           authConfig,
@@ -44,13 +42,11 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects refresh token", async () => {
       const { refreshToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
-          refreshToken,
+          refreshToken || "",
           tokenPayloads,
           clock,
           authConfig,
@@ -59,9 +55,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects expired access token", async () => {
       const { accessToken, tokenPayloads, clock, authConfig } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       clock.timeTravelSeconds(
         clock.nowAsSecondsSinceEpoch() +
@@ -80,9 +74,7 @@ describe("AuthenticationFacade", () => {
 
     it("rejects garbled access token", async () => {
       const { tokenPayloads, clock, authConfig } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.authenticate(
@@ -94,11 +86,8 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("jwt malformed");
     });
     it("rejects access token signed with invalid secret/key", async () => {
-      const requestedScopes = ScopeValueImmutableSet.fromString("task:api");
       const { tokenPayloads, clock, authConfig, user, client } =
-        await createAuthenticationTestContext({
-          requestedScopes,
-        });
+        await createAuthenticationTestContext();
 
       const modifiedAuthConfig = await plainToConfig(
         {
@@ -114,8 +103,8 @@ describe("AuthenticationFacade", () => {
         user,
         authConfig,
         clock,
-        scope: requestedScopes
-          .add(ScopeValue.TOKEN_AUTHENTICATE())
+        scope: clientMother()
+          .scope.add(ScopeValue.TOKEN_AUTHENTICATE())
           .remove(ScopeValue.TOKEN_REFRESH()),
         client,
       });
@@ -133,11 +122,8 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("invalid signature");
     });
     it("rejects access token with invalid issuer", async () => {
-      const requestedScopes = ScopeValueImmutableSet.fromString("task:api");
       const { tokenPayloads, clock, authConfig, user, client } =
-        await createAuthenticationTestContext({
-          requestedScopes,
-        });
+        await createAuthenticationTestContext();
 
       const modifiedAuthConfig = await plainToConfig(
         {
@@ -152,8 +138,8 @@ describe("AuthenticationFacade", () => {
       const newToken = TokenPayload.createAccessToken({
         user,
         authConfig: modifiedAuthConfig,
-        scope: requestedScopes
-          .add(ScopeValue.TOKEN_AUTHENTICATE())
+        scope: clientMother()
+          .scope.add(ScopeValue.TOKEN_AUTHENTICATE())
           .remove(ScopeValue.TOKEN_REFRESH()),
         clock,
         client,
@@ -201,12 +187,14 @@ describe("AuthenticationFacade", () => {
     it("accepts valid refresh token", async () => {
       const { tokenPayloads, clock, authConfig, refreshToken, users, clients } =
         await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
+          requestedScopes: ScopeValueImmutableSet.fromString(
+            "token:authenticate token:refresh task:api",
+          ),
         });
 
       await expect(
         AuthenticationFacade.refresh(
-          refreshToken,
+          refreshToken || "",
           tokenPayloads,
           clock,
           authConfig,
@@ -224,8 +212,10 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
       } = await createAuthenticationTestContext({
-        requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
+        requestedScopes: clientMother().scope,
       });
+
+      Assert(typeof receivedRefreshToken !== "undefined");
 
       const { idToken, accessToken, refreshToken, expiration } =
         await AuthenticationFacade.refresh(
@@ -241,10 +231,9 @@ describe("AuthenticationFacade", () => {
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         exp: expiration,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:authenticate",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_REFRESH())
+          .toString(),
       });
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
@@ -252,10 +241,9 @@ describe("AuthenticationFacade", () => {
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:refresh",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
+          .toString(),
       });
     });
     it("passes on scopes contained in received refresh token", async () => {
@@ -267,11 +255,10 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
       } = await createAuthenticationTestContext({
-        requestedScopes: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "admin:api",
-        ]),
+        requestedScopes: clientMother().scope,
       });
+
+      Assert(typeof receivedRefreshToken !== "undefined");
 
       const { accessToken, refreshToken } = await AuthenticationFacade.refresh(
         receivedRefreshToken,
@@ -283,18 +270,14 @@ describe("AuthenticationFacade", () => {
       );
 
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "admin:api",
-          "token:authenticate",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_REFRESH())
+          .toString(),
       });
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "admin:api",
-          "token:refresh",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
+          .toString(),
       });
     });
     it("issues refresh token with longer ttl, if refresh token contained required scope", async () => {
@@ -306,11 +289,12 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
       } = await createAuthenticationTestContext({
-        requestedScopes: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:refresh:issue-large-ttl",
-        ]),
+        requestedScopes: clientMother().scope.add(
+          ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
+        ),
       });
+
+      Assert(typeof receivedRefreshToken !== "undefined");
 
       const { accessToken, refreshToken, expiration } =
         await AuthenticationFacade.refresh(
@@ -323,29 +307,27 @@ describe("AuthenticationFacade", () => {
         );
 
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:refresh:issue-large-ttl",
-          "token:authenticate",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_REFRESH())
+          .add(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
+          .toString(),
       });
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         exp:
           expiration -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
-        scope: ScopeValueImmutableSet.fromArray([
-          "task:api",
-          "token:refresh:issue-large-ttl",
-          "token:refresh",
-        ]).toString(),
+        scope: clientMother()
+          .scope.remove(ScopeValue.TOKEN_AUTHENTICATE())
+          .add(ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL())
+          .toString(),
       });
     });
     it("rejects idToken", async () => {
       const { idToken, tokenPayloads, clock, authConfig, users, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
+
+      Assert(typeof idToken !== "undefined");
 
       await expect(
         AuthenticationFacade.refresh(
@@ -360,9 +342,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects access token", async () => {
       const { accessToken, tokenPayloads, clock, authConfig, users, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.refresh(
@@ -377,14 +357,14 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects expired refresh token", async () => {
       const { tokenPayloads, clock, authConfig, refreshToken, users, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       clock.timeTravelSeconds(
         clock.nowAsSecondsSinceEpoch() +
           authConfig.jwtRefreshTokenExpirationSeconds,
       );
+
+      Assert(typeof refreshToken !== "undefined");
 
       await expect(
         AuthenticationFacade.refresh(
@@ -399,9 +379,7 @@ describe("AuthenticationFacade", () => {
     });
     it("rejects garbled refresh token", async () => {
       const { tokenPayloads, clock, authConfig, users, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-        });
+        await createAuthenticationTestContext();
 
       await expect(
         AuthenticationFacade.refresh(
@@ -415,11 +393,8 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("jwt malformed");
     });
     it("rejects refresh token signed with invalid secret/key", async () => {
-      const requestedScopes = ScopeValueImmutableSet.fromString("task:api");
       const { tokenPayloads, clock, authConfig, user, users, client, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes,
-        });
+        await createAuthenticationTestContext();
 
       const modifiedAuthConfig = await plainToConfig(
         {
@@ -435,9 +410,7 @@ describe("AuthenticationFacade", () => {
         clock,
         authConfig,
         user,
-        scope: requestedScopes
-          .add(ScopeValue.TOKEN_REFRESH())
-          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
+        scope: clientMother().scope,
         client,
       });
       const accessTokenWithInvalidSignature = await newRefreshToken.sign(
@@ -456,11 +429,8 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("invalid signature");
     });
     it("rejects refresh token with invalid issuer", async () => {
-      const requestedScopes = ScopeValueImmutableSet.fromString("task:api");
       const { tokenPayloads, clock, authConfig, user, users, client, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes,
-        });
+        await createAuthenticationTestContext();
 
       const modifiedAuthConfig = await plainToConfig(
         {
@@ -475,9 +445,7 @@ describe("AuthenticationFacade", () => {
       const newRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig: modifiedAuthConfig,
-        scope: requestedScopes
-          .add(ScopeValue.TOKEN_REFRESH())
-          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
+        scope: clientMother().scope,
         clock,
         client,
       });
@@ -497,19 +465,13 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("jwt has invalid issuer");
     });
     it("rejects refresh token lacking required scope", async () => {
-      const requestedScopes = ScopeValueImmutableSet.fromArray([
-        ScopeValue.TOKEN_REFRESH(),
-        ScopeValue.TASK_API(),
-      ]);
       const { tokenPayloads, clock, authConfig, user, users, client, clients } =
-        await createAuthenticationTestContext({
-          requestedScopes,
-        });
+        await createAuthenticationTestContext();
 
       const newRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig,
-        scope: requestedScopes.remove(ScopeValue.TOKEN_REFRESH()),
+        scope: clientMother().scope.remove(ScopeValue.TOKEN_REFRESH()),
         clock,
         client,
       });
@@ -527,18 +489,13 @@ describe("AuthenticationFacade", () => {
       ).rejects.toThrow("jwt does not contain required scope");
     });
     it("rejects not known refresh tokens", async () => {
-      const requestedScopes = ScopeValueImmutableSet.fromString("task:api");
       const { tokenPayloads, clock, authConfig, users, clients, client, user } =
-        await createAuthenticationTestContext({
-          requestedScopes,
-        });
+        await createAuthenticationTestContext();
 
       const notStoredRefreshToken = TokenPayload.createRefreshToken({
         user,
         authConfig,
-        scope: requestedScopes
-          .add(ScopeValue.TOKEN_REFRESH())
-          .remove(ScopeValue.TOKEN_AUTHENTICATE()),
+        scope: clientMother().scope,
         clock,
         client,
       });
@@ -565,9 +522,9 @@ describe("AuthenticationFacade", () => {
         users,
         clients,
         user,
-      } = await createAuthenticationTestContext({
-        requestedScopes: ScopeValueImmutableSet.fromString("task:api"),
-      });
+      } = await createAuthenticationTestContext();
+
+      Assert(typeof spentRefreshToken !== "undefined");
 
       const { refreshToken: issuedRefreshToken } =
         await AuthenticationFacade.refresh(

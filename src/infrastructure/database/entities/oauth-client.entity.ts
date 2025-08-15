@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 @Entity("oauth_clients")
 export class OauthClient {
@@ -7,4 +13,13 @@ export class OauthClient {
 
   @Column("varchar", { length: 255, nullable: false })
   name: string;
+
+  @Column("text")
+  scope: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

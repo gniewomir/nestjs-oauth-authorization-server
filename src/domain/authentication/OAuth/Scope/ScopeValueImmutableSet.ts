@@ -2,14 +2,22 @@ import { Assert } from "@domain/Assert";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 
-export class ScopeValueImmutableSet {
+export class ScopeValueImmutableSet implements Iterable<ScopeValue> {
+  *[Symbol.iterator](): IterableIterator<ScopeValue> {
+    for (const scope of this.scopes.values()) {
+      yield ScopeValue.fromString(scope);
+    }
+  }
+
   private readonly scopes: Set<string>;
 
   private constructor(scopes: (ScopeValue | string)[]) {
     this.scopes = new Set<string>(
-      scopes.map((scope) =>
-        typeof scope === "object" ? scope.toString() : scope.trim(),
-      ),
+      scopes
+        .map((scope) =>
+          typeof scope === "object" ? scope.toString() : scope.trim(),
+        )
+        .toSorted(),
     );
   }
 
@@ -69,6 +77,12 @@ export class ScopeValueImmutableSet {
       Array.from(this.scopes.values()).filter(
         (scope) => !toRemove.hasScope(scope),
       ),
+    );
+  }
+
+  public isSupersetOf(scopeSet: ScopeValueImmutableSet): boolean {
+    return Array.from(scopeSet).every((scope) =>
+      this.scopes.has(scope.toString()),
     );
   }
 }

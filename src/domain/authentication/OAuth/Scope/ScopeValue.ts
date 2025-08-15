@@ -2,6 +2,7 @@ import { Assert } from "@domain/Assert";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 
 enum ScopeEnum {
+  PROFILE = "profile",
   TASK_API = "task:api",
   ADMIN_API = "admin:api",
   TOKEN_AUTHENTICATE = "token:authenticate",
@@ -15,6 +16,10 @@ export class ScopeValue {
       Object.values(ScopeEnum).includes(scope),
       () => new OauthInvalidScopeException({ message: "Unknown scope" }),
     );
+  }
+
+  public static PROFILE() {
+    return ScopeValue.fromEnum(ScopeEnum.PROFILE);
   }
 
   public static TASK_API() {

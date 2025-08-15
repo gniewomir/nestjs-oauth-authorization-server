@@ -58,4 +58,43 @@ describe("ScopeValueImmutableSet", () => {
     const sut = ScopeValueImmutableSet.fromString(scopesAsString);
     expect(sut.toString()).toEqual(sortedScopesAsString);
   });
+  it("it is iterable and internally sorted", () => {
+    const scopesAsArray = ["token:authenticate", "task:api", "profile"];
+    const sut = ScopeValueImmutableSet.fromArray(scopesAsArray);
+    const result = [];
+    for (const scope of sut) {
+      result.push(scope);
+    }
+    expect(result.map((value) => value.toString())).toEqual(
+      scopesAsArray.toSorted(),
+    );
+  });
+  describe("isSupersetOf", () => {
+    it("returns true if all provided values are in the set", () => {
+      const scopesAsArraySuperset = [
+        "token:authenticate",
+        "task:api",
+        "profile",
+      ];
+      const scopesAsArraySubset = ["profile"];
+      expect(
+        ScopeValueImmutableSet.fromArray(scopesAsArraySuperset).isSupersetOf(
+          ScopeValueImmutableSet.fromArray(scopesAsArraySubset),
+        ),
+      ).toEqual(true);
+    });
+    it("returns true if some provided values do not exist in the set", () => {
+      const scopesAsArraySuperset = [
+        "token:authenticate",
+        "task:api",
+        "profile",
+      ];
+      const scopesAsArrayNotASubset = ["admin:api"];
+      expect(
+        ScopeValueImmutableSet.fromArray(scopesAsArraySuperset).isSupersetOf(
+          ScopeValueImmutableSet.fromArray(scopesAsArrayNotASubset),
+        ),
+      ).toEqual(false);
+    });
+  });
 });

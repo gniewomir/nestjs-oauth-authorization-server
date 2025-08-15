@@ -1,3 +1,4 @@
+import { clientMother } from "@test/domain/authentication/Client.mother";
 import { randomString } from "@test/utility/randomString";
 
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
@@ -7,8 +8,6 @@ import {
   TRequestConstructorParam,
 } from "@domain/authentication/OAuth/Authorization/Request";
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const requestMother = (
@@ -19,7 +18,7 @@ export const requestMother = (
     responseType: ResponseTypeValue.TYPE_CODE(),
     clientId: IdentityValue.create(),
     redirectUri: HttpUrlValue.fromString("https://client-website.com/callback"),
-    scope: ScopeValueImmutableSet.fromArray([ScopeValue.TASK_API()]),
+    scope: clientMother().scope,
     state: randomString(),
     codeChallenge: randomString(),
     codeChallengeMethod: CodeChallengeMethodValue.METHOD_S256(),

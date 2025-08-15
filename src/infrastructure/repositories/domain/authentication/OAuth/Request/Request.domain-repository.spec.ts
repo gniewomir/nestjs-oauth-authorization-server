@@ -56,7 +56,9 @@ describe("RequestDomainRepository", () => {
       );
       expect(savedRequest.state).toBe(domainRequest.state);
       expect(savedRequest.codeChallenge).toBe(domainRequest.codeChallenge);
-      expect(savedRequest.scope).toEqual(domainRequest.scope);
+      expect(savedRequest.scope.toString()).toEqual(
+        domainRequest.scope.toString(),
+      );
       expect(savedRequest.authorizationCode).toBeNull();
     });
 
@@ -124,7 +126,7 @@ describe("RequestDomainRepository", () => {
       );
       expect(result.state).toBe(domainRequest.state);
       expect(result.codeChallenge).toBe(domainRequest.codeChallenge);
-      expect(result.scope).toEqual(domainRequest.scope);
+      expect(result.scope.toString()).toEqual(domainRequest.scope.toString());
       expect(result.authorizationCode).toBeNull();
     });
 

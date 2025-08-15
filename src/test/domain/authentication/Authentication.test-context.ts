@@ -1,4 +1,5 @@
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
+import { clientMother } from "@test/domain/authentication/Client.mother";
 import { requestMother } from "@test/domain/authentication/Request.mother";
 
 import { Assert } from "@domain/Assert";
@@ -6,12 +7,17 @@ import { AuthorizationFacade } from "@domain/authentication/Authorization.facade
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 
-export const createAuthenticationTestContext = async ({
-  requestedScopes,
-}: {
-  requestedScopes: ScopeValueImmutableSet;
-}) => {
-  const authenticationContext = await createAuthorizationTestContext();
+export const createAuthenticationTestContext = async (
+  params: {
+    requestedScopes?: ScopeValueImmutableSet;
+  } = {},
+) => {
+  const requestedScopes = params.requestedScopes
+    ? params.requestedScopes
+    : clientMother().scope;
+  const authenticationContext = await createAuthorizationTestContext({
+    clientScope: requestedScopes,
+  });
   const {
     requests,
     requestId,

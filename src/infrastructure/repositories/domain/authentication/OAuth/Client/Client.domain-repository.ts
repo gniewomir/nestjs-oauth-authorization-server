@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
 
@@ -35,13 +36,15 @@ export class ClientDomainRepository implements ClientInterface {
     return new Client({
       id: IdentityValue.fromString(databaseClient.id),
       name: databaseClient.name,
+      scope: ScopeValueImmutableSet.fromString(databaseClient.scope),
     });
   }
 
-  private mapToDatabase(domainClient: Client): DatabaseClient {
-    const databaseClient = new DatabaseClient();
-    databaseClient.id = domainClient.id.toString();
-    databaseClient.name = domainClient.name;
-    return databaseClient;
+  private mapToDatabase(domainClient: Client) {
+    return {
+      id: domainClient.id.toString(),
+      name: domainClient.name,
+      scope: domainClient.scope.toString(),
+    } satisfies Omit<DatabaseClient, "createdAt" | "updatedAt">;
   }
 }
