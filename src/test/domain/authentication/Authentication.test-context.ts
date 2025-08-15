@@ -1,6 +1,6 @@
 import { createAuthorizationTestContext } from "@test/domain/authentication/Authorization.test-context";
-import { clientMother } from "@test/domain/authentication/Client.mother";
 import { requestMother } from "@test/domain/authentication/Request.mother";
+import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 
 import { Assert } from "@domain/Assert";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
@@ -14,7 +14,7 @@ export const createAuthenticationTestContext = async (
 ) => {
   const requestedScopes = params.requestedScopes
     ? params.requestedScopes
-    : clientMother().scope;
+    : defaultTestClientScopesMother();
   const authenticationContext = await createAuthorizationTestContext({
     clientScope: requestedScopes,
   });

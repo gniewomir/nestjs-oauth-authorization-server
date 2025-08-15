@@ -1,4 +1,4 @@
-import { clientMother } from "@test/domain/authentication/Client.mother";
+import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import { randomString } from "@test/utility/randomString";
 
 import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
@@ -18,7 +18,7 @@ export const requestMother = (
     responseType: ResponseTypeValue.TYPE_CODE(),
     clientId: IdentityValue.create(),
     redirectUri: HttpUrlValue.fromString("https://client-website.com/callback"),
-    scope: clientMother().scope,
+    scope: defaultTestClientScopesMother(),
     state: randomString(),
     codeChallenge: randomString(),
     codeChallengeMethod: CodeChallengeMethodValue.METHOD_S256(),

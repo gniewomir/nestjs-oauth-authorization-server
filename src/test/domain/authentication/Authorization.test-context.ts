@@ -1,4 +1,5 @@
 import { clientMother } from "@test/domain/authentication/Client.mother";
+import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import { userMother } from "@test/domain/authentication/User.mother";
 
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -20,9 +21,9 @@ export const createAuthorizationTestContext = async ({
   clientScope?: ScopeValueImmutableSet;
 } = {}) => {
   const clients = new ClientDomainRepositoryInMemory();
-  const client = clientScope
-    ? clientMother({ scope: clientScope })
-    : clientMother();
+  const client = clientMother({
+    scope: clientScope ? clientScope : defaultTestClientScopesMother(),
+  });
   await clients.persist(client);
 
   const requests = new RequestDomainRepositoryInMemory();
