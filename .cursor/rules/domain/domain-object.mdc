@@ -1,0 +1,403 @@
+---
+description: Domain Object Implementation Rules
+globs: src/domain/**/*
+alwaysApply: false
+---
+
+# Domain Object Implementation Rules
+
+## Overview
+Domain objects are the core entities and value objects that represent business concepts. They encapsulate business logic, enforce invariants, and provide a rich domain model.
+
+## Core Principles
+
+### 1. Immutability
+- Domain objects should be immutable by default
+- Use `readonly` properties for public fields
+- Private fields can be mutable when necessary (e.g., collections)
+- Never expose mutable state through public methods
+
+### 2. Encapsulation
+- Keep internal state private
+- Expose behavior through public methods
+- Use getters for computed properties
+- Protect invariants through validation
+
+### 3. Business Logic First
+- Domain objects should contain business logic
+- Validation should enforce business rules, not just technical constraints
+- Methods should represent business operations
+
+## Implementation Patterns
+
+### Value Objects
+- Use value objects for concepts that have no identity
+- Implement value equality (not reference equality)
+- Provide factory methods for creation
+- Include validation in constructors
+
+```typescript
+export class DescriptionValue {
+  private constructor(private readonly text: string) {
+    Assert(text.length > 0, "Description cannot be empty");
+  }
+
+  public static fromString(text: string): DescriptionValue {
+    return new DescriptionValue(text);
+  }
+
+  public static fromInsecureSource(
+    text: string,
+    sanitizer: DescriptionInterface,
+  ): DescriptionValue {
+    return DescriptionValue.fromString(sanitizer.sanitize(text));
+  }
+
+  public toString() {
+    return this.text;
+  }
+}
+```
+
+### Entities
+- Entities have identity and lifecycle
+- Use `IdentityValue` for unique identification
+- Implement business methods that maintain invariants
+- Use factory methods for creation with validation
+
+```typescript
+export class Task extends OrderedEntity<TasksInterface> {
+  public readonly identity: IdentityValue;
+  public readonly description: DescriptionValue;
+  public readonly goal: IdentityValue;
+  public readonly context: IdentityValue;
+
+  constructor(parameters: {
+    identity: IdentityValue;
+    description: DescriptionValue;
+    assigned: IdentityValue;
+    goal: IdentityValue;
+    context: IdentityValue;
+    orderKey: string;
+  }) {
+    super({ assigned: parameters.assigned });
+    this.identity = parameters.identity;
+    this.description = parameters.description;
+    this.goal = parameters.goal;
+    this.context = parameters.context;
+    this._orderKey = parameters.orderKey;
+  }
+
+  public static async create(
+    parameters: Omit<TTaskConstructorParam, "orderKey">,
+    tasks: TasksInterface,
+  ): Promise<Task> {
+    return new Task({
+      ...parameters,
+      orderKey: (await tasks.searchForHighestOrderKey(parameters.assigned)) ||
+        OrderService.START_ORDER_KEY,
+    });
+  }
+}
+```
+
+### Abstract Base Classes
+- Use abstract classes for shared behavior
+- Define common interfaces and methods
+- Allow subclasses to customize behavior
+
+```typescript
+export abstract class OrderedEntity<T extends OrderInterface> {
+  protected _orderKey: string;
+  public readonly assigned: IdentityValue;
+
+  public constructor({ assigned }: { assigned: IdentityValue }) {
+    this.assigned = assigned;
+  }
+
+  public get orderKey() {
+    return this._orderKey;
+  }
+
+  public async moveBefore(
+    referenceEntityIdentity: IdentityValue,
+    orderingService: OrderService<T>,
+  ): Promise<void> {
+    this._orderKey = await orderingService.nextAvailableOrderKeyBefore(
+      referenceEntityIdentity,
+      this.assigned,
+    );
+  }
+}
+```
+
+### Complex Value Objects
+- Combine multiple value objects into composite objects
+- Validate relationships between components
+- Provide specialized factory methods
+
+```typescript
+export class RefreshTokenValue {
+  private constructor({
+    aud,
+    jti,
+    exp,
+  }: {
+    jti: IdentityValue;
+    exp: NumericDateValue;
+    aud: IdentityValue;
+  }) {
+    this.jti = jti.toString();
+    this.exp = exp.toNumber();
+    this.aud = aud.toString();
+  }
+
+  public static fromTokenPayload(payload: TokenPayload): RefreshTokenValue {
+    Assert(payload.hasScope(ScopeValue.TOKEN_REFRESH()), "Not a refresh token");
+    return new RefreshTokenValue({
+      aud: IdentityValue.fromString(payload.aud),
+      exp: NumericDateValue.fromNumber(payload.exp),
+      jti: IdentityValue.fromString(payload.jti),
+    });
+  }
+}
+```
+
+### Enum-Based Value Objects
+- Use private enums for valid values
+- Provide static factory methods for each enum value
+- Validate against enum values in constructor
+
+```typescript
+enum ScopeEnum {
+  TASK_API = "task:api",
+  ADMIN_API = "admin:api",
+  TOKEN_AUTHENTICATE = "token:authenticate",
+  TOKEN_REFRESH = "token:refresh",
+}
+
+export class ScopeValue {
+  private constructor(private readonly scope: ScopeEnum) {
+    Assert(Object.values(ScopeEnum).includes(scope), `Unknown scope`);
+  }
+
+  public static TASK_API() {
+    return ScopeValue.fromEnum(ScopeEnum.TASK_API);
+  }
+
+  public static fromEnum(scope: ScopeEnum): ScopeValue {
+    return new ScopeValue(scope);
+  }
+
+  public toString(): string {
+    return this.scope.toString();
+  }
+}
+```
+
+### Immutable Collections
+- Implement immutable collections for value objects
+- Provide add/remove operations that return new instances
+- Include utility methods for common operations
+
+```typescript
+export class ScopeValueImmutableSet {
+  private readonly scopes: Set<string>;
+
+  private constructor(scopes: (ScopeValue | string)[]) {
+    this.scopes = new Set<string>(
+      scopes.map((scope) =>
+        typeof scope === "object" ? scope.toString() : scope.trim(),
+      ),
+    );
+  }
+
+  public add(...args: (ScopeValue | string)[]): ScopeValueImmutableSet {
+    return ScopeValueImmutableSet.fromArray([...this.scopes.values(), ...args]);
+  }
+
+  public remove(...args: (ScopeValue | string)[]): ScopeValueImmutableSet {
+    const toRemove = new ScopeValueImmutableSet(args);
+    return new ScopeValueImmutableSet(
+      Array.from(this.scopes.values()).filter(
+        (scope) => !toRemove.hasScope(scope),
+      ),
+    );
+  }
+}
+```
+
+## Factory Method Patterns
+
+### Standard Factory Methods
+- `fromString(value: string)` - Create from string input
+- `fromNumber(value: number)` - Create from numeric input
+- `fromUnknown(value: unknown)` - Flexible input handling
+- `create()` - Generate new instances (for entities)
+
+### Specialized Factory Methods
+- `fromInsecureSource()` - Handle potentially unsafe input with sanitization
+- `fromTokenPayload()` - Create from complex domain objects
+- `fromArray()` - Create from collections
+
+### Async Factory Methods
+- Use async factory methods when creation requires external dependencies
+- Pass domain services as parameters
+- Validate business rules during creation
+
+```typescript
+public static async create(
+  params: TUserConstructorParam,
+  uniqueEmailSpecification: UniqueEmailSpecification,
+): Promise<User> {
+  Assert(
+    await uniqueEmailSpecification.isSatisfied(params.email),
+    "User email have to be unique",
+  );
+  return new User(params);
+}
+```
+
+## Business Method Patterns
+
+### State Modification
+- Methods that modify state should maintain invariants
+- Use private methods for internal state changes
+- Return new instances for immutable objects
+
+```typescript
+public rotateRefreshToken(
+  refreshToken: RefreshTokenValue,
+  clock: ClockInterface,
+): void {
+  const nonExpired = this._refreshTokens.filter(
+    (token) => token.exp > clock.nowAsSecondsSinceEpoch(),
+  );
+  const onlyOtherClients = nonExpired.filter(
+    (token) => refreshToken.aud !== token.aud,
+  );
+  const clients = new Map(
+    onlyOtherClients.map((token) => [token.aud, token]),
+  );
+  clients.set(refreshToken.aud, RefreshTokenValue.fromUnknown(refreshToken));
+  this._refreshTokens = Array.from(clients.values());
+}
+```
+
+### Query Methods
+- Methods that query state should be descriptive
+- Use boolean methods for yes/no questions
+- Return computed values when appropriate
+
+```typescript
+public hasRefreshToken(jti: IdentityValue, clock: ClockInterface): boolean {
+  const validRefreshToken = this._refreshTokens.find(
+    (refreshToken) =>
+      IdentityValue.fromString(refreshToken.jti).isEqual(jti) &&
+      refreshToken.exp > clock.nowAsSecondsSinceEpoch(),
+  );
+  return validRefreshToken !== undefined;
+}
+```
+
+## Type Definitions
+
+### Constructor Parameter Types
+- Define types for constructor parameters
+- Use `ConstructorParameters` utility type
+- Export types for reuse in factory methods
+
+```typescript
+type TUserConstructorArgs = ConstructorParameters<typeof User>;
+export type TUserConstructorParam = TUserConstructorArgs[0];
+```
+
+### Interface Dependencies
+- Define interfaces for domain services
+- Use dependency injection for external dependencies
+- Keep domain objects focused on business logic
+
+## Validation Rules
+
+### Business Rule Validation
+- Enforce domain-specific constraints
+- Validate relationships between values
+- Check for required combinations
+- Use domain specifications for complex validation
+
+### Technical Validation
+- Validate input types and formats
+- Check for required fields
+- Ensure data integrity
+
+### Error Messages
+- Provide clear, actionable error messages
+- Include context in error messages
+- Use consistent language and tone
+
+## Naming Conventions
+
+### Class Names
+- Use descriptive names that represent domain concepts
+- Use PascalCase for class names
+- Examples: `Task`, `User`, `DescriptionValue`, `ScopeValue`
+
+### Method Names
+- Use verb-noun format for actions
+- Use descriptive names for factory methods
+- Use boolean methods for queries (e.g., `hasRefreshToken`)
+- Examples: `create`, `fromString`, `rotateRefreshToken`
+
+### File Names
+- Match class names exactly
+- Use PascalCase for class names
+- Include `.spec.ts` for test files
+
+## Testing Considerations
+
+### Test Coverage
+- Test all factory methods
+- Test validation scenarios (valid and invalid)
+- Test business methods
+- Test edge cases and boundary conditions
+
+### Test Patterns
+- Use mother objects for test data creation
+- Test business invariants
+- Verify state changes
+- Test error conditions
+
+## Integration Patterns
+
+### With Domain Services
+- Domain objects can depend on domain services
+- Use dependency injection for external dependencies
+- Keep domain objects focused on core business logic
+
+### With Infrastructure
+- Domain objects should be serializable
+- Provide conversion methods for persistence
+- Handle external format requirements
+
+## Best Practices
+
+### Keep It Simple
+- Domain objects should be focused and cohesive
+- Avoid complex inheritance hierarchies
+- Prefer composition over inheritance
+
+### Maintain Invariants
+- Always validate business rules
+- Use private constructors with factory methods
+- Protect internal state
+
+### Use Value Objects
+- Use value objects for concepts without identity
+- Implement value equality
+- Keep value objects immutable
+
+### Document Business Logic
+- Use clear method names that express intent
+- Add comments for complex business rules
+- Keep documentation up to date
+

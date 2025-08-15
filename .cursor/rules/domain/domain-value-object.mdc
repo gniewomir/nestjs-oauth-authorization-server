@@ -1,0 +1,318 @@
+---
+description: Domain Value Object Implementation Rules
+globs: **/*/*Value*.ts
+alwaysApply: false
+---
+
+# Domain Value Object Implementation Rules
+
+## Overview
+Domain value objects are immutable objects that represent concepts in the domain. They encapsulate validation logic and provide a rich interface for working with domain concepts.
+
+## Core Principles
+
+### 1. Immutability
+- All value objects must be immutable
+- Use `readonly` properties and private constructors
+- Never modify internal state after creation
+
+### 2. Validation
+- Always validate input in the constructor using `Assert` function
+- Provide clear, descriptive error messages
+- Validate business rules, not just technical constraints
+
+### 3. Factory Methods
+- Provide static factory methods for creation
+- Use descriptive method names (e.g., `fromString`, `fromNumber`, `create`)
+- Include `fromUnknown` method for flexible input handling
+
+## Implementation Patterns
+
+### Basic Structure
+```typescript
+import { Assert } from "@domain/Assert";
+
+export class ValueObjectName {
+  private constructor(private readonly value: string) {
+    // Validation logic here
+    Assert(condition, "Clear error message");
+  }
+
+  public static fromString(value: string): ValueObjectName {
+    return new ValueObjectName(value);
+  }
+
+  public static fromUnknown(value: unknown): ValueObjectName {
+    Assert(
+      typeof value === "string" || value instanceof ValueObjectName,
+      "Value must be string or ValueObjectName instance"
+    );
+    return typeof value === "string" 
+      ? ValueObjectName.fromString(value) 
+      : value;
+  }
+
+  public toString(): string {
+    return this.value;
+  }
+
+  public isEqual(other: ValueObjectName): boolean {
+    return this.toString() === other.toString();
+  }
+}
+```
+
+### Identity Value Objects
+- Use UUID validation for identity values
+- Provide `create()` method for generating new instances
+- Include `isEqual()` method for comparison
+
+```typescript
+export class IdentityValue {
+  private constructor(public readonly identity: string) {
+    Assert(isUUID(identity, "4"));
+  }
+
+  public static create(): IdentityValue {
+    return IdentityValue.fromString(v4());
+  }
+
+  public static fromString(identity: string): IdentityValue {
+    return new IdentityValue(identity);
+  }
+}
+```
+
+### String-Based Value Objects
+- Validate string constraints (length, format, content)
+- Trim whitespace when appropriate
+- Use case-insensitive comparison for equality when needed
+
+```typescript
+export class EmailValue {
+  private constructor(private readonly email: string) {
+    Assert(email.length === email.trim().length, "No leading/trailing spaces");
+    Assert(email.includes("@"), "Must contain @");
+    Assert(email.length <= 254, "Email too long");
+  }
+
+  public isEqual(email: EmailValue): boolean {
+    return this.email.toLowerCase() === email.toString().toLowerCase();
+  }
+}
+```
+
+### Numeric Value Objects
+- Validate numeric constraints (range, type, precision)
+- Provide conversion methods to/from primitive types
+- Handle different input formats (string, number)
+
+```typescript
+export class NumericDateValue {
+  constructor(private readonly secondsSinceEpoch: number) {
+    Assert(secondsSinceEpoch > 0 && isInt(secondsSinceEpoch), "Must be positive integer");
+  }
+
+  public static fromNumber(value: number): NumericDateValue {
+    return new NumericDateValue(value);
+  }
+
+  public static fromString(value: string): NumericDateValue {
+    return new NumericDateValue(parseInt(value, 10));
+  }
+
+  public toNumber(): number {
+    return this.secondsSinceEpoch;
+  }
+}
+```
+
+### Enum-Based Value Objects
+- Use private enum for valid values
+- Provide static factory methods for each enum value
+- Validate against enum values in constructor
+
+```typescript
+enum ScopeEnum {
+  TASK_API = "task:api",
+  ADMIN_API = "admin:api",
+}
+
+export class ScopeValue {
+  private constructor(private readonly scope: ScopeEnum) {
+    Assert(Object.values(ScopeEnum).includes(scope), "Unknown scope");
+  }
+
+  public static TASK_API(): ScopeValue {
+    return ScopeValue.fromEnum(ScopeEnum.TASK_API);
+  }
+
+  public static fromEnum(scope: ScopeEnum): ScopeValue {
+    return new ScopeValue(scope);
+  }
+}
+```
+
+### Composite Value Objects
+- Combine multiple value objects
+- Validate relationships between components
+- Provide factory methods for different creation scenarios
+
+```typescript
+export class RefreshTokenValue {
+  private constructor({
+    aud,
+    jti,
+    exp,
+  }: {
+    jti: IdentityValue;
+    exp: NumericDateValue;
+    aud: IdentityValue;
+  }) {
+    this.jti = jti.toString();
+    this.exp = exp.toNumber();
+    this.aud = aud.toString();
+  }
+
+  public static fromTokenPayload(payload: TokenPayload): RefreshTokenValue {
+    Assert(payload.hasScope(ScopeValue.TOKEN_REFRESH()), "Not a refresh token");
+    return new RefreshTokenValue({
+      aud: IdentityValue.fromString(payload.aud),
+      exp: NumericDateValue.fromNumber(payload.exp),
+      jti: IdentityValue.fromString(payload.jti),
+    });
+  }
+}
+```
+
+### Collection Value Objects
+- Implement immutable collections
+- Provide add/remove operations that return new instances
+- Include utility methods for common operations
+
+```typescript
+export class ScopeValueImmutableSet {
+  private readonly scopes: Set<string>;
+
+  private constructor(scopes: (ScopeValue | string)[]) {
+    this.scopes = new Set<string>(
+      scopes.map((scope) =>
+        typeof scope === "object" ? scope.toString() : scope.trim(),
+      ),
+    );
+  }
+
+  public add(...args: (ScopeValue | string)[]): ScopeValueImmutableSet {
+    return ScopeValueImmutableSet.fromArray([...this.scopes.values(), ...args]);
+  }
+
+  public remove(...args: (ScopeValue | string)[]): ScopeValueImmutableSet {
+    const toRemove = new ScopeValueImmutableSet(args);
+    return new ScopeValueImmutableSet(
+      Array.from(this.scopes.values()).filter(
+        (scope) => !toRemove.hasScope(scope),
+      ),
+    );
+  }
+}
+```
+
+## Validation Rules
+
+### String Validation
+- Check for empty strings when not allowed
+- Validate length constraints
+- Check for leading/trailing whitespace when inappropriate
+- Validate format (email, URL, etc.)
+
+### Numeric Validation
+- Ensure positive values when required
+- Validate integer constraints
+- Check range limits
+- Validate precision requirements
+
+### Business Rule Validation
+- Enforce domain-specific constraints
+- Validate relationships between values
+- Check for required combinations
+
+## Factory Method Patterns
+
+### Standard Factory Methods
+- `fromString(value: string)` - Create from string input
+- `fromNumber(value: number)` - Create from numeric input
+- `fromUnknown(value: unknown)` - Flexible input handling
+- `create()` - Generate new instances (for identities)
+
+### Specialized Factory Methods
+- `fromInsecureSource()` - Handle potentially unsafe input with sanitization
+- `fromTokenPayload()` - Create from complex domain objects
+- `fromArray()` - Create from collections
+
+## Equality and Comparison
+
+### Equality Methods
+- Implement `isEqual(other: ValueObject): boolean`
+- Use value-based comparison, not reference
+- Consider case sensitivity for strings
+- Compare normalized values when appropriate
+
+### String Representation
+- Implement `toString(): string`
+- Return the canonical string representation
+- Ensure round-trip consistency (fromString(toString()) should work)
+
+## Error Handling
+
+### Assert Function
+- Use the domain `Assert` function for validation
+- Provide clear, actionable error messages
+- Include context in error messages when helpful
+
+### Error Messages
+- Be specific about what failed
+- Include expected format or constraints
+- Use consistent language and tone
+
+## Testing Considerations
+
+### Test Coverage
+- Test all factory methods
+- Test validation scenarios (valid and invalid)
+- Test equality comparisons
+- Test edge cases and boundary conditions
+
+### Test Patterns
+- Use mother objects for test data creation
+- Test round-trip conversions
+- Verify immutability
+- Test error conditions
+
+## Integration Patterns
+
+### With Domain Services
+- Value objects can depend on domain services for validation
+- Use dependency injection for external validation logic
+- Keep value objects focused on core validation
+
+### With Infrastructure
+- Value objects should be serializable
+- Provide conversion methods for persistence
+- Handle external format requirements
+
+## Naming Conventions
+
+### Class Names
+- Use descriptive names ending with "Value"
+- Examples: `EmailValue`, `PasswordValue`, `IdentityValue`
+
+### Method Names
+- Use verb-noun format for actions
+- Use descriptive names for factory methods
+- Examples: `fromString`, `create`, `isEqual`
+
+### File Names
+- Match class names exactly
+- Use PascalCase for class names
+- Include `.spec.ts` for test files
+
