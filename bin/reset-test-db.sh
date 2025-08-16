@@ -89,6 +89,7 @@ if execute wait_for_postgres; then
     execute nvm use
     execute npm run build
     execute npm run migration:run
+    execute npm run test:manual:seed
 
     echo "✅ Setup completed successfully!"
 else
