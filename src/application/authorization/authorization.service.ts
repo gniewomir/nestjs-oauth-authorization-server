@@ -21,6 +21,7 @@ import {
   ClientInterface,
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -77,23 +78,48 @@ export class AuthorizationService {
     responseType: string;
     scope?: string;
     state?: string;
-    codeChallengeMethod: string;
-    codeChallenge: string;
+    codeChallengeMethod?: string;
+    codeChallenge?: string;
   }): Promise<{
     requestId: string;
   }> {
+    Assert(
+      IdentityValue.isValid(clientId),
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `Client ID is invalid or missing`,
+        }),
+    );
+    Assert(
+      this.appConfig.env !== "production" ||
+        (!!codeChallenge &&
+          CodeChallengeMethodValue.fromUnknown(codeChallengeMethod).isEqual(
+            CodeChallengeMethodValue.METHOD_S256(),
+          )),
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `PKCE is mandatory outside testing and development`,
+        }),
+    );
+    Assert(
+      Boolean(scope),
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `No scope in request`,
+        }),
+    );
     const request = await AuthorizationFacade.request(
       {
         clientId: IdentityValue.fromString(clientId),
         responseType: ResponseTypeValue.fromString(responseType),
         id: IdentityValue.create(),
         scope: scope
-          ? ScopeValueImmutableSet.fromString(scope)
+          ? ScopeValueImmutableSet.fromUnknown(scope)
           : ScopeValueImmutableSet.fromArray([]),
         state: state || "",
         codeChallenge: codeChallenge || "",
         codeChallengeMethod: codeChallengeMethod
-          ? CodeChallengeMethodValue.fromString(codeChallengeMethod)
+          ? CodeChallengeMethodValue.fromUnknown(codeChallengeMethod)
           : CodeChallengeMethodValue.METHOD_NONE(),
       },
       this.requests,
