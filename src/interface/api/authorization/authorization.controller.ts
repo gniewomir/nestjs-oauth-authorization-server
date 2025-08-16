@@ -85,20 +85,10 @@ export class AuthorizationController {
     description: "Authorization prompt HTML page",
   })
   async getPrompt(@Query("request_id") requestId: string): Promise<string> {
+    const data = await this.authorizationService.preparePrompt({ requestId });
     return this.templateService.renderTemplate(
       path.join(__dirname, "template", "prompt.html"),
-      {
-        requestId,
-        clientName: "Example Application",
-        redirectUri: "https://example.com/callback",
-        requestedScopes: "task:api token:authenticate",
-        state: "",
-        taskApi: true,
-        adminApi: false,
-        tokenAuthenticate: true,
-        tokenRefresh: false,
-        tokenRefreshLargeTtl: false,
-      },
+      data,
     );
   }
 

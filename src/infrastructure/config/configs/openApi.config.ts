@@ -4,6 +4,8 @@ import { ConfigService } from "@nestjs/config";
 import { plainToInstance } from "class-transformer";
 import { IsBoolean, IsNotEmpty, IsObject, IsString } from "class-validator";
 
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { AppConfig } from "@infrastructure/config/configs/app.config";
 import {
   configValidator,
@@ -18,9 +20,21 @@ export const openApiConfigDefaults = (port: number) => {
     authorizationUrl: `http://localhost:${port}/oauth/authorize`,
     tokenUrl: `http://localhost:${port}/oauth/token`,
     refreshUrl: `http://localhost:${port}/oauth/token`,
-    scopes: {
-      "tasks:api": "Manage your own tasks",
-    },
+    scopes: ScopeValueImmutableSet.fromArray([
+      ScopeValue.PROFILE(),
+      ScopeValue.TOKEN_REFRESH(),
+      ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
+      ScopeValue.TOKEN_AUTHENTICATE(),
+      ScopeValue.TASK_API(),
+    ])
+      .describe()
+      .reduce(
+        (carry, { name, description }) => {
+          carry[name] = description;
+          return carry;
+        },
+        {} as Record<string, string>,
+      ),
   } satisfies OpenApiConfig;
 };
 

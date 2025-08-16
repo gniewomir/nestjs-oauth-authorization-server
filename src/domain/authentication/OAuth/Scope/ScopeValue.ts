@@ -1,5 +1,13 @@
 import { Assert } from "@domain/Assert";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
+import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
+import { deepFreeze } from "@infrastructure/config/configs/utility";
+
+type TScopeDescription = {
+  name: string;
+  humanName: string;
+  description: string;
+};
 
 enum ScopeEnum {
   PROFILE = "profile",
@@ -10,11 +18,48 @@ enum ScopeEnum {
   TOKEN_REFRESH_ISSUE_LARGE_TTL = "token:refresh:issue-large-ttl",
 }
 
+type TScopeDescriptions = Readonly<
+  Record<keyof typeof ScopeEnum, Readonly<TScopeDescription>>
+>;
+
+const descriptions: TScopeDescriptions = deepFreeze({
+  PROFILE: {
+    name: ScopeEnum.PROFILE.toString(),
+    humanName: "User profile",
+    description: "Allows application to access your profile",
+  },
+  ADMIN_API: {
+    name: ScopeEnum.ADMIN_API.toString(),
+    humanName: "Administrative Access",
+    description: "Provides administrative capabilities and system-wide access",
+  },
+  TASK_API: {
+    name: ScopeEnum.TASK_API.toString(),
+    humanName: "Tasks API Access",
+    description: "Allows the application to manage your tasks",
+  },
+  TOKEN_AUTHENTICATE: {
+    name: ScopeEnum.TOKEN_AUTHENTICATE.toString(),
+    humanName: "Token Authentication",
+    description: "Allows the application to authenticate using tokens",
+  },
+  TOKEN_REFRESH: {
+    name: ScopeEnum.TOKEN_REFRESH.toString(),
+    humanName: "Token Refresh",
+    description: "Allows the application to refresh access tokens",
+  },
+  TOKEN_REFRESH_ISSUE_LARGE_TTL: {
+    name: ScopeEnum.TOKEN_REFRESH_ISSUE_LARGE_TTL.toString(),
+    humanName: "Extended Refresh Token Lifetime",
+    description: "Allows application to keep you logged in",
+  },
+}) satisfies TScopeDescriptions;
+
 export class ScopeValue {
   private constructor(private readonly scope: ScopeEnum) {
     Assert(
       Object.values(ScopeEnum).includes(scope),
-      () => new OauthInvalidScopeException({ message: "Unknown scope" }),
+      () => new OauthInvalidScopeException({ message: `Unknown scope` }),
     );
   }
 
@@ -52,5 +97,16 @@ export class ScopeValue {
 
   public toString(): string {
     return this.scope.toString();
+  }
+
+  public describe() {
+    for (const description of Object.values(descriptions)) {
+      if (description.name === this.scope.toString()) {
+        return description;
+      }
+    }
+    throw new OauthServerErrorException({
+      message: "Could not describe scope",
+    });
   }
 }

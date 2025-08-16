@@ -103,10 +103,6 @@
             transition: border-color 0.2s ease;
         }
 
-        .checkbox-group:hover {
-            border-color: #000;
-        }
-
         .checkbox-group input[type="checkbox"] {
             width: 18px;
             height: 18px;
@@ -118,18 +114,6 @@
             flex: 1;
             margin-bottom: 0;
             cursor: pointer;
-        }
-
-        .scope-name {
-            font-weight: 600;
-            color: #000;
-            margin-bottom: 4px;
-        }
-
-        .scope-description {
-            font-size: 13px;
-            color: #6c757d;
-            line-height: 1.4;
         }
 
         .remember-me {
@@ -210,14 +194,14 @@
         }
 
         .client-info h3 {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             margin-bottom: 8px;
             color: #000;
         }
 
         .client-info p {
-            font-size: 14px;
+            font-size: 12px;
             color: #6c757d;
             margin-bottom: 4px;
         }
@@ -277,7 +261,7 @@
     <div class="container">
         <div class="header">
             <h1>Authorization Required</h1>
-            <p>{{clientName}} is requesting access to your account</p>
+            <p>Application "{{clientName}}" is requesting access to your account</p>
         </div>
 
         <div class="form-container">
@@ -305,58 +289,11 @@
                 </div>
 
                 <div class="client-info">
-                    <h3>Application Details</h3>
-                    <p><strong>Application:</strong> {{clientName}}</p>
-                    <p><strong>Redirect URI:</strong> {{redirectUri}}</p>
-                    <p><strong>Requested Permissions:</strong> {{requestedScopes}}</p>
+                    <h3>Permissions</h3>
+                    {{#each requestedScopes}}
+                        <p><strong>{{humanName}}</strong> {{description}}</p>
+                    {{/each}}
                 </div>
-
-<!--                <div class="section">-->
-<!--                    <h2>Permissions</h2>-->
-<!--                    <p style="font-size: 14px; color: #6c757d; margin-bottom: 16px;">-->
-<!--                        Select the permissions you want to grant to this application:-->
-<!--                    </p>-->
-<!--                    -->
-<!--                    <div class="checkbox-group">-->
-<!--                        <input type="checkbox" id="scope_task_api" name="scopes" value="task:api" {{#if taskApi}}checked{{/if}}>-->
-<!--                        <label for="scope_task_api">-->
-<!--                            <div class="scope-name">Task API Access</div>-->
-<!--                            <div class="scope-description">Allows the application to create, read, update, and delete your tasks</div>-->
-<!--                        </label>-->
-<!--                    </div>-->
-<!--                    -->
-<!--                    <div class="checkbox-group">-->
-<!--                        <input type="checkbox" id="scope_admin_api" name="scopes" value="admin:api" {{#if adminApi}}checked{{/if}}>-->
-<!--                        <label for="scope_admin_api">-->
-<!--                            <div class="scope-name">Administrative Access</div>-->
-<!--                            <div class="scope-description">Provides administrative capabilities and system-wide access</div>-->
-<!--                        </label>-->
-<!--                    </div>-->
-<!--                    -->
-<!--                    <div class="checkbox-group">-->
-<!--                        <input type="checkbox" id="scope_token_authenticate" name="scopes" value="token:authenticate" {{#if tokenAuthenticate}}checked{{/if}}>-->
-<!--                        <label for="scope_token_authenticate">-->
-<!--                            <div class="scope-name">Token Authentication</div>-->
-<!--                            <div class="scope-description">Allows the application to authenticate using tokens</div>-->
-<!--                        </label>-->
-<!--                    </div>-->
-<!--                    -->
-<!--                    <div class="checkbox-group">-->
-<!--                        <input type="checkbox" id="scope_token_refresh" name="scopes" value="token:refresh" {{#if tokenRefresh}}checked{{/if}}>-->
-<!--                        <label for="scope_token_refresh">-->
-<!--                            <div class="scope-name">Token Refresh</div>-->
-<!--                            <div class="scope-description">Allows the application to refresh access tokens</div>-->
-<!--                        </label>-->
-<!--                    </div>-->
-<!--                    -->
-<!--                    <div class="checkbox-group">-->
-<!--                        <input type="checkbox" id="scope_token_refresh_large_ttl" name="scopes" value="token:refresh:issue-large-ttl" {{#if tokenRefreshLargeTtl}}checked{{/if}}>-->
-<!--                        <label for="scope_token_refresh_large_ttl">-->
-<!--                            <div class="scope-name">Extended Token Lifetime</div>-->
-<!--                            <div class="scope-description">Allows the application to request tokens with extended expiration times</div>-->
-<!--                        </label>-->
-<!--                    </div>-->
-<!--                </div>-->
 
                 <div class="actions">
                     <button type="submit" class="btn btn-primary" id="authorizeBtn">Authorize</button>
@@ -377,8 +314,7 @@
                 
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
-                const scopes = document.querySelectorAll('input[name="scopes"]:checked');
-                
+
                 if (!email) {
                     showError('Please enter your email address');
                     return;
@@ -388,12 +324,7 @@
                     showError('Please enter your password');
                     return;
                 }
-                
-                // if (scopes.length === 0) {
-                //     showError('Please select at least one permission');
-                //     return;
-                // }
-                
+
                 // Show loading state
                 authorizeBtn.disabled = true;
                 authorizeBtn.textContent = 'Authorizing...';

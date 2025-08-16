@@ -85,4 +85,10 @@ export class ScopeValueImmutableSet implements Iterable<ScopeValue> {
       this.scopes.has(scope.toString()),
     );
   }
+
+  public describe() {
+    return Array.from(this.scopes).map((scope) =>
+      ScopeValue.fromString(scope).describe(),
+    );
+  }
 }

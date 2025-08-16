@@ -106,7 +106,18 @@ export class AuthorizationService {
     };
   }
 
-  async preparePrompt(): Promise<void> {}
+  async preparePrompt({ requestId }: { requestId: string }) {
+    const request = await this.requests.retrieve(
+      IdentityValue.fromString(requestId),
+    );
+    const client = await this.clients.retrieve(request.clientId);
+    return {
+      requestId: request.id.toString(),
+      requestedScopes: request.scope.describe(),
+      redirectUri: request.redirectUri.toString(),
+      clientName: client.name,
+    };
+  }
 
   async submitPrompt(params: {
     requestId: string;

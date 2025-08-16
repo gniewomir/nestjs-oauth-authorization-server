@@ -49,6 +49,7 @@ export class AuthorizationFacade {
     clients: ClientInterface,
   ): Promise<Request> {
     const client = await clients.retrieve(params.clientId);
+    console.log(client.scope.toString(), " => ", params.scope.toString());
     Assert(
       client.scope.isSupersetOf(params.scope),
       () =>
