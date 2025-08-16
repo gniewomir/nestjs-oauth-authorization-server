@@ -281,11 +281,13 @@
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" class="form-control" required>
                     </div>
-                    
-                    <div class="remember-me">
-                        <input type="checkbox" id="remember_me" name="remember_me" value="true">
-                        <label for="remember_me">Remember me</label>
-                    </div>
+
+                    {{#if allowRememberMe}}
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember_me" name="remember_me" value="true">
+                            <label for="remember_me">Remember me</label>
+                        </div>
+                    {{/if}}
                 </div>
 
                 <div class="client-info">

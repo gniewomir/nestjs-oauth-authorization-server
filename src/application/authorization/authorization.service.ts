@@ -22,6 +22,7 @@ import {
   ClientInterface,
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
+import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import {
   TokenPayloadInterface,
@@ -112,6 +113,9 @@ export class AuthorizationService {
     );
     const client = await this.clients.retrieve(request.clientId);
     return {
+      allowRememberMe: request.scope.hasScope(
+        ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
+      ),
       requestId: request.id.toString(),
       requestedScopes: request.scope.describe(),
       redirectUri: request.redirectUri.toString(),
