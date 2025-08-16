@@ -7,7 +7,10 @@ import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
 import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
 
-describe("TypeOrm+Postgres upsert limitations", () => {
+/**
+ * Correct results only when database is completely empty
+ */
+describe.skip("TypeOrm+Postgres upsert limitations", () => {
   let module: TestingModule;
   let dataSource: DataSource;
 
