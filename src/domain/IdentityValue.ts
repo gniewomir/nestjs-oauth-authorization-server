@@ -16,6 +16,15 @@ export class IdentityValue {
     return new IdentityValue(identity);
   }
 
+  public static isValid(identity: unknown): boolean {
+    try {
+      IdentityValue.fromUnknown(identity);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   public static fromUnknown(identity: unknown): IdentityValue {
     Assert(typeof identity === "string" || identity instanceof IdentityValue);
     return typeof identity === "string"

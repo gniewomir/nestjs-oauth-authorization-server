@@ -4,6 +4,7 @@ import { defaultTestClientScopesMother } from "@test/domain/authentication/Scope
 import { commandBootstrap } from "@application/command";
 import { Assert } from "@domain/Assert";
 import { ClientInterfaceSymbol } from "@domain/authentication/OAuth/Client/Client.interface";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { PasswordInterfaceSymbol } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
@@ -29,6 +30,10 @@ void commandBootstrap({
       id: IdentityValue.fromString("4072ccc4-5975-4d24-828d-495eb2f65c0a"),
       name: "Swagger",
       scope: defaultTestClientScopesMother(),
+      redirectUri: RedirectUriValue.create(
+        "http://localhost:3000/oauth2-redirect.html",
+        "test",
+      ),
     });
     await clients.persist(client);
     logger.log(

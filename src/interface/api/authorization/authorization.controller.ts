@@ -5,10 +5,12 @@ import {
   Controller,
   Get,
   HttpException,
+  HttpRedirectResponse,
   HttpStatus,
   Inject,
   Post,
   Query,
+  Redirect,
   Res,
 } from "@nestjs/common";
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -87,7 +89,10 @@ export class AuthorizationController {
     const data = await this.authorizationService.preparePrompt({ requestId });
     return this.templateService.renderTemplate(
       path.join(__dirname, "template", "prompt.html"),
-      data,
+      {
+        ...data,
+        submitUrl: "/oauth/prompt",
+      },
     );
   }
 
@@ -108,10 +113,10 @@ export class AuthorizationController {
     status: HttpStatus.UNAUTHORIZED,
     description: "Invalid credentials",
   })
+  @Redirect()
   async postPrompt(
     @Body() body: PromptRequestDto,
-    @Res() res: Response,
-  ): Promise<void> {
+  ): Promise<HttpRedirectResponse> {
     const { redirectUriWithAuthorizationCodeAndState } =
       await this.authorizationService.submitPrompt({
         requestId: body.request_id,
@@ -123,10 +128,10 @@ export class AuthorizationController {
         scopes: body.scopes,
       });
 
-    res.redirect(
-      HttpStatus.TEMPORARY_REDIRECT,
-      redirectUriWithAuthorizationCodeAndState,
-    );
+    return {
+      url: redirectUriWithAuthorizationCodeAndState,
+      statusCode: HttpStatus.FOUND,
+    } satisfies HttpRedirectResponse;
   }
 
   @Post("token")

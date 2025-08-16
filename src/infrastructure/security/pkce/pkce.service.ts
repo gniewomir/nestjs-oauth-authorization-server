@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { createHash } from "crypto";
 
-import { Assert } from "@domain/Assert";
 import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE/PKCE.interface";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 
 @Injectable()
 export class PKCEService implements PKCEInterface {
@@ -16,13 +16,20 @@ export class PKCEService implements PKCEInterface {
     codeVerifier: string;
     method: CodeChallengeMethodValue;
   }): boolean {
-    Assert(
-      method.isEqual(CodeChallengeMethodValue.METHOD_S256()),
-      "S256 is the only supported code challenge method",
-    );
-    const encoder = new TextEncoder();
-    const data = encoder.encode(codeVerifier);
-    const verifier = createHash("sha256").update(data).digest("base64url");
-    return verifier === codeChallenge;
+    if (method.isEqual(CodeChallengeMethodValue.METHOD_NONE())) {
+      return true;
+    }
+    if (method.isEqual(CodeChallengeMethodValue.METHOD_PLAIN())) {
+      return codeVerifier === codeChallenge;
+    }
+    if (method.isEqual(CodeChallengeMethodValue.METHOD_S256())) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(codeVerifier);
+      const verifier = createHash("sha256").update(data).digest("base64url");
+      return verifier === codeChallenge;
+    }
+    throw new OauthInvalidRequestException({
+      errorDescription: `Unrecognized code challenge method`,
+    });
   }
 }

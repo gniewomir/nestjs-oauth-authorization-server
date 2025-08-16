@@ -147,23 +147,17 @@ export class AuthorizationFacade {
         }),
     );
 
-    if (
-      !request.codeChallengeMethod.isEqual(
-        CodeChallengeMethodValue.METHOD_NONE(),
-      )
-    ) {
-      Assert(
-        PKCE.verify({
-          codeChallenge: request.codeChallenge,
-          codeVerifier,
-          method: request.codeChallengeMethod,
+    Assert(
+      PKCE.verify({
+        codeChallenge: request.codeChallenge,
+        codeVerifier,
+        method: request.codeChallengeMethod,
+      }),
+      () =>
+        new OAuthAccessDeniedException({
+          message: "Failed PKCE code challenge",
         }),
-        () =>
-          new OAuthAccessDeniedException({
-            message: "Failed PKCE code challenge",
-          }),
-      );
-    }
+    );
 
     request.useAuthorizationCode(code, clock);
 
