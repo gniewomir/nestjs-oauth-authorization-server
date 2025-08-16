@@ -2,12 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { Request as DomainRequest } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";
@@ -58,7 +58,7 @@ export class RequestDomainRepository implements RequestInterface {
       id: IdentityValue.fromString(databaseRequest.id),
       responseType: ResponseTypeValue.fromString(databaseRequest.responseType),
       clientId: IdentityValue.fromString(databaseRequest.clientId),
-      redirectUri: HttpUrlValue.fromString(databaseRequest.redirectUri),
+      redirectUri: RedirectUriValue.fromString(databaseRequest.redirectUri),
       state: databaseRequest.state,
       codeChallenge: databaseRequest.codeChallenge,
       codeChallengeMethod: CodeChallengeMethodValue.fromString(

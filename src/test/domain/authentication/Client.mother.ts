@@ -4,6 +4,7 @@ import {
   Client,
   TClientConstructorParam,
 } from "@domain/authentication/OAuth/Client/Client";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {
@@ -11,6 +12,7 @@ export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {
     id: IdentityValue.create(),
     name: "web",
     scope: defaultTestClientScopesMother(),
+    redirectUri: RedirectUriValue.create("https://web.com/callback", "test"),
     ...params,
   });
 };

@@ -32,7 +32,7 @@ void commandBootstrap({
     });
     await clients.persist(client);
     logger.log(
-      `Added OAuth client "${client.name}" with id "${client.id.toString()}" and scopes "${client.scope.toString()}"`,
+      `Added OAuth client "${client.name}". ID: ${client.id.toString()}; Scopes: "${client.scope.toString()}"; Redirect: "${client.redirectUri.toString()}"`,
     );
 
     const passwords = application.get<PasswordService>(PasswordInterfaceSymbol);

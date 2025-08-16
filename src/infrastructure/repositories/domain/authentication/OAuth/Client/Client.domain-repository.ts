@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
@@ -37,6 +38,7 @@ export class ClientDomainRepository implements ClientInterface {
       id: IdentityValue.fromString(databaseClient.id),
       name: databaseClient.name,
       scope: ScopeValueImmutableSet.fromString(databaseClient.scope),
+      redirectUri: RedirectUriValue.fromString(databaseClient.redirectUri),
     });
   }
 
@@ -45,6 +47,7 @@ export class ClientDomainRepository implements ClientInterface {
       id: domainClient.id.toString(),
       name: domainClient.name,
       scope: domainClient.scope.toString(),
+      redirectUri: domainClient.redirectUri.toString(),
     } satisfies Omit<DatabaseClient, "createdAt" | "updatedAt">;
   }
 }

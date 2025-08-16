@@ -2,7 +2,6 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import { Assert } from "@domain/Assert";
 import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
-import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import {
   CodeInterface,
@@ -22,6 +21,7 @@ import {
   ClientInterface,
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import {
@@ -40,11 +40,12 @@ import {
 } from "@domain/authentication/OAuth/User/Users.interface";
 import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
-import { AuthConfig } from "@infrastructure/config/configs";
+import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 
 @Injectable()
 export class AuthorizationService {
   constructor(
+    private readonly appConfig: AppConfig,
     private readonly authConfig: AuthConfig,
     @Inject(ClockInterfaceSymbol)
     private readonly clock: ClockInterface,
@@ -88,7 +89,7 @@ export class AuthorizationService {
         clientId: IdentityValue.fromString(clientId),
         responseType: ResponseTypeValue.fromString(responseType),
         id: IdentityValue.create(),
-        redirectUri: HttpUrlValue.fromString(redirectUri),
+        redirectUri: RedirectUriValue.create(redirectUri, this.appConfig.env),
         scope: scope
           ? ScopeValueImmutableSet.fromString(scope)
           : ScopeValueImmutableSet.fromArray([]),
@@ -163,7 +164,7 @@ export class AuthorizationService {
     clientId: IdentityValue;
     code: string;
     codeVerifier: string;
-    redirectUri: HttpUrlValue;
+    redirectUri: RedirectUriValue;
   }): Promise<{
     accessToken: string;
     expiration: number;

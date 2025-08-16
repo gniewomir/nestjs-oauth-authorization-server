@@ -11,11 +11,14 @@ export class OauthClient {
   @PrimaryColumn("uuid")
   id: string;
 
-  @Column("varchar", { length: 255, nullable: false })
+  @Column("varchar", { length: 128, nullable: false })
   name: string;
 
   @Column("text")
   scope: string;
+
+  @Column("text")
+  redirectUri: string;
 
   @CreateDateColumn()
   createdAt: Date;

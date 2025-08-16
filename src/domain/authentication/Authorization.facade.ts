@@ -1,5 +1,4 @@
 import { Assert } from "@domain/Assert";
-import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
@@ -13,6 +12,7 @@ import { OauthInvalidClientException } from "@domain/authentication/OAuth/Errors
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { OauthRedirectUriMismatchException } from "@domain/authentication/OAuth/Errors/OauthRedirectUriMismatchException";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
@@ -39,7 +39,7 @@ export class AuthorizationFacade {
       id: IdentityValue;
       responseType: ResponseTypeValue;
       clientId: IdentityValue;
-      redirectUri: HttpUrlValue;
+      redirectUri: RedirectUriValue;
       scope: ScopeValueImmutableSet;
       state: string;
       codeChallenge: string;
@@ -49,7 +49,6 @@ export class AuthorizationFacade {
     clients: ClientInterface,
   ): Promise<Request> {
     const client = await clients.retrieve(params.clientId);
-    console.log(client.scope.toString(), " => ", params.scope.toString());
     Assert(
       client.scope.isSupersetOf(params.scope),
       () =>
@@ -116,7 +115,7 @@ export class AuthorizationFacade {
       clientId: IdentityValue;
       code: string;
       codeVerifier: string;
-      redirectUri: HttpUrlValue;
+      redirectUri: RedirectUriValue;
     },
     requests: RequestInterface,
     PKCE: PKCEInterface,

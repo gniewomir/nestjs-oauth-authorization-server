@@ -1,5 +1,4 @@
 import { Assert } from "@domain/Assert";
-import { HttpUrlValue } from "@domain/authentication/HttpUrlValue";
 import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
 import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
@@ -8,6 +7,7 @@ import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
 import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
@@ -19,7 +19,7 @@ export type TRequestConstructorParam = TRequestConstructorArgs[0];
 export class Request {
   public readonly id: IdentityValue;
   public readonly clientId: IdentityValue;
-  public readonly redirectUri: HttpUrlValue;
+  public readonly redirectUri: RedirectUriValue;
   public readonly state: string;
   public readonly codeChallenge: string;
   public readonly codeChallengeMethod: CodeChallengeMethodValue;
@@ -30,7 +30,7 @@ export class Request {
     id: IdentityValue;
     responseType: ResponseTypeValue;
     clientId: IdentityValue;
-    redirectUri: HttpUrlValue;
+    redirectUri: RedirectUriValue;
     scope: ScopeValueImmutableSet;
     state: string;
     codeChallenge: string;
