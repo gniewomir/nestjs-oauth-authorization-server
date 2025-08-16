@@ -16,14 +16,16 @@ export async function bootstrap() {
   logger.setContext("bootstrap");
   app.useLogger(logger);
 
+  const appConfig = app.get(AppConfig);
   const openApiConfig = app.get(OpenApiConfig);
 
-  if (openApiConfig.exposed) {
+  if (openApiConfig.exposed && appConfig.env !== "production") {
     const options = new DocumentBuilder()
       .setTitle("Core")
       .setVersion("v1")
       .addOAuth2({
         type: "oauth2",
+        scheme: "oauth2",
         flows: {
           authorizationCode: {
             authorizationUrl: openApiConfig.authorizationUrl,
@@ -40,7 +42,6 @@ export async function bootstrap() {
     SwaggerModule.setup(openApiConfig.path, app, document);
   }
 
-  const appConfig = app.get(AppConfig);
   await app.listen(appConfig.port);
 
   return { app, logger, appConfig };
