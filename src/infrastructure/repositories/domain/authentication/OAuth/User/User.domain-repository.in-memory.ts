@@ -2,6 +2,7 @@ import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailV
 import { User } from "@domain/authentication/OAuth/User/User";
 import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
+import { NotFoundException } from "@infrastructure/repositories/NotFoundException";
 
 export class UserDomainRepositoryInMemory implements UsersInterface {
   public users = new Map<string, User>();
@@ -19,7 +20,7 @@ export class UserDomainRepositoryInMemory implements UsersInterface {
         return Promise.resolve(user);
       }
     }
-    return Promise.reject(new Error("User not found"));
+    return Promise.reject(new NotFoundException("User not found"));
   }
 
   persist(user: User): Promise<void> {
@@ -32,6 +33,6 @@ export class UserDomainRepositoryInMemory implements UsersInterface {
     if (user instanceof User) {
       return Promise.resolve(user);
     }
-    return Promise.reject(new Error("User not found"));
+    return Promise.reject(new NotFoundException("User not found"));
   }
 }

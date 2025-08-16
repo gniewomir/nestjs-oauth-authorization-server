@@ -1,6 +1,7 @@
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { IdentityValue } from "@domain/IdentityValue";
+import { NotFoundException } from "@infrastructure/repositories/NotFoundException";
 
 export class RequestDomainRepositoryInMemory implements RequestInterface {
   public requests = new Map<string, Request>();
@@ -11,7 +12,7 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
         return Promise.resolve(request);
       }
     }
-    throw new Error("Authorization request not found");
+    throw new NotFoundException("Authorization request not found");
   }
 
   async persist(authorisationRequest: Request): Promise<void> {
@@ -24,6 +25,8 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
     if (request instanceof Request) {
       return Promise.resolve(request);
     }
-    return Promise.reject(new Error("Authorization request not found"));
+    return Promise.reject(
+      new NotFoundException("Authorization request not found"),
+    );
   }
 }

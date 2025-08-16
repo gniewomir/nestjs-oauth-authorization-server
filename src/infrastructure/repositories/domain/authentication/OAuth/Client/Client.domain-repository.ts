@@ -8,6 +8,7 @@ import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue"
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
+import { AssertFound } from "@infrastructure/repositories/AssertFound";
 
 @Injectable()
 export class ClientDomainRepository implements ClientInterface {
@@ -26,9 +27,7 @@ export class ClientDomainRepository implements ClientInterface {
       where: { id: id.toString() },
     });
 
-    if (!client) {
-      throw new Error("Client not found");
-    }
+    AssertFound(client, "Client not found");
 
     return this.mapToDomain(client);
   }

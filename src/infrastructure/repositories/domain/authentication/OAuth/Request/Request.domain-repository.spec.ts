@@ -130,7 +130,7 @@ describe("RequestDomainRepository", () => {
       expect(result.authorizationCode).toBeNull();
     });
 
-    it("should throw error when OAuth request not found by id", async () => {
+    it("should throw error when request is not found by id", async () => {
       // Arrange
       const nonExistentId = IdentityValue.create();
 

@@ -11,6 +11,7 @@ import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue"
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";
+import { AssertFound } from "@infrastructure/repositories/AssertFound";
 
 @Injectable()
 export class RequestDomainRepository implements RequestInterface {
@@ -29,9 +30,7 @@ export class RequestDomainRepository implements RequestInterface {
       })
       .getOne();
 
-    if (!request) {
-      throw new Error("Authorization request not found");
-    }
+    AssertFound(request, "Authorization request not found");
 
     return this.mapToDomain(request);
   }
@@ -46,9 +45,7 @@ export class RequestDomainRepository implements RequestInterface {
       where: { id: id.toString() },
     });
 
-    if (!request) {
-      throw new Error("Authorization request not found");
-    }
+    AssertFound(request, "Authorization request not found");
 
     return this.mapToDomain(request);
   }

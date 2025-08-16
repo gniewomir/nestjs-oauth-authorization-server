@@ -7,6 +7,7 @@ import { User as DomainUser } from "@domain/authentication/OAuth/User/User";
 import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
+import { AssertFound } from "@infrastructure/repositories/AssertFound";
 
 @Injectable()
 export class UserDomainRepository implements UsersInterface {
@@ -20,9 +21,7 @@ export class UserDomainRepository implements UsersInterface {
       where: { email: email.toString() },
     });
 
-    if (!user) {
-      throw new Error("User not found");
-    }
+    AssertFound(user, "User not found");
 
     return this.mapToDomain(user);
   }
@@ -37,9 +36,7 @@ export class UserDomainRepository implements UsersInterface {
       where: { id: identity.toString() },
     });
 
-    if (!user) {
-      throw new Error("User not found");
-    }
+    AssertFound(user, "User not found");
 
     return this.mapToDomain(user);
   }
