@@ -6,7 +6,9 @@ export class PasswordValue {
   public static readonly minPasswordLength: number = 12;
   public static readonly minUniqueCharacters: number = 6;
 
-  private constructor(private readonly password: string) {
+  private constructor(private readonly password: string) {}
+
+  public static create(password: string): PasswordValue {
     Assert(
       password.length === password.trim().length,
       () =>
@@ -42,13 +44,14 @@ export class PasswordValue {
           errorDescription: "Password should not be longer than 72 bytes",
         }),
     );
+    return new PasswordValue(password);
   }
 
   public static fromString(password: string) {
     return new PasswordValue(password);
   }
 
-  public isEqualHashedPassword(
+  public matchHashedPassword(
     hashedPassword: string,
     passwordInterface: PasswordInterface,
   ): Promise<boolean> {

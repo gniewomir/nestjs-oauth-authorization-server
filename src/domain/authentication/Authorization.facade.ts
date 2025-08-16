@@ -89,7 +89,7 @@ export class AuthorizationFacade {
         }),
     );
     Assert(
-      await params.credentials.password.isEqualHashedPassword(
+      await params.credentials.password.matchHashedPassword(
         user.password,
         passwords,
       ),
