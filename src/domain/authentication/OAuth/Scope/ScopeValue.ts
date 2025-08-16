@@ -26,7 +26,7 @@ const descriptions: TScopeDescriptions = deepFreeze({
   PROFILE: {
     name: ScopeEnum.PROFILE.toString(),
     humanName: "User profile",
-    description: "Allows application to access your profile",
+    description: "Allows the application to access your profile",
   },
   ADMIN_API: {
     name: ScopeEnum.ADMIN_API.toString(),
