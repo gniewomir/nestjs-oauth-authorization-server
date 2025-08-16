@@ -43,5 +43,5 @@ export async function bootstrap() {
   const appConfig = app.get(AppConfig);
   await app.listen(appConfig.port);
 
-  return { app, logger };
+  return { app, logger, appConfig };
 }
