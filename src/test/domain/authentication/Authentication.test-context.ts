@@ -36,7 +36,7 @@ export const createAuthenticationTestContext = async (
     codeVerifier,
   } = authenticationContext;
 
-  const request = await AuthorizationFacade.request(
+  await AuthorizationFacade.request(
     {
       ...requestMother(),
       clientId: client.id,
@@ -73,7 +73,6 @@ export const createAuthenticationTestContext = async (
         clientId: client.id,
         code: authorizationCode.toString(),
         codeVerifier,
-        redirectUri: request.redirectUri,
       },
       requests,
       PKCE,

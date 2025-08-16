@@ -223,7 +223,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext({ clientScope: scope });
 
-      const request = await AuthorizationFacade.request(
+      await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -260,7 +260,6 @@ describe("AuthorizationFacade", () => {
             clientId: client.id,
             code: authorizationCode.toString(),
             codeVerifier,
-            redirectUri: request.redirectUri,
           },
           requests,
           PKCE,
@@ -311,7 +310,7 @@ describe("AuthorizationFacade", () => {
         clientScope: scope,
       });
 
-      const request = await AuthorizationFacade.request(
+      await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -348,7 +347,6 @@ describe("AuthorizationFacade", () => {
             clientId: client.id,
             code: authorizationCode.toString(),
             codeVerifier,
-            redirectUri: request.redirectUri,
           },
           requests,
           PKCE,
@@ -397,7 +395,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeValueImmutableSet.fromString("task:api");
-      const request = await AuthorizationFacade.request(
+      await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -433,7 +431,6 @@ describe("AuthorizationFacade", () => {
           clientId: client.id,
           code: authorizationCode.toString(),
           codeVerifier,
-          redirectUri: request.redirectUri,
         },
         requests,
         PKCE,
@@ -450,7 +447,6 @@ describe("AuthorizationFacade", () => {
             clientId: client.id,
             code: authorizationCode.toString(),
             codeVerifier,
-            redirectUri: request.redirectUri,
           },
           requests,
           PKCE,
@@ -481,7 +477,7 @@ describe("AuthorizationFacade", () => {
         codeVerifier,
       } = await createAuthorizationTestContext();
 
-      const request = await AuthorizationFacade.request(
+      await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -519,7 +515,6 @@ describe("AuthorizationFacade", () => {
             clientId: client.id,
             code: authorizationCode.toString(),
             codeVerifier,
-            redirectUri: request.redirectUri,
           },
           requests,
           PKCE,
@@ -551,7 +546,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeValueImmutableSet.fromString("task:api");
-      const request = await AuthorizationFacade.request(
+      await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -588,7 +583,6 @@ describe("AuthorizationFacade", () => {
             clientId: client.id,
             code: authorizationCode.toString(),
             codeVerifier: PKCE.generateCodeVerifier(),
-            redirectUri: request.redirectUri,
           },
           requests,
           PKCE,
@@ -621,7 +615,7 @@ describe("AuthorizationFacade", () => {
       } = await createAuthorizationTestContext();
 
       const scope = ScopeValueImmutableSet.fromString("token:refresh");
-      const request = await AuthorizationFacade.request(
+      await AuthorizationFacade.request(
         {
           ...requestMother(),
           clientId: client.id,
@@ -657,7 +651,6 @@ describe("AuthorizationFacade", () => {
           clientId: client.id,
           code: authorizationCode.toString(),
           codeVerifier,
-          redirectUri: request.redirectUri,
         },
         requests,
         PKCE,

@@ -38,15 +38,6 @@ export class TokenRequestDto {
   code_verifier?: string;
 
   @ApiProperty({
-    description: "Redirect URI (for authorization_code grant)",
-    example: "https://client.example.com/callback",
-    required: false,
-  })
-  @IsString()
-  @IsNotEmpty()
-  redirect_uri?: string;
-
-  @ApiProperty({
     description: "Refresh token (for refresh_token grant)",
     example: "refresh_token_123",
     required: false,

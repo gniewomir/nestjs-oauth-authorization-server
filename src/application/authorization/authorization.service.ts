@@ -68,7 +68,6 @@ export class AuthorizationService {
   async request({
     clientId,
     responseType,
-    redirectUri,
     scope,
     state,
     codeChallenge,
@@ -76,11 +75,10 @@ export class AuthorizationService {
   }: {
     clientId: string;
     responseType: string;
-    redirectUri: string;
     scope?: string;
     state?: string;
-    codeChallengeMethod?: string;
-    codeChallenge?: string;
+    codeChallengeMethod: string;
+    codeChallenge: string;
   }): Promise<{
     requestId: string;
   }> {
@@ -89,7 +87,6 @@ export class AuthorizationService {
         clientId: IdentityValue.fromString(clientId),
         responseType: ResponseTypeValue.fromString(responseType),
         id: IdentityValue.create(),
-        redirectUri: RedirectUriValue.create(redirectUri, this.appConfig.env),
         scope: scope
           ? ScopeValueImmutableSet.fromString(scope)
           : ScopeValueImmutableSet.fromArray([]),
@@ -133,7 +130,7 @@ export class AuthorizationService {
     };
     scopes?: string[];
   }): Promise<{
-    code: string;
+    redirectUriWithAuthorizationCodeAndState: string;
   }> {
     const request = await AuthorizationFacade.prompt(
       {
@@ -154,8 +151,12 @@ export class AuthorizationService {
 
     Assert(request.authorizationCode instanceof Code);
 
+    const redirect = new URL(request.redirectUri.toString());
+    redirect.searchParams.set("code", request.authorizationCode.toString());
+    redirect.searchParams.set("state", request.state);
+
     return {
-      code: request.authorizationCode.code,
+      redirectUriWithAuthorizationCodeAndState: redirect.toString(),
     };
   }
 

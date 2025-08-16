@@ -11,14 +11,6 @@ export class AuthorizeRequestDto {
   client_id: string;
 
   @ApiProperty({
-    description: "Redirect URI after authorization",
-    example: "https://client.example.com/callback",
-  })
-  @IsString()
-  @IsNotEmpty()
-  redirect_uri: string;
-
-  @ApiProperty({
     description: 'Response type (must be "code" for Authorization Code flow)',
     example: "code",
     enum: ["code"],
@@ -50,8 +42,7 @@ export class AuthorizeRequestDto {
     example: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
   })
   @IsString()
-  @IsOptional()
-  code_challenge?: string;
+  code_challenge: string;
 
   @ApiProperty({
     description: 'PKCE code challenge method (must be "S256")',
@@ -60,6 +51,5 @@ export class AuthorizeRequestDto {
   })
   @IsString()
   @IsIn(["S256"])
-  @IsOptional()
-  code_challenge_method?: string;
+  code_challenge_method: string;
 }

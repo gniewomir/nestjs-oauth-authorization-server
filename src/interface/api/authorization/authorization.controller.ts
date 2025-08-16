@@ -61,7 +61,6 @@ export class AuthorizationController {
   ): Promise<void> {
     const request = await this.authorizationService.request({
       clientId: query.client_id,
-      redirectUri: query.redirect_uri,
       scope: query.scope,
       state: query.state,
       codeChallenge: query.code_challenge,
@@ -113,8 +112,8 @@ export class AuthorizationController {
     @Body() body: PromptRequestDto,
     @Res() res: Response,
   ): Promise<void> {
-    try {
-      const { code } = await this.authorizationService.submitPrompt({
+    const { redirectUriWithAuthorizationCodeAndState } =
+      await this.authorizationService.submitPrompt({
         requestId: body.request_id,
         credentials: {
           email: body.email,
@@ -124,34 +123,10 @@ export class AuthorizationController {
         scopes: body.scopes,
       });
 
-      // Redirect to client with authorization code
-      res.redirect(
-        HttpStatus.TEMPORARY_REDIRECT,
-        `/oauth/callback?code=${code}&state=${body.request_id}`,
-      );
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Authorization failed";
-      throw new HttpException(errorMessage, HttpStatus.UNAUTHORIZED);
-    }
-  }
-
-  @Get("callback")
-  @ApiOperation({
-    summary: "OAuth2 Callback Endpoint",
-    description: "Handles authorization code callback",
-  })
-  callback(
-    @Query("code") code: string,
-    @Query("state") state: string,
-    @Res() res: Response,
-  ): void {
-    // This would typically redirect to the original redirect_uri
-    // For now, we'll just return the authorization code
-    res.status(HttpStatus.OK).json({
-      code,
-      state,
-    });
+    res.redirect(
+      HttpStatus.TEMPORARY_REDIRECT,
+      redirectUriWithAuthorizationCodeAndState,
+    );
   }
 
   @Post("token")

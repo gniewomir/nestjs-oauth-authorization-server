@@ -12,7 +12,6 @@ import { OauthInvalidClientException } from "@domain/authentication/OAuth/Errors
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { OauthRedirectUriMismatchException } from "@domain/authentication/OAuth/Errors/OauthRedirectUriMismatchException";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
@@ -39,7 +38,6 @@ export class AuthorizationFacade {
       id: IdentityValue;
       responseType: ResponseTypeValue;
       clientId: IdentityValue;
-      redirectUri: RedirectUriValue;
       scope: ScopeValueImmutableSet;
       state: string;
       codeChallenge: string;
@@ -49,6 +47,7 @@ export class AuthorizationFacade {
     clients: ClientInterface,
   ): Promise<Request> {
     const client = await clients.retrieve(params.clientId);
+    const redirectUri = client.redirectUri;
     Assert(
       client.scope.isSupersetOf(params.scope),
       () =>
@@ -56,7 +55,13 @@ export class AuthorizationFacade {
           message: "Client do not have authorization for requested scope",
         }),
     );
-    const request = await Request.create(params, clients);
+    const request = await Request.create(
+      {
+        ...params,
+        redirectUri,
+      },
+      clients,
+    );
     await requests.persist(request);
     return request;
   }
@@ -110,12 +115,10 @@ export class AuthorizationFacade {
       clientId,
       code,
       codeVerifier,
-      redirectUri,
     }: {
       clientId: IdentityValue;
       code: string;
       codeVerifier: string;
-      redirectUri: RedirectUriValue;
     },
     requests: RequestInterface,
     PKCE: PKCEInterface,
@@ -126,6 +129,7 @@ export class AuthorizationFacade {
     clients: ClientInterface,
   ): Promise<TSignedTokens> {
     const request = await requests.getByAuthorizationCode(code);
+    const client = await clients.retrieve(request.clientId);
 
     Assert(
       request.clientId.isEqual(clientId),
@@ -136,7 +140,7 @@ export class AuthorizationFacade {
     );
 
     Assert(
-      request.redirectUri.isEqual(redirectUri),
+      request.redirectUri.isEqual(client.redirectUri),
       () =>
         new OauthRedirectUriMismatchException({
           message: "Mismatch between saved and provided redirectUri",
@@ -167,7 +171,6 @@ export class AuthorizationFacade {
     const user = await users.retrieve(
       IdentityValue.fromString(request.authorizationCode.sub),
     );
-    const client = await clients.retrieve(clientId);
 
     const tokens: Partial<TSignedTokens> = {};
 
