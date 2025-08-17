@@ -177,7 +177,7 @@ export class AuthorizationFacade {
       request.clientId.isEqual(clientId),
       () =>
         new OauthInvalidClientException({
-          message: "Invalid clientId",
+          message: "Provided clientId does not match authorization request",
         }),
     );
 
@@ -210,9 +210,10 @@ export class AuthorizationFacade {
           IdentityValue.fromString(request.authorizationCode.sub),
         );
       },
-      (error) =>
+      () =>
         new OauthServerErrorException({
-          message: error.message,
+          message:
+            "Could not find user associated with this authorization code",
         }),
     );
 
