@@ -71,7 +71,7 @@ describe("AuthorizationFacade", () => {
           new RequestDomainRepositoryInMemory(),
           clients,
         ),
-      ).rejects.toThrow("Client do not have authorization for requested scope");
+      ).rejects.toThrow("Requested scope unavailable for provided client");
     });
   });
   describe("prompt", () => {
@@ -254,7 +254,7 @@ describe("AuthorizationFacade", () => {
 
       Assert(authorizationCode !== null);
 
-      const { idToken, accessToken, expiration, refreshToken } =
+      const { idToken, accessToken, refreshToken, expiresAt } =
         await AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
@@ -276,13 +276,13 @@ describe("AuthorizationFacade", () => {
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        exp: expiration,
+        exp: expiresAt,
         scope: accessTokenScopesMother().toString(),
       });
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         exp:
-          expiration -
+          expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
         scope: refreshTokenScopesMother().toString(),
@@ -341,7 +341,7 @@ describe("AuthorizationFacade", () => {
 
       Assert(authorizationCode !== null);
 
-      const { idToken, accessToken, expiration, refreshToken } =
+      const { idToken, accessToken, expiresAt, refreshToken } =
         await AuthorizationFacade.codeExchange(
           {
             clientId: client.id,
@@ -363,13 +363,13 @@ describe("AuthorizationFacade", () => {
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        exp: expiration,
+        exp: expiresAt,
         scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         exp:
-          expiration -
+          expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
         scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),

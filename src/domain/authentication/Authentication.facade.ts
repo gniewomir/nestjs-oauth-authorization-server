@@ -2,6 +2,7 @@ import { Assert } from "@domain/Assert";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { OauthInvalidTokenException } from "@domain/authentication/OAuth/Errors/OauthInvalidTokenException";
+import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
 import { OauthTokenExpiredException } from "@domain/authentication/OAuth/Errors/OauthTokenExpiredException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -11,6 +12,7 @@ import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenP
 import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
+import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AuthConfig } from "@infrastructure/config/configs";
 
 export class AuthenticationFacade {
@@ -54,9 +56,20 @@ export class AuthenticationFacade {
     idToken: string;
   }> {
     const payload = await tokenPayloads.verify(refreshToken);
-    const user = await users.retrieve(IdentityValue.fromString(payload.sub));
-    const client = await clients.retrieve(
-      IdentityValue.fromString(payload.aud),
+    const user = await NotFoundToDomainException(
+      () => users.retrieve(IdentityValue.fromString(payload.sub)),
+      () =>
+        new OauthServerErrorException({
+          message: "subject of valid token does not exist in the system!",
+        }),
+    );
+    const client = await NotFoundToDomainException(
+      () => clients.retrieve(IdentityValue.fromString(payload.aud)),
+      () =>
+        new OauthServerErrorException({
+          message:
+            "audience of valid token (client) does not exist in the system!",
+        }),
     );
 
     Assert(
@@ -83,7 +96,9 @@ export class AuthenticationFacade {
     Assert(
       user.hasRefreshToken(IdentityValue.fromString(payload.jti), clock),
       () =>
-        new OauthInvalidTokenException({ message: "unknown refresh token" }),
+        new OauthInvalidTokenException({
+          message: "refresh token is not found on user",
+        }),
     );
 
     const idTokenPayload = IdTokenPayload.createIdToken({

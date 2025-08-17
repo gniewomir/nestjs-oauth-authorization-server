@@ -7,11 +7,12 @@ import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
 import { OauthInvalidClientException } from "@domain/authentication/OAuth/Errors/OauthInvalidClientException";
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
 import { OauthRedirectUriMismatchException } from "@domain/authentication/OAuth/Errors/OauthRedirectUriMismatchException";
+import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
@@ -23,13 +24,16 @@ import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/Pas
 import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
+import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AuthConfig } from "@infrastructure/config/configs";
 
 type TSignedTokens = {
   accessToken: string;
-  expiration: number;
+  expiresIn: number;
+  expiresAt: number;
   refreshToken?: string;
   idToken?: string;
+  scope: ScopeValueImmutableSet;
 };
 
 export class AuthorizationFacade {
@@ -46,13 +50,21 @@ export class AuthorizationFacade {
     requests: RequestInterface,
     clients: ClientInterface,
   ): Promise<Request> {
-    const client = await clients.retrieve(params.clientId);
+    const client = await NotFoundToDomainException(
+      () => clients.retrieve(params.clientId),
+      (error) =>
+        new OauthInvalidCredentialsException({
+          message: error.message,
+        }),
+    );
+
     const redirectUri = client.redirectUri;
+
     Assert(
       client.scope.isSupersetOf(params.scope),
       () =>
         new OauthInvalidScopeException({
-          message: "Client do not have authorization for requested scope",
+          message: "Requested scope unavailable for provided client",
         }),
     );
     const request = await Request.create(
@@ -82,8 +94,20 @@ export class AuthorizationFacade {
     clock: ClockInterface,
     authConfig: AuthConfig,
   ): Promise<Request> {
-    const request = await requests.retrieve(params.requestId);
-    const user = await users.getByEmail(params.credentials.email);
+    const request = await NotFoundToDomainException(
+      () => requests.retrieve(params.requestId),
+      (error) =>
+        new OauthInvalidRequestException({
+          message: error.message,
+        }),
+    );
+    const user = await NotFoundToDomainException(
+      () => users.getByEmail(params.credentials.email),
+      (error) =>
+        new OauthInvalidCredentialsException({
+          message: error.message,
+        }),
+    );
 
     Assert(
       params.credentials.email.isEqual(user.email),
@@ -92,6 +116,7 @@ export class AuthorizationFacade {
           message: "Email mismatch",
         }),
     );
+
     Assert(
       await params.credentials.password.matchHashedPassword(
         user.password,
@@ -128,8 +153,21 @@ export class AuthorizationFacade {
     tokenPayloads: TokenPayloadInterface,
     clients: ClientInterface,
   ): Promise<TSignedTokens> {
-    const request = await requests.getByAuthorizationCode(code);
-    const client = await clients.retrieve(request.clientId);
+    const request = await NotFoundToDomainException(
+      () => requests.getByAuthorizationCode(code),
+      () =>
+        new OauthInvalidCredentialsException({
+          message:
+            "There is no authorization request with matching authorization code",
+        }),
+    );
+    const client = await NotFoundToDomainException(
+      () => clients.retrieve(request.clientId),
+      (error) =>
+        new OauthServerErrorException({
+          message: error.message,
+        }),
+    );
 
     Assert(
       request.clientId.isEqual(clientId),
@@ -154,16 +192,24 @@ export class AuthorizationFacade {
         method: request.codeChallengeMethod,
       }),
       () =>
-        new OAuthAccessDeniedException({
+        new OauthInvalidCredentialsException({
           message: "Failed PKCE code challenge",
         }),
     );
 
     request.useAuthorizationCode(code, clock);
 
-    Assert(request.authorizationCode instanceof Code);
-    const user = await users.retrieve(
-      IdentityValue.fromString(request.authorizationCode.sub),
+    const user = await NotFoundToDomainException(
+      () => {
+        Assert(request.authorizationCode instanceof Code);
+        return users.retrieve(
+          IdentityValue.fromString(request.authorizationCode.sub),
+        );
+      },
+      (error) =>
+        new OauthServerErrorException({
+          message: error.message,
+        }),
     );
 
     const tokens: Partial<TSignedTokens> = {};
@@ -188,12 +234,13 @@ export class AuthorizationFacade {
      * accessToken is intended to authenticate api calls.
      * It should not be inspected by client.
      */
+    const accessTokenScope = request.scope
+      .add(ScopeValue.TOKEN_AUTHENTICATE())
+      .remove(ScopeValue.TOKEN_REFRESH());
     const accessTokenPayload = TokenPayload.createAccessToken({
       authConfig,
       user,
-      scope: request.scope
-        .add(ScopeValue.TOKEN_AUTHENTICATE())
-        .remove(ScopeValue.TOKEN_REFRESH()),
+      scope: accessTokenScope,
       clock,
       client,
     });
@@ -224,7 +271,9 @@ export class AuthorizationFacade {
     return {
       ...tokens,
       accessToken: tokens.accessToken,
-      expiration: accessTokenPayload.exp,
+      expiresIn: accessTokenPayload.exp - clock.nowAsSecondsSinceEpoch(),
+      expiresAt: accessTokenPayload.exp,
+      scope: accessTokenScope,
     } satisfies TSignedTokens;
   }
 }

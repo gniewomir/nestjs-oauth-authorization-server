@@ -500,7 +500,7 @@ describe("AuthenticationFacade", () => {
           users,
           clients,
         ),
-      ).rejects.toThrow("unknown refresh token");
+      ).rejects.toThrow("refresh token is not found on user");
     });
     it("rotates spent refresh token", async () => {
       const {

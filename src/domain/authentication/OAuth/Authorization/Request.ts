@@ -5,7 +5,7 @@ import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authoriza
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
+import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
@@ -99,7 +99,7 @@ export class Request {
     Assert(
       knownCode.use(clock) === code,
       () =>
-        new OAuthAccessDeniedException({
+        new OauthInvalidCredentialsException({
           message: "Failed authorization code verification",
         }),
     );
