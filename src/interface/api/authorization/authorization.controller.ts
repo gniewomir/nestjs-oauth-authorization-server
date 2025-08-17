@@ -227,12 +227,14 @@ export class AuthorizationController {
     throw new BadRequestException("Unknown user choice");
   }
 
-  renderErrorPage(exception: unknown, returnUrl?: string) {
+  private renderErrorPage(exception: unknown, returnUrl?: string) {
     Assert(exception instanceof Error);
 
     const serializeException = (exception: Error) => {
       // @ts-expect-error format stack in more readable way, without overthinking it
-      exception.stack = exception.stack?.split("\n").map((str) => str.trim());
+      exception.stack = exception.stack
+        ? exception.stack.split("\n").map((str) => str.trim())
+        : exception.stack;
       return this.appConfig.env === "development"
         ? JSON.stringify(exception, Object.getOwnPropertyNames(exception), 2)
         : undefined;
