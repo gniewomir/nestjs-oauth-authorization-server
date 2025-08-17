@@ -1,6 +1,6 @@
 import { Assert } from "@domain/Assert";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";

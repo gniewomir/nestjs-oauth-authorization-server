@@ -1,6 +1,8 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
-import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
+import {
+  OauthInvalidRequestException,
+  OauthInvalidScopeException,
+} from "@domain/authentication/OAuth/Errors";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";

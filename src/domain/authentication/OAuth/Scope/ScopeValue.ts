@@ -1,6 +1,8 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
-import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
+import {
+  OauthInvalidScopeException,
+  OauthServerErrorException,
+} from "@domain/authentication/OAuth/Errors";
 import { deepFreeze } from "@infrastructure/config/configs/utility";
 
 type TScopeDescription = {

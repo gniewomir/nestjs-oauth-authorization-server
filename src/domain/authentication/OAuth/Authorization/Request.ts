@@ -5,8 +5,10 @@ import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authoriza
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import {
+  OauthInvalidCredentialsException,
+  OauthInvalidRequestException,
+} from "@domain/authentication/OAuth/Errors";
 import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { ClockInterface } from "@domain/Clock.interface";

@@ -1,5 +1,5 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors";
 
 enum CodeChallengeMethodsEnum {
   S256 = "S256",

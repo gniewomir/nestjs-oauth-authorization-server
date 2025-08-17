@@ -1,8 +1,10 @@
 import { Assert } from "@domain/Assert";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
-import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
-import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
+import {
+  OauthInvalidCredentialsException,
+  OauthInvalidRequestException,
+  OauthServerErrorException,
+} from "@domain/authentication/OAuth/Errors";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";

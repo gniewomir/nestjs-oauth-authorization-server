@@ -20,10 +20,12 @@ import { Response } from "express";
 
 import { AuthorizationService } from "@application/authorization/authorization.service";
 import { Assert } from "@domain/Assert";
-import { OauthException } from "@domain/authentication/OAuth/Errors/OauthException";
-import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
-import { OauthUnsupportedGrantTypeException } from "@domain/authentication/OAuth/Errors/OauthUnsupportedGrantTypeException";
+import {
+  OauthException,
+  OauthInvalidCredentialsException,
+  OauthInvalidRequestException,
+  OauthUnsupportedGrantTypeException,
+} from "@domain/authentication/OAuth/Errors";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AppConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";

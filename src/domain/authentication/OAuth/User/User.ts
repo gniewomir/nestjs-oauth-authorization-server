@@ -1,5 +1,5 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
 import { UniqueEmailSpecification } from "@domain/authentication/OAuth/User/UniqueEmail.specification";

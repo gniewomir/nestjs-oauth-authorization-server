@@ -8,14 +8,16 @@ import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Req
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { OauthInvalidClientException } from "@domain/authentication/OAuth/Errors/OauthInvalidClientException";
-import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
-import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
-import { OauthInvalidTokenException } from "@domain/authentication/OAuth/Errors/OauthInvalidTokenException";
-import { OauthRedirectUriMismatchException } from "@domain/authentication/OAuth/Errors/OauthRedirectUriMismatchException";
-import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
-import { OauthTokenExpiredException } from "@domain/authentication/OAuth/Errors/OauthTokenExpiredException";
+import {
+  OauthInvalidClientException,
+  OauthInvalidCredentialsException,
+  OauthInvalidRequestException,
+  OauthInvalidScopeException,
+  OauthInvalidTokenException,
+  OauthRedirectUriMismatchException,
+  OauthServerErrorException,
+  OauthTokenExpiredException,
+} from "@domain/authentication/OAuth/Errors";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";

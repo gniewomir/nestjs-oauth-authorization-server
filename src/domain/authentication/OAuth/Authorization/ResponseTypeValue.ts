@@ -1,5 +1,5 @@
 import { Assert } from "@domain/Assert";
-import { OauthUnsupportedResponseTypeException } from "@domain/authentication/OAuth/Errors/OauthUnsupportedResponseTypeException";
+import { OauthUnsupportedResponseTypeException } from "@domain/authentication/OAuth/Errors";
 
 export class ResponseTypeValue {
   private constructor(private readonly responseType: string) {

@@ -1,5 +1,5 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors/OauthInvalidScopeException";
+import { OauthInvalidScopeException } from "@domain/authentication/OAuth/Errors";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 
 export class ScopeValueImmutableSet implements Iterable<ScopeValue> {

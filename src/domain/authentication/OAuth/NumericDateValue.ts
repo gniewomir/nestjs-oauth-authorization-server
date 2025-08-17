@@ -1,7 +1,7 @@
 import { isInt } from "class-validator";
 
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors";
 
 /**
  * A JSON numeric value representing the number of seconds from 1970-01-01T00:00:00Z UTC

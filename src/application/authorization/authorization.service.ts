@@ -21,8 +21,10 @@ import {
   ClientInterface,
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
-import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
+import {
+  OauthInvalidRequestException,
+  OauthServerErrorException,
+} from "@domain/authentication/OAuth/Errors";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import {

@@ -1,5 +1,5 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors";
 import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 
 export class PasswordValue {
