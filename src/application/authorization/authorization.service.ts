@@ -22,6 +22,7 @@ import {
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import {
@@ -40,6 +41,7 @@ import {
 } from "@domain/authentication/OAuth/User/Users.interface";
 import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
+import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 
 @Injectable()
@@ -131,22 +133,31 @@ export class AuthorizationService {
   }
 
   async preparePrompt({ requestId }: { requestId: string }) {
-    const request = await this.requests.retrieve(
-      IdentityValue.fromString(requestId),
+    const request = await NotFoundToDomainException(
+      () => this.requests.retrieve(IdentityValue.fromString(requestId)),
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `Authorization request not found`,
+        }),
     );
-    const client = await this.clients.retrieve(request.clientId);
+
+    const client = await NotFoundToDomainException(
+      () => this.clients.retrieve(request.clientId),
+      (error) =>
+        new OauthServerErrorException({
+          message: error.message,
+        }),
+    );
     return {
       allowRememberMe: request.scope.hasScope(
         ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
       ),
-      requestId: request.id.toString(),
       requestedScopes: request.scope.describe(),
-      redirectUri: request.redirectUri.toString(),
       clientName: client.name,
     };
   }
 
-  async submitPrompt(params: {
+  async ownerAuthorized(params: {
     requestId: string;
     credentials: {
       email: string;
@@ -182,6 +193,22 @@ export class AuthorizationService {
 
     return {
       redirectUriWithAuthorizationCodeAndState: redirect.toString(),
+    };
+  }
+
+  async ownerDenied({ requestId }: { requestId: string }): Promise<{
+    redirectUriWithAccessDeniedErrorAndState: string;
+  }> {
+    const request = await this.requests.retrieve(
+      IdentityValue.fromUnknown(requestId),
+    );
+
+    const redirect = request.redirectUri.toURL();
+    redirect.searchParams.set("error", "access_denied");
+    redirect.searchParams.set("state", request.state);
+
+    return {
+      redirectUriWithAccessDeniedErrorAndState: redirect.toString(),
     };
   }
 

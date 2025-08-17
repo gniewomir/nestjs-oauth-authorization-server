@@ -92,30 +92,6 @@
             border-color: #000;
         }
 
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 16px;
-            padding: 16px;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            transition: border-color 0.2s ease;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-top: 2px;
-            accent-color: #000;
-        }
-
-        .checkbox-group label {
-            flex: 1;
-            margin-bottom: 0;
-            cursor: pointer;
-        }
-
         .remember-me {
             display: flex;
             align-items: center;
@@ -176,13 +152,7 @@
         }
 
         .error {
-            background: #f8d7da;
             color: #721c24;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border: 1px solid #f5c6cb;
         }
 
         .client-info {
@@ -231,30 +201,6 @@
                 width: 100%;
             }
         }
-
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #000;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -266,20 +212,26 @@
 
         <div class="form-container">
 
-            <form method="POST" action="{{ submitUrl }}" id="authForm">
+            <form method="POST" id="authForm">
                 <input type="hidden" name="request_id" value="{{requestId}}">
                 
                 <div class="section">
                     <h2>Sign In</h2>
+
+                    {{#with errorObject}}
+                        <div class="form-group">
+                            <strong class="error">{{errorMessage}}</strong>
+                        </div>
+                    {{/with}}
                     
                     <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" class="form-control" required>
+                        <label for="email" class="error">Email Address</label>
+                        <input type="email" id="email" name="email" class="form-control">
                     </div>
                     
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" name="password" class="form-control" required>
+                        <input type="password" id="password" name="password" class="form-control">
                     </div>
 
                     {{#if allowRememberMe}}
@@ -298,100 +250,11 @@
                 </div>
 
                 <div class="actions">
-                    <button type="submit" class="btn btn-primary" id="authorizeBtn">Authorize</button>
-                    <button type="button" class="btn btn-secondary" onclick="cancelAuthorization()">Cancel</button>
+                    <button type="submit" name="choice" value="authorize" class="btn btn-primary" id="authorizeBtn">Authorize</button>
+                    <button type="submit" name="choice" value="deny" class="btn btn-secondary">Deny</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('authForm');
-            const authorizeBtn = document.getElementById('authorizeBtn');
-            
-            // Form validation
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value;
-
-                if (!email) {
-                    showError('Please enter your email address');
-                    return;
-                }
-                
-                if (!password) {
-                    showError('Please enter your password');
-                    return;
-                }
-
-                // Show loading state
-                authorizeBtn.disabled = true;
-                authorizeBtn.textContent = 'Authorizing...';
-                form.classList.add('loading');
-                
-                // Submit form
-                form.submit();
-            });
-            
-            // Real-time validation
-            const emailInput = document.getElementById('email');
-            const passwordInput = document.getElementById('password');
-            
-            emailInput.addEventListener('blur', function() {
-                if (this.value.trim() && !isValidEmail(this.value)) {
-                    showError('Please enter a valid email address');
-                } else {
-                    clearError();
-                }
-            });
-            
-            passwordInput.addEventListener('blur', function() {
-                if (this.value && this.value.length < 6) {
-                    showError('Password must be at least 6 characters long');
-                } else {
-                    clearError();
-                }
-            });
-        });
-        
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-        
-        function showError(message) {
-            clearError();
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            
-            const form = document.getElementById('authForm');
-            form.insertBefore(errorDiv, form.firstChild);
-        }
-        
-        function clearError() {
-            const existingError = document.querySelector('.error');
-            if (existingError) {
-                existingError.remove();
-            }
-        }
-        
-        function cancelAuthorization() {
-            if (confirm('Are you sure you want to cancel the authorization? This will redirect you back to the application.')) {
-                window.location.href = '{{redirectUri}}?error=access_denied&state={{state}}';
-            }
-        }
-        
-        // Handle browser back button
-        window.addEventListener('beforeunload', function(e) {
-            if (document.getElementById('authForm').classList.contains('loading')) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
-    </script>
 </body>
 </html>

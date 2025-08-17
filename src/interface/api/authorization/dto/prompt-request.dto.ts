@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
-  IsArray,
   IsBoolean,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -42,13 +42,11 @@ export class PromptRequestDto {
   remember_me?: boolean;
 
   @ApiProperty({
-    description: "Selected scopes",
-    example: ["task:api", "token:authenticate"],
-    required: false,
-    type: [String],
+    description: "User choice - authorize or deny",
+    example: "authorize",
+    required: true,
+    enum: ["authorize", "deny"],
   })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  scopes?: string[];
+  @IsIn(["authorize", "deny"])
+  choice: string;
 }

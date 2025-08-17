@@ -4,21 +4,13 @@ import * as Handlebars from "handlebars";
 
 import { TemplateInterface } from "@interface/api/authorization/template/Template.interface";
 
-export interface PromptTemplateData {
-  requestId: string;
-  clientName: string;
-  redirectUri: string;
-  requestedScopes: string;
-  state: string;
-  taskApi: boolean;
-  adminApi: boolean;
-  tokenAuthenticate: boolean;
-  tokenRefresh: boolean;
-  tokenRefreshLargeTtl: boolean;
-}
-
 @Injectable()
 export class TemplateService implements TemplateInterface {
+  private readonly templateCache = new Map<
+    string,
+    HandlebarsTemplateDelegate
+  >();
+
   async renderTemplate(
     path: string,
     data: Record<string, unknown>,
@@ -26,10 +18,6 @@ export class TemplateService implements TemplateInterface {
     const template = await this.getTemplate(path);
     return template(data);
   }
-  private readonly templateCache = new Map<
-    string,
-    HandlebarsTemplateDelegate
-  >();
 
   private async getTemplate(
     templatePath: string,

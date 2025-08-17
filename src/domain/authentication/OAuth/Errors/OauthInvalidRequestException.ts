@@ -6,12 +6,14 @@ import {
 } from "@domain/authentication/OAuth/Errors/OauthException";
 
 export class OauthInvalidRequestException extends OauthException {
+  public static readonly DEFAULT_CODE = "invalid_request";
+  public static readonly DEFAULT_DESCRIPTION =
+    "The request is missing a required parameter, includes an invalid value, or is malformed.";
   constructor(params: TOauthExceptionConstructorParm = {}) {
     super({
-      errorCode: "invalid_request",
+      errorCode: OauthInvalidRequestException.DEFAULT_CODE,
       statusCode: HttpStatus.BAD_REQUEST,
-      errorDescription:
-        "The request is missing a required parameter, includes an invalid value, or is malformed.",
+      errorDescription: OauthInvalidRequestException.DEFAULT_DESCRIPTION,
       ...params,
     });
   }

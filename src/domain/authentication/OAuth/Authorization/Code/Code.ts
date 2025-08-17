@@ -1,6 +1,6 @@
 import { Assert } from "@domain/Assert";
 import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
-import { OAuthAccessDeniedException } from "@domain/authentication/OAuth/Errors/OauthAccessDeniedException";
+import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/OauthServerErrorException";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
@@ -102,14 +102,14 @@ export class Code {
     Assert(
       !this.used,
       () =>
-        new OAuthAccessDeniedException({
+        new OauthInvalidCredentialsException({
           message: "Authorization Code already used!",
         }),
     );
     Assert(
       this.exp > clock.nowAsSecondsSinceEpoch(),
       () =>
-        new OAuthAccessDeniedException({
+        new OauthInvalidCredentialsException({
           message: "Authorization code expired!",
         }),
     );

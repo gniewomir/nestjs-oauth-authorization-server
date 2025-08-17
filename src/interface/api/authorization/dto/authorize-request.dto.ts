@@ -22,14 +22,14 @@ export class AuthorizeRequestDto {
   @ApiProperty({
     description: "Requested scopes (space-separated)",
     example: "task:api admin:api",
-    required: false,
+    required: true,
   })
   @IsString()
-  @IsOptional()
-  scope?: string;
+  scope: string;
 
   @ApiProperty({
-    description: "State parameter for CSRF protection",
+    description:
+      "State parameter for CSRF protection and keeping track of the request on the client side",
     example: "random-state-string",
     required: false,
   })
@@ -47,9 +47,9 @@ export class AuthorizeRequestDto {
   @ApiProperty({
     description: 'PKCE code challenge method (must be "S256")',
     example: "S256",
-    enum: ["S256"],
+    enum: ["S256", "plain"],
   })
   @IsString()
-  @IsIn(["S256"])
+  @IsIn(["S256", "plain"])
   code_challenge_method: string;
 }

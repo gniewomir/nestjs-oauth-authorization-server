@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -16,6 +17,8 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 
 import { AuthorizationService } from "@application/authorization/authorization.service";
+import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
+import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { TemplateService } from "@infrastructure/template/template.service";
 import { TemplateInterfaceSymbol } from "@interface/api/authorization/template/Template.interface";
 
@@ -39,12 +42,11 @@ export class AuthorizationController {
     description: "Initiates OAuth2 Authorization Code flow with PKCE",
   })
   @ApiQuery({ name: "client_id", required: true })
-  @ApiQuery({ name: "redirect_uri", required: true })
   @ApiQuery({ name: "response_type", required: true })
-  @ApiQuery({ name: "scope", required: false })
+  @ApiQuery({ name: "scope", required: true })
   @ApiQuery({ name: "state", required: false })
-  @ApiQuery({ name: "code_challenge", required: true })
-  @ApiQuery({ name: "code_challenge_method", required: true })
+  @ApiQuery({ name: "code_challenge", required: false })
+  @ApiQuery({ name: "code_challenge_method", required: false })
   @ApiResponse({
     status: HttpStatus.TEMPORARY_REDIRECT,
     description: "Redirect to authorization prompt",
@@ -85,13 +87,35 @@ export class AuthorizationController {
     status: 200,
     description: "Authorization prompt HTML page",
   })
-  async getPrompt(@Query("request_id") requestId: string): Promise<string> {
-    const data = await this.authorizationService.preparePrompt({ requestId });
+  async getPrompt(
+    @Query("request_id") requestId: string,
+    @Query("error") error?: string,
+  ): Promise<string> {
+    const { requestedScopes, clientName, allowRememberMe } =
+      await this.authorizationService.preparePrompt({
+        requestId,
+      });
+
+    const errorObject = {
+      [OauthInvalidCredentialsException.DEFAULT_CODE]: {
+        errorCode: OauthInvalidCredentialsException.DEFAULT_CODE,
+        errorMessage: OauthInvalidCredentialsException.DEFAULT_DESCRIPTION,
+      },
+      [OauthInvalidRequestException.DEFAULT_CODE]: {
+        errorCode: OauthInvalidRequestException.DEFAULT_CODE,
+        errorMessage: "Did you provided a valid email?",
+      },
+      "no-error": undefined,
+    }[error || "no-error"];
+
     return this.templateService.renderTemplate(
       path.join(__dirname, "template", "prompt.html"),
       {
-        ...data,
-        submitUrl: "/oauth/prompt",
+        requestId,
+        requestedScopes,
+        clientName,
+        allowRememberMe,
+        errorObject,
       },
     );
   }
@@ -117,21 +141,52 @@ export class AuthorizationController {
   async postPrompt(
     @Body() body: PromptRequestDto,
   ): Promise<HttpRedirectResponse> {
-    const { redirectUriWithAuthorizationCodeAndState } =
-      await this.authorizationService.submitPrompt({
-        requestId: body.request_id,
-        credentials: {
-          email: body.email,
-          password: body.password,
-          rememberMe: body.remember_me || false,
-        },
-        scopes: body.scopes,
-      });
+    if (body.choice === "deny") {
+      const { redirectUriWithAccessDeniedErrorAndState } =
+        await this.authorizationService.ownerDenied({
+          requestId: body.request_id,
+        });
 
-    return {
-      url: redirectUriWithAuthorizationCodeAndState,
-      statusCode: HttpStatus.FOUND,
-    } satisfies HttpRedirectResponse;
+      return {
+        url: redirectUriWithAccessDeniedErrorAndState,
+        statusCode: HttpStatus.FOUND,
+      } satisfies HttpRedirectResponse;
+    }
+
+    if (body.choice === "authorize") {
+      try {
+        const { redirectUriWithAuthorizationCodeAndState } =
+          await this.authorizationService.ownerAuthorized({
+            requestId: body.request_id,
+            credentials: {
+              email: body.email,
+              password: body.password,
+              rememberMe: body.remember_me || false,
+            },
+          });
+
+        return {
+          url: redirectUriWithAuthorizationCodeAndState,
+          statusCode: HttpStatus.FOUND,
+        } satisfies HttpRedirectResponse;
+      } catch (error) {
+        if (error instanceof OauthInvalidCredentialsException) {
+          return {
+            url: `/oauth/prompt?request_id=${body.request_id}&error=${error.errorCode}`,
+            statusCode: HttpStatus.FOUND,
+          } satisfies HttpRedirectResponse;
+        }
+        if (error instanceof OauthInvalidRequestException) {
+          return {
+            url: `/oauth/prompt?request_id=${body.request_id}&error=${error.errorCode}`,
+            statusCode: HttpStatus.FOUND,
+          } satisfies HttpRedirectResponse;
+        }
+        throw error;
+      }
+    }
+
+    throw new BadRequestException("Unknown user choice");
   }
 
   @Post("token")

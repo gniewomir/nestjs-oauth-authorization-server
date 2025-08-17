@@ -31,6 +31,10 @@ export class RedirectUriValue {
     return new RedirectUriValue(new URL(uri));
   }
 
+  public toURL(): URL {
+    return new URL(this.parsedUrl.toString());
+  }
+
   public toString(): string {
     return this.parsedUrl.toString();
   }
