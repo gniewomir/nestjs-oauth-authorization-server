@@ -4,7 +4,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
   HttpRedirectResponse,
   HttpStatus,
   Inject,
@@ -22,6 +21,7 @@ import { TemplateInterfaceSymbol } from "@interface/api/authorization/template/T
 
 import { AuthorizeRequestDto } from "./dto/authorize-request.dto";
 import { PromptRequestDto } from "./dto/prompt-request.dto";
+import { TokenRequestDto } from "./dto/token-request.dto";
 import { TokenResponseDto } from "./dto/token-response.dto";
 
 @ApiTags("OAuth2 Authorization")
@@ -141,10 +141,45 @@ export class AuthorizationController {
       "Exchanges authorization code for tokens or refreshes access tokens",
   })
   @ApiResponse({
-    status: 501,
-    description: "Not implemented",
+    status: 200,
+    description: "Token response",
+    type: TokenResponseDto,
   })
-  token(): TokenResponseDto {
-    throw new HttpException("Not implemented", HttpStatus.NOT_IMPLEMENTED);
+  @ApiResponse({
+    status: 400,
+    description: "Invalid request parameters",
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Invalid authorization code or credentials",
+  })
+  async token(@Body() body: TokenRequestDto): Promise<TokenResponseDto> {
+    if (body.grant_type === "authorization_code") {
+      const {
+        idToken,
+        refreshToken,
+        accessToken,
+        expiresIn,
+        scope,
+        tokenType,
+      } = await this.authorizationService.codeExchange({
+        clientId: body.client_id,
+        code: body.code,
+        codeVerifier: body.code_verifier,
+      });
+
+      return {
+        id_token: idToken,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: expiresIn,
+        scope,
+        token_type: tokenType,
+      } satisfies TokenResponseDto;
+    }
+    if (body.grant_type === "refresh_token") {
+      throw new Error("Not implemented");
+    }
+    throw new Error("Not implemented");
   }
 }

@@ -22,7 +22,6 @@ import {
   ClientInterfaceSymbol,
 } from "@domain/authentication/OAuth/Client/Client.interface";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import {
@@ -186,18 +185,63 @@ export class AuthorizationService {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
-  async codeExchange(params: {
-    clientId: IdentityValue;
-    code: string;
-    codeVerifier: string;
-    redirectUri: RedirectUriValue;
-  }): Promise<{
-    accessToken: string;
-    expiration: number;
-    refreshToken: string;
-    idToken: string;
-  }> {
-    throw new Error("Not implemented");
+  async codeExchange({
+    clientId,
+    code,
+    codeVerifier,
+  }: {
+    clientId: string | undefined;
+    code: string | undefined;
+    codeVerifier: string | undefined;
+  }) {
+    Assert(
+      typeof clientId === "string" && IdentityValue.isValid(clientId),
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "Invalid client ID",
+        }),
+    );
+
+    Assert(
+      typeof code === "string",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "Authorization code is required",
+        }),
+    );
+
+    Assert(
+      typeof codeVerifier === "string" || this.appConfig.env !== "production",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription:
+            "Code verifier is required in production environment",
+        }),
+    );
+
+    const { accessToken, idToken, expiresIn, refreshToken, scope } =
+      await AuthorizationFacade.codeExchange(
+        {
+          clientId: IdentityValue.fromString(clientId),
+          code: code,
+          codeVerifier: codeVerifier || "",
+        },
+        this.requests,
+        this.pkce,
+        this.clock,
+        this.authConfig,
+        this.users,
+        this.tokenPayloads,
+        this.clients,
+      );
+
+    return {
+      accessToken,
+      refreshToken,
+      idToken,
+      expiresIn,
+      scope: scope.toString(),
+      tokenType: "Bearer",
+    };
   }
 }
