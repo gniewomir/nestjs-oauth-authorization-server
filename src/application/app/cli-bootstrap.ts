@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
+import { CliExceptionFilter } from "@application/app/cli-exception-filter";
 import { AppConfig } from "@infrastructure/config/configs";
 import {
   LoggerInterface,
@@ -19,7 +20,7 @@ type TCommandPayload = (context: {
   appConfig: AppConfig;
 }) => Promise<void>;
 
-export async function commandBootstrap({
+export async function cliBootstrap({
   baseModule,
   name,
   payload,
@@ -42,7 +43,11 @@ export async function commandBootstrap({
 
   logger.info(`Environment => ${appConfig.env}`);
 
-  await payload({ application: command, logger, appConfig });
+  try {
+    await payload({ application: command, logger, appConfig });
+  } catch (error) {
+    new CliExceptionFilter().log(error);
+  }
 
   await command.close();
 }

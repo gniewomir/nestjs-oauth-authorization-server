@@ -1,7 +1,7 @@
 import { clientMother, userMother } from "@test/domain/authentication";
 import { rememberMeTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 
-import { commandBootstrap } from "@application/app";
+import { cliBootstrap } from "@application/app";
 import { Assert } from "@domain/Assert";
 import { ClientInterfaceSymbol } from "@domain/authentication/OAuth/Client/Client.interface";
 import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
@@ -15,7 +15,7 @@ import { UserDomainRepository } from "@infrastructure/repositories/domain/authen
 import { PasswordService } from "@infrastructure/security/password";
 import { SeedModule } from "@interface/cli/seed/seed.module";
 
-void commandBootstrap({
+void cliBootstrap({
   name: "test:manual:seed",
   baseModule: SeedModule,
   payload: async ({ application, logger, appConfig }) => {

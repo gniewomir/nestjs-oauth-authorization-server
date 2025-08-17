@@ -26,7 +26,7 @@ export interface OauthErrorResponse {
 }
 
 @Catch()
-export class CustomExceptionFilter implements ExceptionFilter {
+export class AppExceptionFilter implements ExceptionFilter {
   private readonly logger = new LoggerService();
 
   catch(exception: unknown, host: ArgumentsHost): void {
