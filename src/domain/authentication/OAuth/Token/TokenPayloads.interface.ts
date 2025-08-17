@@ -1,6 +1,6 @@
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 
-export interface TokenPayloadInterface {
+export interface TokenPayloadsInterface {
   sign(tokenPayload: Record<string, unknown>): Promise<string>;
 
   decode(token: string): Promise<TokenPayload>;

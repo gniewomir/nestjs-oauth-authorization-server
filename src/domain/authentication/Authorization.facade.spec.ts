@@ -211,7 +211,7 @@ describe("AuthorizationFacade", () => {
       ).rejects.toThrow("User not found");
     });
   });
-  describe("codeExchange", () => {
+  describe("authorizationCodeGrant", () => {
     it("allows exchange of authorization code for tokens", async () => {
       const scope = defaultTestClientScopesMother();
       const {
@@ -264,7 +264,7 @@ describe("AuthorizationFacade", () => {
       Assert(authorizationCode !== null);
 
       const { idToken, accessToken, refreshToken, expiresAt } =
-        await AuthorizationFacade.codeExchange(
+        await AuthorizationFacade.authorizationCodeGrant(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -351,7 +351,7 @@ describe("AuthorizationFacade", () => {
       Assert(authorizationCode !== null);
 
       const { idToken, accessToken, expiresAt, refreshToken } =
-        await AuthorizationFacade.codeExchange(
+        await AuthorizationFacade.authorizationCodeGrant(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -435,7 +435,7 @@ describe("AuthorizationFacade", () => {
 
       Assert(authorizationCode !== null);
 
-      await AuthorizationFacade.codeExchange(
+      await AuthorizationFacade.authorizationCodeGrant(
         {
           clientId: client.id,
           code: authorizationCode.toString(),
@@ -451,7 +451,7 @@ describe("AuthorizationFacade", () => {
       );
 
       await expect(
-        AuthorizationFacade.codeExchange(
+        AuthorizationFacade.authorizationCodeGrant(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -519,7 +519,7 @@ describe("AuthorizationFacade", () => {
       clock.timeTravelSeconds(authorizationCode.exp);
 
       await expect(
-        AuthorizationFacade.codeExchange(
+        AuthorizationFacade.authorizationCodeGrant(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -587,7 +587,7 @@ describe("AuthorizationFacade", () => {
       Assert(authorizationCode !== null);
 
       await expect(
-        AuthorizationFacade.codeExchange(
+        AuthorizationFacade.authorizationCodeGrant(
           {
             clientId: client.id,
             code: authorizationCode.toString(),
@@ -655,7 +655,7 @@ describe("AuthorizationFacade", () => {
 
       Assert(authorizationCode !== null);
 
-      const { refreshToken } = await AuthorizationFacade.codeExchange(
+      const { refreshToken } = await AuthorizationFacade.authorizationCodeGrant(
         {
           clientId: client.id,
           code: authorizationCode.toString(),
@@ -683,7 +683,7 @@ describe("AuthorizationFacade", () => {
       ).toEqual(true);
     });
   });
-  describe("refresh", () => {
+  describe("refreshTokenGrant", () => {
     it("accepts valid refresh token", async () => {
       const { tokenPayloads, clock, authConfig, refreshToken, users, clients } =
         await createAuthenticationTestContext({
@@ -693,7 +693,7 @@ describe("AuthorizationFacade", () => {
         });
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           refreshToken || "",
           tokenPayloads,
           clock,
@@ -718,8 +718,8 @@ describe("AuthorizationFacade", () => {
 
       Assert(typeof receivedRefreshToken !== "undefined");
 
-      const { idToken, accessToken, refreshToken, expiration } =
-        await AuthorizationFacade.refresh(
+      const { idToken, accessToken, refreshToken, expiresAt } =
+        await AuthorizationFacade.refreshTokenGrant(
           receivedRefreshToken,
           tokenPayloads,
           clock,
@@ -728,16 +728,18 @@ describe("AuthorizationFacade", () => {
           clients,
         );
 
+      Assert(scope.hasScope(ScopeValue.PROFILE()) && !!idToken);
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        exp: expiration,
+        exp: expiresAt,
         scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
+      Assert(scope.hasScope(ScopeValue.TOKEN_REFRESH()) && !!refreshToken);
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         exp:
-          expiration -
+          expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
         scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
@@ -758,18 +760,20 @@ describe("AuthorizationFacade", () => {
 
       Assert(typeof receivedRefreshToken !== "undefined");
 
-      const { accessToken, refreshToken } = await AuthorizationFacade.refresh(
-        receivedRefreshToken,
-        tokenPayloads,
-        clock,
-        authConfig,
-        users,
-        clients,
-      );
+      const { accessToken, refreshToken } =
+        await AuthorizationFacade.refreshTokenGrant(
+          receivedRefreshToken,
+          tokenPayloads,
+          clock,
+          authConfig,
+          users,
+          clients,
+        );
 
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
+      Assert(scope.hasScope(ScopeValue.TOKEN_REFRESH()) && !!refreshToken);
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
       });
@@ -789,8 +793,8 @@ describe("AuthorizationFacade", () => {
 
       Assert(typeof receivedRefreshToken !== "undefined");
 
-      const { accessToken, refreshToken, expiration } =
-        await AuthorizationFacade.refresh(
+      const { accessToken, refreshToken, expiresAt } =
+        await AuthorizationFacade.refreshTokenGrant(
           receivedRefreshToken,
           tokenPayloads,
           clock,
@@ -802,9 +806,10 @@ describe("AuthorizationFacade", () => {
       await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
         scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
+      Assert(scope.hasScope(ScopeValue.TOKEN_REFRESH()) && !!refreshToken);
       await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
         exp:
-          expiration -
+          expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
         scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
@@ -817,7 +822,7 @@ describe("AuthorizationFacade", () => {
       Assert(typeof idToken !== "undefined");
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           idToken,
           tokenPayloads,
           clock,
@@ -832,7 +837,7 @@ describe("AuthorizationFacade", () => {
         await createAuthenticationTestContext();
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           accessToken,
           tokenPayloads,
           clock,
@@ -854,7 +859,7 @@ describe("AuthorizationFacade", () => {
       Assert(typeof refreshToken !== "undefined");
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           refreshToken,
           tokenPayloads,
           clock,
@@ -869,7 +874,7 @@ describe("AuthorizationFacade", () => {
         await createAuthenticationTestContext();
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           randomString(1024),
           tokenPayloads,
           clock,
@@ -905,7 +910,7 @@ describe("AuthorizationFacade", () => {
       );
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           accessTokenWithInvalidSignature,
           tokenPayloads,
           clock,
@@ -941,7 +946,7 @@ describe("AuthorizationFacade", () => {
       );
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           invalidRefreshToken,
           tokenPayloads,
           clock,
@@ -967,7 +972,7 @@ describe("AuthorizationFacade", () => {
       const invalidRefreshToken = await newRefreshToken.sign(tokenPayloads);
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           invalidRefreshToken,
           tokenPayloads,
           clock,
@@ -992,7 +997,7 @@ describe("AuthorizationFacade", () => {
         await notStoredRefreshToken.sign(tokenPayloads);
 
       await expect(
-        AuthorizationFacade.refresh(
+        AuthorizationFacade.refreshTokenGrant(
           signedNotStoredRefreshToken,
           tokenPayloads,
           clock,
@@ -1016,7 +1021,7 @@ describe("AuthorizationFacade", () => {
       Assert(typeof spentRefreshToken !== "undefined");
 
       const { refreshToken: issuedRefreshToken } =
-        await AuthorizationFacade.refresh(
+        await AuthorizationFacade.refreshTokenGrant(
           spentRefreshToken,
           tokenPayloads,
           clock,
@@ -1027,6 +1032,7 @@ describe("AuthorizationFacade", () => {
 
       const decodedUsedRefreshToken =
         await tokenPayloads.decode(spentRefreshToken);
+      Assert(issuedRefreshToken !== undefined);
       const decodedIssuedRefreshToken =
         await tokenPayloads.decode(issuedRefreshToken);
       const freshUser = await users.retrieve(user.identity);

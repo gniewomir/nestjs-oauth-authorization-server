@@ -2,7 +2,7 @@ import { Assert } from "@domain/Assert";
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { User } from "@domain/authentication/OAuth/User/User";
 import { ClockInterface } from "@domain/Clock.interface";
@@ -107,7 +107,7 @@ export class IdTokenPayload {
     });
   }
 
-  public async sign(tokenInterface: TokenPayloadInterface): Promise<string> {
+  public async sign(tokenInterface: TokenPayloadsInterface): Promise<string> {
     return await tokenInterface.sign(Object.fromEntries(Object.entries(this)));
   }
 }

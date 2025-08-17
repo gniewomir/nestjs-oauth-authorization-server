@@ -4,7 +4,7 @@ import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Error
 import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { User } from "@domain/authentication/OAuth/User/User";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
@@ -144,7 +144,7 @@ export class TokenPayload {
     return ScopeValueImmutableSet.fromString(this.scope).hasScope(scope);
   }
 
-  public async sign(tokenInterface: TokenPayloadInterface): Promise<string> {
+  public async sign(tokenInterface: TokenPayloadsInterface): Promise<string> {
     return await tokenInterface.sign(Object.fromEntries(Object.entries(this)));
   }
 

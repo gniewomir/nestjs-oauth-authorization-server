@@ -4,14 +4,14 @@ import { OauthInvalidTokenException } from "@domain/authentication/OAuth/Errors/
 import { OauthTokenExpiredException } from "@domain/authentication/OAuth/Errors/OauthTokenExpiredException";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { ClockInterface } from "@domain/Clock.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
 
 export class AuthenticationFacade {
   public static async authenticate(
     token: string,
-    tokenPayloads: TokenPayloadInterface,
+    tokenPayloads: TokenPayloadsInterface,
     clock: ClockInterface,
     authConfig: AuthConfig,
   ): Promise<TokenPayload> {

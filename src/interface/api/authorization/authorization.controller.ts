@@ -320,8 +320,26 @@ export class AuthorizationController {
       } satisfies TokenResponseDto;
     }
     if (body.grant_type === "refresh_token") {
-      throw new Error("Not implemented");
+      const {
+        idToken,
+        refreshToken,
+        accessToken,
+        expiresIn,
+        scope,
+        tokenType,
+      } = await this.authorizationService.refreshTokenGrant({
+        refreshToken: body.refresh_token,
+      });
+
+      return {
+        id_token: idToken,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: expiresIn,
+        scope,
+        token_type: tokenType,
+      } satisfies TokenResponseDto;
     }
-    throw new Error("Not implemented");
+    throw new BadRequestException("Unsupported grant type");
   }
 }

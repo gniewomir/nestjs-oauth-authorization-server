@@ -26,9 +26,9 @@ import { OauthServerErrorException } from "@domain/authentication/OAuth/Errors/O
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import {
-  TokenPayloadInterface,
   TokenPayloadInterfaceSymbol,
-} from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+  TokenPayloadsInterface,
+} from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import {
   PasswordInterface,
@@ -64,7 +64,7 @@ export class AuthorizationService {
     @Inject(PKCEInterfaceSymbol)
     private readonly pkce: PKCEInterface,
     @Inject(TokenPayloadInterfaceSymbol)
-    private readonly tokenPayloads: TokenPayloadInterface,
+    private readonly tokenPayloads: TokenPayloadsInterface,
   ) {}
 
   async request({
@@ -247,7 +247,7 @@ export class AuthorizationService {
     );
 
     const { accessToken, idToken, expiresIn, refreshToken, scope } =
-      await AuthorizationFacade.codeExchange(
+      await AuthorizationFacade.authorizationCodeGrant(
         {
           clientId: IdentityValue.fromString(clientId),
           code: code,
@@ -272,7 +272,40 @@ export class AuthorizationService {
     };
   }
 
-  public refreshTokenGrant() {
-    throw new Error("Not implemented");
+  public async refreshTokenGrant({
+    refreshToken,
+  }: {
+    refreshToken: string | undefined;
+  }) {
+    Assert(
+      typeof refreshToken === "string" && refreshToken.length > 0,
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "Refresh token is required",
+        }),
+    );
+
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+      idToken,
+      expiration,
+    } = await AuthorizationFacade.refreshTokenGrant(
+      refreshToken,
+      this.tokenPayloads,
+      this.clock,
+      this.authConfig,
+      this.users,
+      this.clients,
+    );
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+      idToken,
+      expiresIn: expiration - this.clock.nowAsSecondsSinceEpoch(),
+      scope: "token:authenticate", // Access tokens always have authenticate scope
+      tokenType: "Bearer",
+    };
   }
 }

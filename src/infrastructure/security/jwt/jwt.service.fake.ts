@@ -8,10 +8,10 @@ import {
 
 import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { TokenPayloadInterface } from "@domain/authentication/OAuth/Token/TokenPayload.interface";
+import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
 
-export class JwtServiceFake implements TokenPayloadInterface {
+export class JwtServiceFake implements TokenPayloadsInterface {
   constructor(private readonly authConfig: AuthConfig) {}
 
   verifyIdToken(idToken: string): Promise<IdTokenPayload> {

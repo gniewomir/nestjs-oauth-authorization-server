@@ -68,7 +68,7 @@ export const createAuthenticationTestContext = async (
   Assert(authorizationCode !== null);
 
   const { accessToken, refreshToken, idToken } =
-    await AuthorizationFacade.codeExchange(
+    await AuthorizationFacade.authorizationCodeGrant(
       {
         clientId: client.id,
         code: authorizationCode.toString(),
