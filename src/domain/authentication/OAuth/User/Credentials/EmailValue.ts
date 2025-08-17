@@ -36,7 +36,8 @@ export class EmailValue {
       typeof email === "string" || email instanceof EmailValue,
       () =>
         new OauthInvalidRequestException({
-          message: "email value has to be instance of EmailValue or string",
+          developerMessage:
+            "email value has to be instance of EmailValue or string",
         }),
     );
     if (typeof email === "string") {

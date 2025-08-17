@@ -19,17 +19,19 @@ export class AuthenticationFacade {
     Assert(
       payload.hasValidIssuer(authConfig),
       () =>
-        new OauthInvalidTokenException({ message: "jwt has invalid issuer" }),
+        new OauthInvalidTokenException({
+          developerMessage: "jwt has invalid issuer",
+        }),
     );
     Assert(
       payload.hasNotExpired(clock),
-      () => new OauthTokenExpiredException({ message: "jwt expired" }),
+      () => new OauthTokenExpiredException({ developerMessage: "jwt expired" }),
     );
     Assert(
       payload.hasScope(ScopeValue.TOKEN_AUTHENTICATE()),
       () =>
         new OauthInvalidScopeException({
-          message: "jwt does not contain required scope",
+          developerMessage: "jwt does not contain required scope",
         }),
     );
     return payload;

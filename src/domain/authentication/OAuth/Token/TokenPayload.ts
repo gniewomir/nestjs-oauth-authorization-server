@@ -116,7 +116,7 @@ export class TokenPayload {
       typeof payload.iss === "string",
       () =>
         new OauthInvalidRequestException({
-          message: "Claim iss must be a string",
+          developerMessage: "Claim iss must be a string",
         }),
     );
     const exp = NumericDateValue.fromUnknown(payload.exp);
@@ -125,7 +125,7 @@ export class TokenPayload {
       exp.toNumber() > iat.toNumber(),
       () =>
         new OauthInvalidRequestException({
-          message: "jwt cannot expire before it was issued",
+          developerMessage: "jwt cannot expire before it was issued",
         }),
     );
 

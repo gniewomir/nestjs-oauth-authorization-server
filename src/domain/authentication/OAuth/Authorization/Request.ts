@@ -92,7 +92,7 @@ export class Request {
       knownCode !== null,
       () =>
         new OauthInvalidRequestException({
-          message:
+          developerMessage:
             "Authorization code was not yet issued for this authorization request",
         }),
     );
@@ -100,7 +100,7 @@ export class Request {
       knownCode.use(clock) === code,
       () =>
         new OauthInvalidCredentialsException({
-          message: "Failed authorization code verification",
+          developerMessage: "Failed authorization code verification",
         }),
     );
   }

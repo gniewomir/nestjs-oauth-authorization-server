@@ -145,7 +145,7 @@ export class AuthorizationService {
       () => this.clients.retrieve(request.clientId),
       (error) =>
         new OauthServerErrorException({
-          message: error.message,
+          developerMessage: error.message,
         }),
     );
     return {
@@ -198,8 +198,12 @@ export class AuthorizationService {
   async ownerDenied({ requestId }: { requestId: string }): Promise<{
     redirectUriWithAccessDeniedErrorAndState: string;
   }> {
-    const request = await this.requests.retrieve(
-      IdentityValue.fromUnknown(requestId),
+    const request = await NotFoundToDomainException(
+      () => this.requests.retrieve(IdentityValue.fromUnknown(requestId)),
+      () =>
+        new OauthInvalidRequestException({
+          developerMessage: `Authorization request not found`,
+        }),
     );
 
     const redirect = request.redirectUri.toURL();

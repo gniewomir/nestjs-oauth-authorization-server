@@ -59,7 +59,8 @@ export class ScopeValue {
   private constructor(private readonly scope: ScopeEnum) {
     Assert(
       Object.values(ScopeEnum).includes(scope),
-      () => new OauthInvalidScopeException({ message: `Unknown scope` }),
+      () =>
+        new OauthInvalidScopeException({ developerMessage: `Unknown scope` }),
     );
   }
 
@@ -106,7 +107,7 @@ export class ScopeValue {
       }
     }
     throw new OauthServerErrorException({
-      message: "Could not describe scope",
+      developerMessage: "Could not describe scope",
     });
   }
 }

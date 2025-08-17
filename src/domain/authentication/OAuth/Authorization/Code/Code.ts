@@ -26,7 +26,8 @@ export class Code {
       params.iat.toNumber() < params.exp.toNumber(),
       () =>
         new OauthServerErrorException({
-          message: "Authorization code cannot expire before it was issued",
+          developerMessage:
+            "Authorization code cannot expire before it was issued",
         }),
     );
     this.sub = params.sub.toString();
@@ -59,34 +60,42 @@ export class Code {
       !!value && typeof value === "object",
       () =>
         new OauthInvalidRequestException({
-          message: "Code have to be an object",
+          developerMessage: "Code have to be an object",
         }),
     );
     Assert(
       "code" in value && typeof value.code === "string",
       () =>
-        new OauthInvalidRequestException({ message: "Code must be a string" }),
+        new OauthInvalidRequestException({
+          developerMessage: "Code must be a string",
+        }),
     );
     Assert(
       "iat" in value,
-      () => new OauthInvalidRequestException({ message: "iat is missing" }),
+      () =>
+        new OauthInvalidRequestException({
+          developerMessage: "iat is missing",
+        }),
     );
     Assert(
       "exp" in value,
-      () => new OauthInvalidRequestException({ message: "exp is missing" }),
+      () =>
+        new OauthInvalidRequestException({
+          developerMessage: "exp is missing",
+        }),
     );
     Assert(
       "used" in value && typeof value.used === "boolean",
       () =>
         new OauthInvalidRequestException({
-          message: "Used value must be a boolean",
+          developerMessage: "Used value must be a boolean",
         }),
     );
     Assert(
       "sub" in value,
       () =>
         new OauthInvalidRequestException({
-          message: "sub is missing",
+          developerMessage: "sub is missing",
         }),
     );
     return new Code({
@@ -103,14 +112,14 @@ export class Code {
       !this.used,
       () =>
         new OauthInvalidCredentialsException({
-          message: "Authorization Code already used!",
+          developerMessage: "Authorization Code already used!",
         }),
     );
     Assert(
       this.exp > clock.nowAsSecondsSinceEpoch(),
       () =>
         new OauthInvalidCredentialsException({
-          message: "Authorization code expired!",
+          developerMessage: "Authorization code expired!",
         }),
     );
     this.used = true;

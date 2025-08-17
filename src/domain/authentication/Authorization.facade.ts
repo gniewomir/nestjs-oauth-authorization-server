@@ -58,7 +58,7 @@ export class AuthorizationFacade {
       () => clients.retrieve(params.clientId),
       (error) =>
         new OauthInvalidCredentialsException({
-          message: error.message,
+          developerMessage: error.message,
         }),
     );
 
@@ -68,7 +68,7 @@ export class AuthorizationFacade {
       client.scope.isSupersetOf(params.scope),
       () =>
         new OauthInvalidScopeException({
-          message: "Requested scope unavailable for provided client",
+          developerMessage: "Requested scope unavailable for provided client",
         }),
     );
     const request = await Request.create(
@@ -102,14 +102,14 @@ export class AuthorizationFacade {
       () => requests.retrieve(params.requestId),
       (error) =>
         new OauthInvalidRequestException({
-          message: error.message,
+          developerMessage: error.message,
         }),
     );
     const user = await NotFoundToDomainException(
       () => users.getByEmail(params.credentials.email),
       (error) =>
         new OauthInvalidCredentialsException({
-          message: error.message,
+          developerMessage: error.message,
         }),
     );
 
@@ -117,7 +117,7 @@ export class AuthorizationFacade {
       params.credentials.email.isEqual(user.email),
       () =>
         new OauthInvalidCredentialsException({
-          message: "Email mismatch",
+          developerMessage: "Email mismatch",
         }),
     );
 
@@ -128,7 +128,7 @@ export class AuthorizationFacade {
       ),
       () =>
         new OauthInvalidCredentialsException({
-          message: "Password mismatch",
+          developerMessage: "Password mismatch",
         }),
     );
 
@@ -161,7 +161,7 @@ export class AuthorizationFacade {
       () => requests.getByAuthorizationCode(code),
       () =>
         new OauthInvalidCredentialsException({
-          message:
+          developerMessage:
             "There is no authorization request with matching authorization code",
         }),
     );
@@ -169,7 +169,7 @@ export class AuthorizationFacade {
       () => clients.retrieve(request.clientId),
       (error) =>
         new OauthServerErrorException({
-          message: error.message,
+          developerMessage: error.message,
         }),
     );
 
@@ -177,7 +177,7 @@ export class AuthorizationFacade {
       request.clientId.isEqual(clientId),
       () =>
         new OauthInvalidClientException({
-          message: "Invalid clientId",
+          developerMessage: "Invalid clientId",
         }),
     );
 
@@ -185,7 +185,7 @@ export class AuthorizationFacade {
       request.redirectUri.isEqual(client.redirectUri),
       () =>
         new OauthRedirectUriMismatchException({
-          message: "Mismatch between saved and provided redirectUri",
+          developerMessage: "Mismatch between saved and provided redirectUri",
         }),
     );
 
@@ -197,7 +197,7 @@ export class AuthorizationFacade {
       }),
       () =>
         new OauthInvalidCredentialsException({
-          message: "Failed PKCE code challenge",
+          developerMessage: "Failed PKCE code challenge",
         }),
     );
 
@@ -212,7 +212,7 @@ export class AuthorizationFacade {
       },
       (error) =>
         new OauthServerErrorException({
-          message: error.message,
+          developerMessage: error.message,
         }),
     );
 
@@ -248,21 +248,22 @@ export class AuthorizationFacade {
       () => users.retrieve(IdentityValue.fromString(payload.sub)),
       () =>
         new OauthServerErrorException({
-          message: "subject of valid token does not exist in the system!",
+          developerMessage:
+            "subject of valid token does not exist in the system!",
         }),
     );
     const client = await NotFoundToDomainException(
       () => clients.retrieve(IdentityValue.fromString(payload.aud)),
       () =>
         new OauthServerErrorException({
-          message:
+          developerMessage:
             "audience of valid token (client) does not exist in the system!",
         }),
     );
 
     Assert(
       payload.hasNotExpired(clock),
-      () => new OauthTokenExpiredException({ message: "jwt expired" }),
+      () => new OauthTokenExpiredException({ developerMessage: "jwt expired" }),
     );
 
     Assert(
@@ -271,21 +272,23 @@ export class AuthorizationFacade {
       ),
       () =>
         new OauthInvalidScopeException({
-          message: "jwt does not contain required scope",
+          developerMessage: "jwt does not contain required scope",
         }),
     );
 
     Assert(
       payload.hasValidIssuer(authConfig),
       () =>
-        new OauthInvalidTokenException({ message: "jwt has invalid issuer" }),
+        new OauthInvalidTokenException({
+          developerMessage: "jwt has invalid issuer",
+        }),
     );
 
     Assert(
       user.hasRefreshToken(IdentityValue.fromString(payload.jti), clock),
       () =>
         new OauthInvalidTokenException({
-          message: "refresh token is not found on user",
+          developerMessage: "refresh token is not found on user",
         }),
     );
 
