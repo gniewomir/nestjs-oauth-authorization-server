@@ -13,31 +13,6 @@ import {
 } from "@infrastructure/config/configs/utility";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 
-export const openApiConfigDefaults = (port: number) => {
-  return {
-    exposed: false,
-    path: "open-api",
-    authorizationUrl: `http://localhost:${port}/oauth/authorize`,
-    tokenUrl: `http://localhost:${port}/oauth/token`,
-    refreshUrl: `http://localhost:${port}/oauth/token`,
-    scopes: ScopeValueImmutableSet.fromArray([
-      ScopeValue.PROFILE(),
-      ScopeValue.TOKEN_REFRESH(),
-      ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
-      ScopeValue.TOKEN_AUTHENTICATE(),
-      ScopeValue.TASK_API(),
-    ])
-      .describe()
-      .reduce(
-        (carry, { name, description }) => {
-          carry[name] = description;
-          return carry;
-        },
-        {} as Record<string, string>,
-      ),
-  } satisfies OpenApiConfig;
-};
-
 @Injectable()
 export class OpenApiConfig {
   @IsNotEmpty()
@@ -64,6 +39,31 @@ export class OpenApiConfig {
   @IsObject()
   scopes: Record<string, string>;
 
+  public static defaults({ port }: { port: number }): OpenApiConfig {
+    return {
+      exposed: false,
+      path: "open-api",
+      authorizationUrl: `http://localhost:${port}/oauth/authorize`,
+      tokenUrl: `http://localhost:${port}/oauth/token`,
+      refreshUrl: `http://localhost:${port}/oauth/token`,
+      scopes: ScopeValueImmutableSet.fromArray([
+        ScopeValue.PROFILE(),
+        ScopeValue.TOKEN_REFRESH(),
+        ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
+        ScopeValue.TOKEN_AUTHENTICATE(),
+        ScopeValue.TASK_API(),
+      ])
+        .describe()
+        .reduce(
+          (carry, { name, description }) => {
+            carry[name] = description;
+            return carry;
+          },
+          {} as Record<string, string>,
+        ),
+    } satisfies OpenApiConfig;
+  }
+
   public static provider(): Provider {
     return {
       provide: OpenApiConfig,
@@ -76,8 +76,8 @@ export class OpenApiConfig {
         const config = plainToInstance<OpenApiConfig, Record<string, unknown>>(
           OpenApiConfig,
           {
-            ...openApiConfigDefaults(appConfig.port),
-            exposed: ["TRUE", "1"].includes(
+            ...OpenApiConfig.defaults({ port: appConfig.port }),
+            exposed: ["true", "1"].includes(
               (
                 nestConfigService.get<string>("OPENAPI_EXPOSED") || ""
               ).toLowerCase(),

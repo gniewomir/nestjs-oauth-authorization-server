@@ -7,7 +7,8 @@ import { Request as DomainAuthorizationRequest } from "@domain/authentication/OA
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { ConfigModule } from "@infrastructure/config";
-import { authConfigDefaults } from "@infrastructure/config/configs/auth.config";
+import { AuthConfig } from "@infrastructure/config/configs";
+import { plainToConfig } from "@infrastructure/config/configs/utility";
 import { DatabaseModule } from "@infrastructure/database";
 import { AuthorizationRequest as DatabaseAuthorizationRequest } from "@infrastructure/database/entities";
 import { AuthorizationCodeService } from "@infrastructure/security/authorization-code/authorization-code.service";
@@ -85,7 +86,7 @@ describe("RequestDomainRepository", () => {
       // Arrange
       const clock = new ClockServiceFake();
       const authCodeService = new AuthorizationCodeService();
-      const authConfig = authConfigDefaults;
+      const authConfig = await plainToConfig(AuthConfig.defaults(), AuthConfig);
 
       const userId = IdentityValue.create();
       const authCode = Code.create(userId, authCodeService, clock, authConfig);
@@ -146,7 +147,7 @@ describe("RequestDomainRepository", () => {
       // Arrange
       const clock = new ClockServiceFake();
       const authCodeService = new AuthorizationCodeService();
-      const authConfig = authConfigDefaults;
+      const authConfig = await plainToConfig(AuthConfig.defaults(), AuthConfig);
 
       const userId = IdentityValue.create();
       const authCode = Code.create(userId, authCodeService, clock, authConfig);

@@ -5,7 +5,7 @@ import { userMother } from "@test/domain/authentication/User.mother";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
-import { AuthConfig, authConfigDefaults } from "@infrastructure/config/configs";
+import { AuthConfig } from "@infrastructure/config/configs";
 import { plainToConfig } from "@infrastructure/config/configs/utility";
 import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
 import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
@@ -30,7 +30,7 @@ export const createAuthorizationTestContext = async ({
   const requestId = IdentityValue.create();
 
   const users = new UserDomainRepositoryInMemory();
-  const authConfig = await plainToConfig(authConfigDefaults, AuthConfig);
+  const authConfig = await plainToConfig(AuthConfig.defaults(), AuthConfig);
   const passwords = new PasswordService(authConfig);
   const userPassword = "abcdefghijklmnopqrstq";
   const user = userMother({

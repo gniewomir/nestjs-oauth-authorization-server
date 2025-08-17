@@ -9,12 +9,6 @@ import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
 import { configValidator } from "./utility/configValidator";
 import { deepFreeze } from "./utility/deepFreeze";
 
-const appConfigDefaults = {
-  port: 3000,
-  env: "production",
-  loglevel: "warn",
-} satisfies AppConfig;
-
 const normalizeEnv = (value: string | undefined) => {
   /**
    * When in doubt, be strict
@@ -48,6 +42,14 @@ export class AppConfig {
   @IsIn(["debug", "verbose", "info", "warn", "error"])
   loglevel: string;
 
+  public static defaults(): AppConfig {
+    return {
+      port: 3000,
+      env: "production",
+      loglevel: "warn",
+    };
+  }
+
   public static provider(): Provider {
     return {
       provide: AppConfig,
@@ -59,7 +61,7 @@ export class AppConfig {
         const config = plainToInstance<AppConfig, Record<string, unknown>>(
           AppConfig,
           {
-            ...appConfigDefaults,
+            ...AppConfig.defaults(),
             env: normalizeEnv(nestConfigService.get("NODE_ENV")),
             port: parseInt(nestConfigService.get("PORT") || "", 10),
             loglevel: nestConfigService.get("LOG_LEVEL") || "warn",

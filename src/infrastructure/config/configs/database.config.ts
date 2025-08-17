@@ -31,6 +31,16 @@ export class DatabaseConfig {
   @IsString()
   database: string;
 
+  public static defaults(): DatabaseConfig {
+    return {
+      host: "localhost",
+      port: 5432,
+      user: "test",
+      password: "test",
+      database: "test",
+    };
+  }
+
   public static provider(): Provider {
     return {
       provide: DatabaseConfig,
@@ -42,6 +52,7 @@ export class DatabaseConfig {
         const config = plainToInstance<DatabaseConfig, Record<string, unknown>>(
           DatabaseConfig,
           {
+            ...DatabaseConfig.defaults(),
             port: parseInt(nestConfigService.get("DATABASE_PORT") || "", 10),
             host: nestConfigService.get("DATABASE_HOST") || "",
             user: nestConfigService.get("DATABASE_USER") || "",
