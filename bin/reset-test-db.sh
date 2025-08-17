@@ -4,6 +4,11 @@ set -e  # Exit on any error
 
 CONTAINER_NAME="postgres_test"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ "$1" == "--verbose" ]]; then
+  LOG="verbose"
+else
+  LOG="silent"
+fi
 
 echo "⚡ Project root: $PROJECT_ROOT"
 
@@ -44,7 +49,11 @@ execute() {
 
   echo "▶️  Executing: '$*'..."
 
-  "$@" > /dev/null 2>&1
+  if [[ "$LOG" == "verbose" ]]; then
+    "$@"
+  else
+    "$@" > /dev/null 2>&1
+  fi
 
   local exit_code=$?
 

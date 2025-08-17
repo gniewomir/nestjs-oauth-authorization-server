@@ -4,6 +4,12 @@ set -e  # Exit on any error
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [[ "$1" == "--verbose" ]]; then
+  LOG="verbose"
+else
+  LOG="silent"
+fi
+
 execute() {
   if [ $# -eq 0 ]; then
     echo "❌ Error: No command to execute."
@@ -12,7 +18,11 @@ execute() {
 
   echo "▶️  Executing: '$*'..."
 
-  "$@" > /dev/null 2>&1
+  if [[ "$LOG" == "verbose" ]]; then
+    "$@"
+  else
+    "$@" > /dev/null 2>&1
+  fi
 
   local exit_code=$?
 
