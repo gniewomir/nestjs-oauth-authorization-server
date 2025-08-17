@@ -23,6 +23,7 @@ import { Assert } from "@domain/Assert";
 import { OauthException } from "@domain/authentication/OAuth/Errors/OauthException";
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { IdentityValue } from "@domain/IdentityValue";
 import { AppConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 import { TemplateService } from "@infrastructure/template/template.service";
@@ -73,7 +74,7 @@ export class AuthorizationController {
     @Query() query: AuthorizeRequestDto,
     @Res() res: Response,
   ): Promise<void> {
-    const request = await this.authorizationService.request({
+    const request = await this.authorizationService.createAuthorizationRequest({
       clientId: query.client_id,
       scope: query.scope,
       state: query.state,
@@ -97,13 +98,13 @@ export class AuthorizationController {
     status: 200,
     description: "Authorization prompt HTML page",
   })
-  async getPrompt(
+  async prompt(
     @Query("request_id") requestId: string,
     @Query("error") error?: string,
   ): Promise<string> {
     try {
       const { requestedScopes, clientName, allowRememberMe } =
-        await this.authorizationService.preparePrompt({
+        await this.authorizationService.prepareAuthorizationPrompt({
           requestId,
         });
 
@@ -157,7 +158,7 @@ export class AuthorizationController {
     description: "Invalid credentials",
   })
   @Redirect()
-  async postPrompt(@Body() body: PromptRequestDto) {
+  async submitPrompt(@Body() body: PromptRequestDto) {
     if (body.choice === "deny") {
       try {
         const { redirectUriWithAccessDeniedErrorAndState } =
@@ -297,6 +298,31 @@ export class AuthorizationController {
   })
   async token(@Body() body: TokenRequestDto): Promise<TokenResponseDto> {
     if (body.grant_type === "authorization_code") {
+      Assert(
+        IdentityValue.isValid(body.client_id),
+        () =>
+          new OauthInvalidRequestException({
+            errorDescription: "Invalid client ID",
+          }),
+      );
+
+      Assert(
+        typeof body.code === "string" && body.code.length > 0,
+        () =>
+          new OauthInvalidRequestException({
+            errorDescription: "No authorization code",
+          }),
+      );
+
+      Assert(
+        typeof body.code_verifier === "string" ||
+          this.appConfig.env !== "production",
+        () =>
+          new OauthInvalidRequestException({
+            errorDescription: "No code verifier",
+          }),
+      );
+
       const {
         idToken,
         refreshToken,
@@ -304,10 +330,10 @@ export class AuthorizationController {
         expiresIn,
         scope,
         tokenType,
-      } = await this.authorizationService.authorizationCodeGrant({
+      } = await this.authorizationService.grantAuthorizationCode({
         clientId: body.client_id,
         code: body.code,
-        codeVerifier: body.code_verifier,
+        codeVerifier: body.code_verifier || "",
       });
 
       return {
@@ -320,6 +346,14 @@ export class AuthorizationController {
       } satisfies TokenResponseDto;
     }
     if (body.grant_type === "refresh_token") {
+      Assert(
+        typeof body.refresh_token === "string" && body.refresh_token.length > 0,
+        () =>
+          new OauthInvalidRequestException({
+            errorDescription: "No refresh token in request",
+          }),
+      );
+
       const {
         idToken,
         refreshToken,
@@ -327,7 +361,7 @@ export class AuthorizationController {
         expiresIn,
         scope,
         tokenType,
-      } = await this.authorizationService.refreshTokenGrant({
+      } = await this.authorizationService.grantRefreshToken({
         refreshToken: body.refresh_token,
       });
 

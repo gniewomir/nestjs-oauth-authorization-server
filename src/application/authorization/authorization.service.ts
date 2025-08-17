@@ -67,7 +67,7 @@ export class AuthorizationService {
     private readonly tokenPayloads: TokenPayloadsInterface,
   ) {}
 
-  async request({
+  async createAuthorizationRequest({
     clientId,
     responseType,
     scope,
@@ -132,7 +132,7 @@ export class AuthorizationService {
     };
   }
 
-  async preparePrompt({ requestId }: { requestId: string }) {
+  async prepareAuthorizationPrompt({ requestId }: { requestId: string }) {
     const request = await NotFoundToDomainException(
       () => this.requests.retrieve(IdentityValue.fromString(requestId)),
       () =>
@@ -164,7 +164,6 @@ export class AuthorizationService {
       password: string;
       rememberMe?: boolean;
     };
-    scopes?: string[];
   }): Promise<{
     redirectUriWithAuthorizationCodeAndState: string;
   }> {
@@ -212,40 +211,15 @@ export class AuthorizationService {
     };
   }
 
-  async authorizationCodeGrant({
+  async grantAuthorizationCode({
     clientId,
     code,
     codeVerifier,
   }: {
-    clientId: string | undefined;
-    code: string | undefined;
-    codeVerifier: string | undefined;
+    clientId: string;
+    code: string;
+    codeVerifier: string;
   }) {
-    Assert(
-      typeof clientId === "string" && IdentityValue.isValid(clientId),
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: "Invalid client ID",
-        }),
-    );
-
-    Assert(
-      typeof code === "string",
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: "Authorization code is required",
-        }),
-    );
-
-    Assert(
-      typeof codeVerifier === "string" || this.appConfig.env !== "production",
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription:
-            "Code verifier is required in production environment",
-        }),
-    );
-
     const { accessToken, idToken, expiresIn, refreshToken, scope } =
       await AuthorizationFacade.authorizationCodeGrant(
         {
@@ -272,24 +246,13 @@ export class AuthorizationService {
     };
   }
 
-  public async refreshTokenGrant({
-    refreshToken,
-  }: {
-    refreshToken: string | undefined;
-  }) {
-    Assert(
-      typeof refreshToken === "string" && refreshToken.length > 0,
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: "Refresh token is required",
-        }),
-    );
-
+  public async grantRefreshToken({ refreshToken }: { refreshToken: string }) {
     const {
       accessToken,
       refreshToken: newRefreshToken,
       idToken,
-      expiration,
+      expiresAt,
+      scope,
     } = await AuthorizationFacade.refreshTokenGrant(
       refreshToken,
       this.tokenPayloads,
@@ -303,8 +266,8 @@ export class AuthorizationService {
       accessToken,
       refreshToken: newRefreshToken,
       idToken,
-      expiresIn: expiration - this.clock.nowAsSecondsSinceEpoch(),
-      scope: "token:authenticate", // Access tokens always have authenticate scope
+      expiresIn: expiresAt - this.clock.nowAsSecondsSinceEpoch(),
+      scope: scope.toString(),
       tokenType: "Bearer",
     };
   }
