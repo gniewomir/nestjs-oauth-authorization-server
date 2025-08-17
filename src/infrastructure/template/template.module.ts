@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { TemplateService } from "@infrastructure/template/template.service";
-import { TemplateInterfaceSymbol } from "@interface/api/authorization/template/Template.interface";
+import { TemplateInterfaceSymbol } from "@interface/api/authorization/Template.interface";
 
 @Module({
   providers: [

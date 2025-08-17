@@ -5,9 +5,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   HttpRedirectResponse,
   HttpStatus,
   Inject,
+  InternalServerErrorException,
   Post,
   Query,
   Redirect,
@@ -17,10 +19,14 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 
 import { AuthorizationService } from "@application/authorization/authorization.service";
+import { Assert } from "@domain/Assert";
+import { OauthException } from "@domain/authentication/OAuth/Errors/OauthException";
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { AppConfig } from "@infrastructure/config/configs";
+import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 import { TemplateService } from "@infrastructure/template/template.service";
-import { TemplateInterfaceSymbol } from "@interface/api/authorization/template/Template.interface";
+import { TemplateInterfaceSymbol } from "@interface/api/authorization/Template.interface";
 
 import { AuthorizeRequestDto } from "./dto/authorize-request.dto";
 import { PromptRequestDto } from "./dto/prompt-request.dto";
@@ -31,10 +37,14 @@ import { TokenResponseDto } from "./dto/token-response.dto";
 @Controller("oauth")
 export class AuthorizationController {
   constructor(
+    @Inject(LoggerInterfaceSymbol) private readonly logger: LoggerInterface,
+    private readonly appConfig: AppConfig,
     private readonly authorizationService: AuthorizationService,
     @Inject(TemplateInterfaceSymbol)
     private readonly templateService: TemplateService,
-  ) {}
+  ) {
+    this.logger.setContext("AuthorizationController");
+  }
 
   @Get("authorize")
   @ApiOperation({
@@ -91,33 +101,42 @@ export class AuthorizationController {
     @Query("request_id") requestId: string,
     @Query("error") error?: string,
   ): Promise<string> {
-    const { requestedScopes, clientName, allowRememberMe } =
-      await this.authorizationService.preparePrompt({
-        requestId,
-      });
+    try {
+      const { requestedScopes, clientName, allowRememberMe } =
+        await this.authorizationService.preparePrompt({
+          requestId,
+        });
 
-    const errorObject = {
-      [OauthInvalidCredentialsException.DEFAULT_CODE]: {
-        errorCode: OauthInvalidCredentialsException.DEFAULT_CODE,
-        errorMessage: OauthInvalidCredentialsException.DEFAULT_DESCRIPTION,
-      },
-      [OauthInvalidRequestException.DEFAULT_CODE]: {
-        errorCode: OauthInvalidRequestException.DEFAULT_CODE,
-        errorMessage: "Did you provided a valid email?",
-      },
-      "no-error": undefined,
-    }[error || "no-error"];
+      const errorObject = {
+        [OauthInvalidCredentialsException.DEFAULT_CODE]: {
+          errorCode: OauthInvalidCredentialsException.DEFAULT_CODE,
+          errorMessage: "Provided credentials does not match our records.",
+        },
+        [OauthInvalidRequestException.DEFAULT_CODE]: {
+          errorCode: OauthInvalidRequestException.DEFAULT_CODE,
+          errorMessage: "Did you provided a valid email?",
+        },
+        "no-error": undefined,
+      }[error || "no-error"];
 
-    return this.templateService.renderTemplate(
-      path.join(__dirname, "template", "prompt.html"),
-      {
-        requestId,
-        requestedScopes,
-        clientName,
-        allowRememberMe,
-        errorObject,
-      },
-    );
+      return this.templateService.renderTemplate(
+        path.join(__dirname, "template", "prompt.html"),
+        {
+          requestId,
+          requestedScopes,
+          clientName,
+          allowRememberMe,
+          errorObject,
+        },
+      );
+    } catch (error) {
+      this.logger.log("Error during preparing OAuth prompt", error);
+      Assert(error instanceof Error);
+      return this.renderErrorPage(
+        error,
+        `/oauth/prompt?request_id=${requestId}`,
+      );
+    }
   }
 
   @Post("prompt")
@@ -138,19 +157,26 @@ export class AuthorizationController {
     description: "Invalid credentials",
   })
   @Redirect()
-  async postPrompt(
-    @Body() body: PromptRequestDto,
-  ): Promise<HttpRedirectResponse> {
+  async postPrompt(@Body() body: PromptRequestDto) {
     if (body.choice === "deny") {
-      const { redirectUriWithAccessDeniedErrorAndState } =
-        await this.authorizationService.ownerDenied({
-          requestId: body.request_id,
-        });
+      try {
+        const { redirectUriWithAccessDeniedErrorAndState } =
+          await this.authorizationService.ownerDenied({
+            requestId: body.request_id,
+          });
 
-      return {
-        url: redirectUriWithAccessDeniedErrorAndState,
-        statusCode: HttpStatus.FOUND,
-      } satisfies HttpRedirectResponse;
+        return {
+          url: redirectUriWithAccessDeniedErrorAndState,
+          statusCode: HttpStatus.FOUND,
+        } satisfies HttpRedirectResponse;
+      } catch (error) {
+        this.logger.log(
+          "Unhandled error during submitting OAuth prompt - user denied authorization",
+          error,
+        );
+        Assert(error instanceof Error);
+        return this.renderErrorPage(error);
+      }
     }
 
     if (body.choice === "authorize") {
@@ -171,22 +197,83 @@ export class AuthorizationController {
         } satisfies HttpRedirectResponse;
       } catch (error) {
         if (error instanceof OauthInvalidCredentialsException) {
+          this.logger.log(
+            "Handled error during submitting OAuth prompt",
+            error,
+          );
           return {
             url: `/oauth/prompt?request_id=${body.request_id}&error=${error.errorCode}`,
             statusCode: HttpStatus.FOUND,
           } satisfies HttpRedirectResponse;
         }
         if (error instanceof OauthInvalidRequestException) {
+          this.logger.log(
+            "Handled error during submitting OAuth prompt",
+            error,
+          );
           return {
             url: `/oauth/prompt?request_id=${body.request_id}&error=${error.errorCode}`,
             statusCode: HttpStatus.FOUND,
           } satisfies HttpRedirectResponse;
         }
-        throw error;
+        this.logger.error(
+          "Unhandled error during submitting OAuth prompt - user authorized",
+          error,
+        );
+        Assert(error instanceof Error);
+        return this.renderErrorPage(
+          error,
+          `/oauth/prompt?request_id=${body.request_id}`,
+        );
       }
     }
 
     throw new BadRequestException("Unknown user choice");
+  }
+
+  renderErrorPage(exception: Error, returnUrl?: string) {
+    const serializeException = (exception: Error) => {
+      // @ts-expect-error format stack in more readable way, without overthinking it
+      exception.stack = exception.stack?.split("\n").map((str) => str.trim());
+      return this.appConfig.env === "development"
+        ? JSON.stringify(exception, Object.getOwnPropertyNames(exception), 2)
+        : undefined;
+    };
+
+    if (exception instanceof OauthException) {
+      return this.templateService.renderTemplate(
+        path.join(__dirname, "template", "error.html"),
+        {
+          errorCode: exception.statusCode,
+          errorTitle: exception.errorCode,
+          errorDescription: exception.errorDescription,
+          errorDetails: serializeException(exception),
+          returnUrl: returnUrl,
+        },
+      );
+    }
+
+    if (exception instanceof HttpException) {
+      return this.templateService.renderTemplate(
+        path.join(__dirname, "template", "error.html"),
+        {
+          errorCode: exception.getStatus(),
+          errorTitle: exception.name,
+          errorDetails: serializeException(exception),
+          returnUrl: returnUrl,
+        },
+      );
+    }
+
+    return this.templateService.renderTemplate(
+      path.join(__dirname, "template", "error.html"),
+      {
+        errorCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        errorTitle: InternalServerErrorException.name,
+        errorDetails: serializeException(exception),
+        returnUrl: returnUrl,
+      },
+    );
   }
 
   @Post("token")

@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import * as fs from "fs";
 import * as Handlebars from "handlebars";
 
-import { TemplateInterface } from "@interface/api/authorization/template/Template.interface";
+import { TemplateInterface } from "@interface/api/authorization/Template.interface";
 
 @Injectable()
 export class TemplateService implements TemplateInterface {
