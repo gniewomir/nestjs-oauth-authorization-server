@@ -145,7 +145,7 @@ export class AuthorizationService {
       () => this.clients.retrieve(request.clientId),
       (error) =>
         new OauthServerErrorException({
-          developerMessage: error.message,
+          message: error.message,
         }),
     );
     return {
@@ -202,7 +202,7 @@ export class AuthorizationService {
       () => this.requests.retrieve(IdentityValue.fromUnknown(requestId)),
       () =>
         new OauthInvalidRequestException({
-          developerMessage: `Authorization request not found`,
+          message: `Authorization request not found`,
         }),
     );
 

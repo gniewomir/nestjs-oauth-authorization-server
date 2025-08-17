@@ -44,7 +44,7 @@ export class ScopeValueImmutableSet implements Iterable<ScopeValue> {
       Array.isArray(scope),
       () =>
         new OauthInvalidScopeException({
-          developerMessage: "scope is not an array",
+          message: "scope is not an array",
         }),
     );
     Assert(
@@ -53,7 +53,7 @@ export class ScopeValueImmutableSet implements Iterable<ScopeValue> {
       ),
       () =>
         new OauthInvalidScopeException({
-          developerMessage: "scope is not an array of ScopeVale or strings",
+          message: "scope is not an array of ScopeVale or strings",
         }),
     );
     return ScopeValueImmutableSet.fromArray(scope);

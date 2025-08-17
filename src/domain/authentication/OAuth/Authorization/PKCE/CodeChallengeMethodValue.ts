@@ -15,7 +15,7 @@ export class CodeChallengeMethodValue {
         .includes(method),
       () =>
         new OauthInvalidRequestException({
-          developerMessage: `Accepted code challenge methods are ${Object.values(CodeChallengeMethodsEnum).join(", ")}`,
+          message: `Accepted code challenge methods are ${Object.values(CodeChallengeMethodsEnum).join(", ")}`,
         }),
     );
   }

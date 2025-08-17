@@ -11,12 +11,16 @@ import { deepFreeze } from "./utility/deepFreeze";
 
 const appConfigDefaults = {
   port: 3000,
-  env: "development",
+  env: "production",
+  loglevel: "warn",
 } satisfies AppConfig;
 
 const normalizeEnv = (value: string | undefined) => {
+  /**
+   * When in doubt, be strict
+   */
   if (!value) {
-    return "development";
+    return "production";
   }
   const normalized = value.toLowerCase().trim();
   if (["test", "testing"].includes(normalized)) {
@@ -39,6 +43,11 @@ export class AppConfig {
   @IsIn(["development", "test", "production"])
   env: ReturnType<typeof normalizeEnv>;
 
+  @IsNotEmpty()
+  @IsString()
+  @IsIn(["debug", "verbose", "info", "warn", "error"])
+  loglevel: string;
+
   public static provider(): Provider {
     return {
       provide: AppConfig,
@@ -52,7 +61,8 @@ export class AppConfig {
           {
             ...appConfigDefaults,
             env: normalizeEnv(nestConfigService.get("NODE_ENV")),
-            port: parseInt(nestConfigService.get("APP_PORT") || "", 10),
+            port: parseInt(nestConfigService.get("PORT") || "", 10),
+            loglevel: nestConfigService.get("LOG_LEVEL") || "warn",
           },
         );
 

@@ -23,6 +23,7 @@ import { Assert } from "@domain/Assert";
 import { OauthException } from "@domain/authentication/OAuth/Errors/OauthException";
 import { OauthInvalidCredentialsException } from "@domain/authentication/OAuth/Errors/OauthInvalidCredentialsException";
 import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors/OauthInvalidRequestException";
+import { OauthUnsupportedGrantTypeException } from "@domain/authentication/OAuth/Errors/OauthUnsupportedGrantTypeException";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AppConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
@@ -131,12 +132,8 @@ export class AuthorizationController {
         },
       );
     } catch (error) {
-      this.logger.log("Error during preparing OAuth prompt", error);
-      Assert(error instanceof Error);
-      return this.renderErrorPage(
-        error,
-        `/oauth/prompt?request_id=${requestId}`,
-      );
+      this.logger.error("Error during preparing OAuth prompt", error);
+      return this.renderErrorPage(error);
     }
   }
 
@@ -171,11 +168,10 @@ export class AuthorizationController {
           statusCode: HttpStatus.FOUND,
         } satisfies HttpRedirectResponse;
       } catch (error) {
-        this.logger.log(
-          "Unhandled error during submitting OAuth prompt - user denied authorization",
+        this.logger.info(
+          "Unhandled error during submitting OAuth prompt submission (denied)",
           error,
         );
-        Assert(error instanceof Error);
         return this.renderErrorPage(error);
       }
     }
@@ -198,7 +194,7 @@ export class AuthorizationController {
         } satisfies HttpRedirectResponse;
       } catch (error) {
         if (error instanceof OauthInvalidCredentialsException) {
-          this.logger.log(
+          this.logger.warn(
             "Handled error during submitting OAuth prompt",
             error,
           );
@@ -208,7 +204,7 @@ export class AuthorizationController {
           } satisfies HttpRedirectResponse;
         }
         if (error instanceof OauthInvalidRequestException) {
-          this.logger.log(
+          this.logger.warn(
             "Handled error during submitting OAuth prompt",
             error,
           );
@@ -218,10 +214,9 @@ export class AuthorizationController {
           } satisfies HttpRedirectResponse;
         }
         this.logger.error(
-          "Unhandled error during submitting OAuth prompt - user authorized",
+          "Unhandled error during submitting OAuth prompt submission (authorized)",
           error,
         );
-        Assert(error instanceof Error);
         return this.renderErrorPage(
           error,
           `/oauth/prompt?request_id=${body.request_id}`,
@@ -232,7 +227,9 @@ export class AuthorizationController {
     throw new BadRequestException("Unknown user choice");
   }
 
-  renderErrorPage(exception: Error, returnUrl?: string) {
+  renderErrorPage(exception: unknown, returnUrl?: string) {
+    Assert(exception instanceof Error);
+
     const serializeException = (exception: Error) => {
       // @ts-expect-error format stack in more readable way, without overthinking it
       exception.stack = exception.stack?.split("\n").map((str) => str.trim());
@@ -374,6 +371,6 @@ export class AuthorizationController {
         token_type: tokenType,
       } satisfies TokenResponseDto;
     }
-    throw new BadRequestException("Unsupported grant type");
+    throw new OauthUnsupportedGrantTypeException();
   }
 }

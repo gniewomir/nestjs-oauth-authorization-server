@@ -43,7 +43,7 @@ export class User {
       await uniqueEmailSpecification.isSatisfied(params.email),
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "User email have to be unique",
+          message: "User email have to be unique",
           errorDescription: "user with this email already exists",
         }),
     );

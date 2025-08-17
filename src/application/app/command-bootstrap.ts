@@ -28,21 +28,21 @@ export async function commandBootstrap({
   baseModule: Type<any> | DynamicModule | ForwardReference;
   payload: TCommandPayload;
 }) {
-  const application = await NestFactory.createApplicationContext(baseModule, {
+  const command = await NestFactory.createApplicationContext(baseModule, {
     bufferLogs: true, // store logs until custom logger is available
   });
-  const logger = await application.resolve<
+  const logger = await command.resolve<
     typeof LoggerInterfaceSymbol,
     LoggerService
   >(LoggerInterfaceSymbol);
   logger.setContext(name);
-  application.useLogger(logger);
+  command.useLogger(logger);
 
-  const appConfig = await application.resolve<AppConfig>(AppConfig);
+  const appConfig = await command.resolve<AppConfig>(AppConfig);
 
-  logger.log(`Environment => ${appConfig.env}`);
+  logger.info(`Environment => ${appConfig.env}`);
 
-  await payload({ application, logger, appConfig });
+  await payload({ application: command, logger, appConfig });
 
-  await application.close();
+  await command.close();
 }

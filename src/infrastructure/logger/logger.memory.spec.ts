@@ -1,7 +1,7 @@
 import { LoggerInterface } from "./logger.interface";
 import { LoggerMemory } from "./logger.memory";
 
-const levels = ["verbose", "debug", "log", "warn", "error", "fatal"];
+const levels = ["verbose", "debug", "info", "warn", "error"];
 
 describe("LoggerMemory", () => {
   describe("stores log messages with all metadata", () => {

@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 import { AppModule } from "@application/app";
+import { CustomExceptionFilter } from "@application/app/exception-filter";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
 
@@ -15,6 +16,8 @@ export async function applicationBootstrap() {
   );
   logger.setContext("bootstrap");
   app.useLogger(logger);
+
+  app.useGlobalFilters(new CustomExceptionFilter());
 
   const appConfig = app.get(AppConfig);
   const openApiConfig = app.get(OpenApiConfig);

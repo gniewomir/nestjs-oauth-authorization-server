@@ -60,16 +60,24 @@ export class LoggerMemory implements LoggerInterface {
     this.archive.push(["debug", this.context, message, ...optionalParams]);
   }
 
-  error(message: any, ...optionalParams: any[]): any {
-    this.archive.push(["error", this.context, message, ...optionalParams]);
+  verbose(message: any, ...optionalParams: any[]): any {
+    this.archive.push(["verbose", this.context, message, ...optionalParams]);
   }
 
-  fatal(message: any, ...optionalParams: any[]): any {
-    this.archive.push(["fatal", this.context, message, ...optionalParams]);
+  info(message: any, ...optionalParams: any[]): any {
+    this.archive.push(["info", this.context, message, ...optionalParams]);
   }
 
   log(message: any, ...optionalParams: any[]): any {
-    this.archive.push(["log", this.context, message, ...optionalParams]);
+    this.archive.push(["info", this.context, message, ...optionalParams]);
+  }
+
+  warn(message: any, ...optionalParams: any[]): any {
+    this.archive.push(["warn", this.context, message, ...optionalParams]);
+  }
+
+  error(message: any, ...optionalParams: any[]): any {
+    this.archive.push(["error", this.context, message, ...optionalParams]);
   }
 
   setContext(context: string): void {
@@ -78,13 +86,5 @@ export class LoggerMemory implements LoggerInterface {
 
   setLogLevels(levels: LogLevel[]): any {
     this.logLevels = levels;
-  }
-
-  verbose(message: any, ...optionalParams: any[]): any {
-    this.archive.push(["verbose", this.context, message, ...optionalParams]);
-  }
-
-  warn(message: any, ...optionalParams: any[]): any {
-    this.archive.push(["warn", this.context, message, ...optionalParams]);
   }
 }

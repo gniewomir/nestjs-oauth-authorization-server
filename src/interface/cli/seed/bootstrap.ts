@@ -1,7 +1,7 @@
 import { clientMother, userMother } from "@test/domain/authentication";
 import { rememberMeTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 
-import { commandBootstrap } from "@application/command";
+import { commandBootstrap } from "@application/app";
 import { Assert } from "@domain/Assert";
 import { ClientInterfaceSymbol } from "@domain/authentication/OAuth/Client/Client.interface";
 import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
@@ -36,7 +36,7 @@ void commandBootstrap({
       ),
     });
     await clients.persist(client);
-    logger.log(
+    logger.info(
       `Added OAuth client "${client.name}". ID: ${client.id.toString()}; Scopes: "${client.scope.toString()}"; Redirect: "${client.redirectUri.toString()}"`,
     );
 
@@ -54,7 +54,7 @@ void commandBootstrap({
       ),
     });
     await users.persist(user);
-    logger.log(
+    logger.info(
       `Added user "${userPlaintextEmail}" and password "${userPlaintextPassword}"`,
     );
   },

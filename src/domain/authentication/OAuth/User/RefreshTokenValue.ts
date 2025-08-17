@@ -30,28 +30,28 @@ export class RefreshTokenValue {
       !!value && typeof value === "object",
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "UserRefreshTokenValue must be an object",
+          message: "UserRefreshTokenValue must be an object",
         }),
     );
     Assert(
       "aud" in value,
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "UserRefreshTokenValue have to have a aud property",
+          message: "UserRefreshTokenValue have to have a aud property",
         }),
     );
     Assert(
       "jti" in value,
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "UserRefreshTokenValue have to have jti property",
+          message: "UserRefreshTokenValue have to have jti property",
         }),
     );
     Assert(
       "exp" in value,
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "UserRefreshTokenValue have to have a exp property",
+          message: "UserRefreshTokenValue have to have a exp property",
         }),
     );
     return new RefreshTokenValue({
@@ -66,7 +66,7 @@ export class RefreshTokenValue {
       payload.hasScope(ScopeValue.TOKEN_REFRESH()),
       () =>
         new OauthInvalidScopeException({
-          developerMessage: "Not a refresh token",
+          message: "Not a refresh token",
         }),
     );
     return new RefreshTokenValue({

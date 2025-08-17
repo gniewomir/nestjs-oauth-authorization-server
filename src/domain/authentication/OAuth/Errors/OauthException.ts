@@ -7,7 +7,7 @@ export type TAbstractOauthExceptionConstructorParm = {
   state?: string;
   statusCode: HttpStatus;
   cause?: unknown;
-  developerMessage?: string;
+  message?: string;
 };
 
 export type TOauthExceptionConstructorParm = Omit<
@@ -27,11 +27,7 @@ export abstract class OauthException extends Error {
   public readonly errorUri?: string;
   public readonly state?: string;
   public readonly statusCode: HttpStatus;
-  public readonly developerMessage: string;
-
-  public get message() {
-    return this.errorDescription || "Hidden for security reasons";
-  }
+  public readonly message: string;
 
   constructor({
     errorDescription,
@@ -40,10 +36,10 @@ export abstract class OauthException extends Error {
     errorUri,
     state,
     statusCode,
-    developerMessage,
+    message,
   }: TAbstractOauthExceptionConstructorParm) {
-    super(developerMessage || errorDescription, { cause });
-    this.developerMessage = developerMessage || errorDescription;
+    super(message || errorDescription, { cause });
+    this.message = message || errorDescription;
     this.errorCode = errorCode;
     this.errorDescription = errorDescription;
     this.errorUri = errorUri;

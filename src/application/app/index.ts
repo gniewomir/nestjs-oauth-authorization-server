@@ -1,3 +1,3 @@
 export { AppModule } from "./app.module";
-export { applicationBootstrap as bootstrap } from "./bootstrap";
+export { applicationBootstrap } from "./application-bootstrap";
 export { commandBootstrap } from "./command-bootstrap";

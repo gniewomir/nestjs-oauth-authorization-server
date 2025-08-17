@@ -6,7 +6,7 @@ export class ResponseTypeValue {
     Assert(
       responseType === "code",
       new OauthUnsupportedResponseTypeException({
-        developerMessage:
+        message:
           "Only accepted authorization flow at the moment is Authorization Code flow with PKCE",
       }),
     );

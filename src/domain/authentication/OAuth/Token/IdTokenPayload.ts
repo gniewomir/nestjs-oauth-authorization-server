@@ -75,7 +75,7 @@ export class IdTokenPayload {
       typeof payload.iss === "string",
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "Claim iss must be a string",
+          message: "Claim iss must be a string",
         }),
     );
     const exp = NumericDateValue.fromUnknown(payload.exp);
@@ -84,14 +84,14 @@ export class IdTokenPayload {
       exp.toNumber() > iat.toNumber(),
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "jwt cannot expire before it was issued",
+          message: "jwt cannot expire before it was issued",
         }),
     );
     Assert(
       typeof payload.email_verified === "boolean",
       () =>
         new OauthInvalidRequestException({
-          developerMessage: "email_verified must be a boolean",
+          message: "email_verified must be a boolean",
         }),
     );
 
