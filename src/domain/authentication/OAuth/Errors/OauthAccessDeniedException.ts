@@ -5,7 +5,7 @@ import {
   TOauthExceptionConstructorParm,
 } from "@domain/authentication/OAuth/Errors/OauthException";
 
-export class OAuthAccessDeniedException extends OauthException {
+export class OauthAccessDeniedException extends OauthException {
   constructor(params: TOauthExceptionConstructorParm = {}) {
     super({
       errorCode: "access_denied",
