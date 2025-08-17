@@ -304,7 +304,7 @@ export class AuthorizationController {
         expiresIn,
         scope,
         tokenType,
-      } = await this.authorizationService.codeExchange({
+      } = await this.authorizationService.authorizationCodeGrant({
         clientId: body.client_id,
         code: body.code,
         codeVerifier: body.code_verifier,

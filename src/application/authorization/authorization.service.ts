@@ -212,7 +212,7 @@ export class AuthorizationService {
     };
   }
 
-  async codeExchange({
+  async authorizationCodeGrant({
     clientId,
     code,
     codeVerifier,
@@ -270,5 +270,9 @@ export class AuthorizationService {
       scope: scope.toString(),
       tokenType: "Bearer",
     };
+  }
+
+  public refreshTokenGrant() {
+    throw new Error("Not implemented");
   }
 }
