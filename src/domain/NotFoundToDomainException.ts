@@ -2,7 +2,7 @@ import { NotFoundException } from "@infrastructure/repositories/NotFoundExceptio
 
 export async function NotFoundToDomainException<T>(
   callback: () => Promise<T>,
-  errorFactory: (error: Error) => any,
+  errorFactory: (error: Error) => Error,
 ): Promise<T> {
   try {
     return await callback();
