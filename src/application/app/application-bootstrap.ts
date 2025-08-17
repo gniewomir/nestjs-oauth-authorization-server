@@ -5,7 +5,7 @@ import { AppModule } from "@application/app";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
 
-export async function bootstrap() {
+export async function applicationBootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true, // store logs until custom logger is available
   });
