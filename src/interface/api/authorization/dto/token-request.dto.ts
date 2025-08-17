@@ -21,7 +21,7 @@ export class TokenRequestDto {
 
   @ApiProperty({
     description: "Authorization code (for authorization_code grant)",
-    example: "auth_code_123",
+    example: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
     required: false,
   })
   @IsString()
@@ -39,7 +39,7 @@ export class TokenRequestDto {
 
   @ApiProperty({
     description: "Refresh token (for refresh_token grant)",
-    example: "refresh_token_123",
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     required: false,
   })
   @IsString()

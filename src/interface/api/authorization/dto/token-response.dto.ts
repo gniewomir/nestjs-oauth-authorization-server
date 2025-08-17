@@ -21,15 +21,15 @@ export class TokenResponseDto {
 
   @ApiProperty({
     description: "Refresh token for obtaining new access tokens",
-    example: "refresh_token_123",
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   })
-  refresh_token: string;
+  refresh_token?: string;
 
   @ApiProperty({
     description: "ID token containing user information",
     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   })
-  id_token: string;
+  id_token?: string;
 
   @ApiProperty({
     description: "Granted scopes",
