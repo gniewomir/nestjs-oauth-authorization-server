@@ -1,5 +1,5 @@
 import { clientMother, userMother } from "@test/domain/authentication";
-import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
+import { rememberMeTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 
 import { commandBootstrap } from "@application/command";
 import { Assert } from "@domain/Assert";
@@ -29,9 +29,9 @@ void commandBootstrap({
     const client = clientMother({
       id: IdentityValue.fromString("4072ccc4-5975-4d24-828d-495eb2f65c0a"),
       name: "Swagger",
-      scope: defaultTestClientScopesMother(),
+      scope: rememberMeTestClientScopesMother(),
       redirectUri: RedirectUriValue.create(
-        "http://localhost:3000/oauth2-redirect.html",
+        "http://localhost:3000/open-api/oauth2-redirect.html",
         "test",
       ),
     });
