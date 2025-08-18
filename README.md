@@ -22,7 +22,7 @@ Decision documentation written by hand during development:
 
 ## Generated Documentation (`./docs/overview/`)
 
-Comprehensive architectural documentation generated using LLM from codebase analysis:
+Architectural documentation generated using LLM from codebase analysis (might be outdated):
 * `ARCHITECTURE-OVERVIEW.md` - high-level introduction to architectural patterns
 * `ARCHITECTURE-PATTERNS.md` - detailed explanation of design patterns used
 * `ARCHITECTURE-LAYERS.md` - deep dive into layered architecture implementation
