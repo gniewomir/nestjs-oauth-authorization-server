@@ -8,8 +8,8 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-import { Task } from "@infrastructure/database/entities/task.entity";
-import { User } from "@infrastructure/database/entities/user.entity";
+import { Task } from "./task.entity";
+import { User } from "./user.entity";
 
 @Entity()
 export class Context {

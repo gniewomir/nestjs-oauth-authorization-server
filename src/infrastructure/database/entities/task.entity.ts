@@ -7,9 +7,9 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-import { Context } from "@infrastructure/database/entities/context.entity";
-import { Goal } from "@infrastructure/database/entities/goal.entity";
-import { User } from "@infrastructure/database/entities/user.entity";
+import { Context } from "./context.entity";
+import { Goal } from "./goal.entity";
+import { User } from "./user.entity";
 
 @Entity()
 export class Task {

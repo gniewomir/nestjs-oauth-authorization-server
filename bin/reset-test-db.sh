@@ -4,11 +4,8 @@ set -e  # Exit on any error
 
 CONTAINER_NAME="postgres_test"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ "$1" == "--verbose" ]]; then
-  LOG="verbose"
-else
-  LOG="silent"
-fi
+
+. "$(dirname "$0")/include/execute.sh"
 
 echo "⚡ Project root: $PROJECT_ROOT"
 
@@ -41,31 +38,6 @@ wait_for_postgres() {
     return 1
 }
 
-execute() {
-  if [ $# -eq 0 ]; then
-    echo "❌ Error: No command to execute."
-    return 1
-  fi
-
-  echo "▶️  Executing: '$*'..."
-
-  if [[ "$LOG" == "verbose" ]]; then
-    "$@"
-  else
-    "$@" > /dev/null 2>&1
-  fi
-
-  local exit_code=$?
-
-  if [ $exit_code -eq 0 ]; then
-    echo "✅ '$*' success!"
-  else
-    echo "❌ Error, returned exit code: $exit_code"
-  fi
-
-  return $exit_code
-}
-
 if execute is_container_running; then
     echo "⚡ Container '$CONTAINER_NAME' is running. Stopping and removing it with data..."
     execute docker stop $CONTAINER_NAME
@@ -74,7 +46,7 @@ fi
 
 if execute container_exists; then
     echo "⚡ Found stopped container '$CONTAINER_NAME'. Removing it..."
-    execute docker rm $CONTAINER_NAME
+    execute docker rm -v $CONTAINER_NAME
     echo "⚡ Stopped container removed."
 fi
 
