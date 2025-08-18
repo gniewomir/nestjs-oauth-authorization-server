@@ -36,6 +36,12 @@ $ npm install
 $ npm run test
 ```
 
+# Env
+To generate new default env file based on configuration (can be piped)
+```shell
+$ ./bin/env.sh
+```
+
 # Database
 
 Setup or reset test database
