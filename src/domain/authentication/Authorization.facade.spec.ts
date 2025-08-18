@@ -25,7 +25,7 @@ import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailV
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
+import { plainToConfig } from "@infrastructure/config/utility";
 import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
 import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
 import { JwtServiceFake } from "@infrastructure/security/jwt";

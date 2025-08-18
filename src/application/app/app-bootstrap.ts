@@ -3,6 +3,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 import { AppModule } from "@application/app";
 import { AppExceptionFilter } from "@application/app/app-exception-filter";
+import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
 
@@ -22,7 +23,7 @@ export async function appBootstrap() {
   const appConfig = app.get(AppConfig);
   const openApiConfig = app.get(OpenApiConfig);
 
-  if (openApiConfig.exposed && appConfig.env !== "production") {
+  if (openApiConfig.exposed && appConfig.nodeEnv !== "production") {
     const options = new DocumentBuilder()
       .setTitle("Core")
       .setVersion("v1")
@@ -33,7 +34,15 @@ export async function appBootstrap() {
           authorizationCode: {
             authorizationUrl: openApiConfig.authorizationUrl,
             tokenUrl: openApiConfig.tokenUrl,
-            scopes: openApiConfig.scopes,
+            scopes: ScopeValueImmutableSet.fromString(openApiConfig.scopes)
+              .describe()
+              .reduce(
+                (carry, { name, description }) => {
+                  carry[name] = description;
+                  return carry;
+                },
+                {} as Record<string, string>,
+              ),
             refreshUrl: openApiConfig.tokenUrl,
           },
         },

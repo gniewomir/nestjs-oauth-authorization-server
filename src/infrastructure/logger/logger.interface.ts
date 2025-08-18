@@ -4,6 +4,8 @@ export interface LoggerInfoObject {
   [key: string]: any;
 }
 
+export const logLevels = ["debug", "verbose", "info", "warn", "error"];
+
 export interface LoggerInterface {
   debug(message: string | LoggerInfoObject, ...meta: unknown[]): void;
   verbose(message: string | LoggerInfoObject, ...meta: unknown[]): void;

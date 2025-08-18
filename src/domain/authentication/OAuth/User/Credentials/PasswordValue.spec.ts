@@ -1,6 +1,6 @@
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
+import { plainToConfig } from "@infrastructure/config/utility";
 import { PasswordService } from "@infrastructure/security/password/password.service";
 
 describe("PasswordValue", () => {

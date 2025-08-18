@@ -3,7 +3,7 @@ import {
   OauthInvalidScopeException,
   OauthServerErrorException,
 } from "@domain/authentication/OAuth/Errors";
-import { deepFreeze } from "@infrastructure/config/configs/utility";
+import { deepFreeze } from "@infrastructure/config/utility";
 
 type TScopeDescription = {
   name: string;

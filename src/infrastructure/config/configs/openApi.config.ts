@@ -1,17 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { ConfigService } from "@nestjs/config";
-import { plainToInstance } from "class-transformer";
-import { IsBoolean, IsNotEmpty, IsObject, IsString } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
 
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { AppConfig } from "@infrastructure/config/configs/app.config";
-import {
-  configValidator,
-  deepFreeze,
-} from "@infrastructure/config/configs/utility";
+import { provide } from "@infrastructure/config/utility/provide";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
+
+import { AppConfig } from "./app.config";
 
 @Injectable()
 export class OpenApiConfig {
@@ -36,8 +33,8 @@ export class OpenApiConfig {
   refreshUrl: string;
 
   @IsNotEmpty()
-  @IsObject()
-  scopes: Record<string, string>;
+  @IsString()
+  scopes: string;
 
   public static defaults({ port }: { port: number }): OpenApiConfig {
     return {
@@ -52,15 +49,7 @@ export class OpenApiConfig {
         ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
         ScopeValue.TOKEN_AUTHENTICATE(),
         ScopeValue.TASK_API(),
-      ])
-        .describe()
-        .reduce(
-          (carry, { name, description }) => {
-            carry[name] = description;
-            return carry;
-          },
-          {} as Record<string, string>,
-        ),
+      ]).toString(),
     } satisfies OpenApiConfig;
   }
 
@@ -73,19 +62,20 @@ export class OpenApiConfig {
         appConfig: AppConfig,
       ) => {
         logger.setContext("OpenApiConfig factory");
-        const config = plainToInstance<OpenApiConfig, Record<string, unknown>>(
+        return await provide(
+          "openapi",
+          "OpenApiConfig",
           OpenApiConfig,
+          logger,
+          nestConfigService,
           {
-            ...OpenApiConfig.defaults({ port: appConfig.port }),
-            exposed: ["true", "1"].includes(
-              (
-                nestConfigService.get<string>("OPENAPI_EXPOSED") || ""
-              ).toLowerCase(),
-            ),
+            exposed: {
+              fromEnv: "required",
+              description: "Should API docs should be exposed to the world?",
+            },
           },
+          OpenApiConfig.defaults({ port: appConfig.port }),
         );
-
-        return deepFreeze(configValidator(config, logger));
       },
       inject: [ConfigService, LoggerInterfaceSymbol, AppConfig],
     };

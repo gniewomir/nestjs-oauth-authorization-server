@@ -2,7 +2,7 @@ import * as assert from "node:assert";
 
 import { validate } from "class-validator";
 
-import { LoggerInterface } from "../../../logger";
+import { LoggerInterface } from "@infrastructure/logger";
 
 export const configValidator: <T extends Record<keyof T, unknown>>(
   config: T,

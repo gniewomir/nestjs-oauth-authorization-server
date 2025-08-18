@@ -1,7 +1,6 @@
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { ConfigService } from "@nestjs/config";
 import { randomString } from "@test/utility/randomString";
-import { plainToInstance } from "class-transformer";
 import { IsInt, IsNotEmpty, IsString, Length, Max } from "class-validator";
 import { Algorithm } from "jsonwebtoken";
 
@@ -10,10 +9,7 @@ import {
   ONE_HOUR_IN_SECONDS,
   ONE_MINUTE_IN_SECONDS,
 } from "@infrastructure/clock";
-import {
-  configValidator,
-  deepFreeze,
-} from "@infrastructure/config/configs/utility";
+import { provide } from "@infrastructure/config/utility/provide";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 
 export class AuthConfig {
@@ -75,11 +71,20 @@ export class AuthConfig {
         logger: LoggerInterface,
       ) => {
         logger.setContext("AuthConfig factory");
-        const config = plainToInstance(AuthConfig, {
-          ...AuthConfig.defaults(),
-          jwtSecret: nestConfigService.get("AUTH_SECRET") || "",
-        } satisfies AuthConfig);
-        return deepFreeze(configValidator(config, logger));
+        return await provide(
+          "auth",
+          "AuthConfig",
+          AuthConfig,
+          logger,
+          nestConfigService,
+          {
+            jwtSecret: {
+              fromEnv: "required",
+              description: "Secret string used to sign jwt tokens",
+            },
+          },
+          AuthConfig.defaults(),
+        );
       },
       inject: [ConfigService, LoggerInterfaceSymbol],
     };

@@ -1,30 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { ConfigService } from "@nestjs/config";
-import { plainToInstance } from "class-transformer";
 import { IsIn, IsInt, IsNotEmpty, IsString } from "class-validator";
+
+import { provide } from "@infrastructure/config/utility/provide";
+import { logLevels } from "@infrastructure/logger/logger.interface";
 
 import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
 
-import { configValidator } from "./utility/configValidator";
-import { deepFreeze } from "./utility/deepFreeze";
-
-const normalizeEnv = (value: string | undefined) => {
-  /**
-   * When in doubt, be strict
-   */
-  if (!value) {
-    return "production";
-  }
-  const normalized = value.toLowerCase().trim();
-  if (["test", "testing"].includes(normalized)) {
-    return "test";
-  }
-  if (["local", "dev", "development"].includes(normalized)) {
-    return "development";
-  }
-  return "production";
-};
+const acceptedEnvs = ["development", "test", "production"];
 
 @Injectable()
 export class AppConfig {
@@ -34,19 +18,19 @@ export class AppConfig {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(["development", "test", "production"])
-  env: ReturnType<typeof normalizeEnv>;
+  @IsIn(acceptedEnvs)
+  nodeEnv: "production" | "development" | "test";
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(["debug", "verbose", "info", "warn", "error"])
-  loglevel: string;
+  @IsIn(logLevels)
+  logLevel: string;
 
   public static defaults(): AppConfig {
     return {
       port: 3000,
-      env: "production",
-      loglevel: "warn",
+      nodeEnv: "production",
+      logLevel: "warn",
     };
   }
 
@@ -58,17 +42,33 @@ export class AppConfig {
         logger: LoggerInterface,
       ) => {
         logger.setContext("AppConfig factory");
-        const config = plainToInstance<AppConfig, Record<string, unknown>>(
+        return await provide(
+          "app",
+          "AppConfig",
           AppConfig,
+          logger,
+          nestConfigService,
           {
-            ...AppConfig.defaults(),
-            env: normalizeEnv(nestConfigService.get("NODE_ENV")),
-            port: parseInt(nestConfigService.get("PORT") || "", 10),
-            loglevel: nestConfigService.get("LOG_LEVEL") || "warn",
+            port: {
+              fromEnv: "required",
+              description: "Port on which application will be running.",
+            },
+            logLevel: {
+              fromEnv: "required",
+              description: `Lowest log level that will be logged. Accepted values ${logLevels.join(", ")}.`,
+            },
+            nodeEnv: {
+              fromEnv: "required",
+              envKey: "NODE_ENV",
+              description:
+                "Current application environment." +
+                ' "development" & "test" are lenient when it comes to error reporting & configuration.' +
+                ' "Production" limits error reporting outside logs and enforces stricter configuration.' +
+                ` Accepted values ${acceptedEnvs.join(", ")}.`,
+            },
           },
+          AppConfig.defaults(),
         );
-
-        return deepFreeze(configValidator(config, logger));
       },
       inject: [ConfigService, LoggerInterfaceSymbol],
     };

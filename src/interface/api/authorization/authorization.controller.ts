@@ -237,7 +237,7 @@ export class AuthorizationController {
       exception.stack = exception.stack
         ? exception.stack.split("\n").map((str) => str.trim())
         : exception.stack;
-      return this.appConfig.env === "development"
+      return this.appConfig.nodeEnv === "development"
         ? JSON.stringify(exception, Object.getOwnPropertyNames(exception), 2)
         : undefined;
     };
@@ -317,7 +317,7 @@ export class AuthorizationController {
 
       Assert(
         typeof body.code_verifier === "string" ||
-          this.appConfig.env !== "production",
+          this.appConfig.nodeEnv !== "production",
         () =>
           new OauthInvalidRequestException({
             errorDescription: "No code verifier",

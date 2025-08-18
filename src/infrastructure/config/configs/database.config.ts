@@ -1,13 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { ConfigService } from "@nestjs/config";
-import { plainToInstance } from "class-transformer";
 import { IsInt, IsNotEmpty, IsString } from "class-validator";
 
-import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
+import { provide } from "@infrastructure/config/utility/provide";
 
-import { configValidator } from "./utility/configValidator";
-import { deepFreeze } from "./utility/deepFreeze";
+import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
 
 @Injectable()
 export class DatabaseConfig {
@@ -49,19 +47,36 @@ export class DatabaseConfig {
         logger: LoggerInterface,
       ) => {
         logger.setContext("DatabaseConfig factory");
-        const config = plainToInstance<DatabaseConfig, Record<string, unknown>>(
+        return await provide(
+          "db",
+          "DatabaseConfig",
           DatabaseConfig,
+          logger,
+          nestConfigService,
           {
-            ...DatabaseConfig.defaults(),
-            port: parseInt(nestConfigService.get("DATABASE_PORT") || "", 10),
-            host: nestConfigService.get("DATABASE_HOST") || "",
-            user: nestConfigService.get("DATABASE_USER") || "",
-            password: nestConfigService.get("DATABASE_PASSWORD") || "",
-            database: nestConfigService.get("DATABASE_NAME") || "",
+            port: {
+              fromEnv: "required",
+              description: "Database port",
+            },
+            host: {
+              fromEnv: "required",
+              description: "Database host",
+            },
+            database: {
+              fromEnv: "required",
+              description: "Database name",
+            },
+            password: {
+              fromEnv: "required",
+              description: "Database password",
+            },
+            user: {
+              fromEnv: "required",
+              description: "Database user",
+            },
           },
+          DatabaseConfig.defaults(),
         );
-
-        return deepFreeze(configValidator(config, logger));
       },
       inject: [ConfigService, LoggerInterfaceSymbol],
     };

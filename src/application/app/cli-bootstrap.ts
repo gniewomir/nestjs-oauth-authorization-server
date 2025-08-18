@@ -41,7 +41,7 @@ export async function cliBootstrap({
 
   const appConfig = await command.resolve<AppConfig>(AppConfig);
 
-  logger.info(`Environment => ${appConfig.env}`);
+  logger.info(`Environment => ${appConfig.nodeEnv}`);
 
   try {
     await payload({ application: command, logger, appConfig });

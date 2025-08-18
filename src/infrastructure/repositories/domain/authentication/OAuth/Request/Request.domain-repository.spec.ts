@@ -8,7 +8,7 @@ import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { ConfigModule } from "@infrastructure/config";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
+import { plainToConfig } from "@infrastructure/config/utility";
 import { DatabaseModule } from "@infrastructure/database";
 import { AuthorizationRequest as DatabaseAuthorizationRequest } from "@infrastructure/database/entities";
 import { AuthorizationCodeService } from "@infrastructure/security/authorization-code/authorization-code.service";

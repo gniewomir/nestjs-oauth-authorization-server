@@ -20,7 +20,7 @@ void cliBootstrap({
   baseModule: SeedModule,
   payload: async ({ application, logger, appConfig }) => {
     Assert(
-      appConfig.env === "development" || appConfig.env === "test",
+      appConfig.nodeEnv === "development" || appConfig.nodeEnv === "test",
       "Expected development of test environment",
     );
     const clients = application.get<ClientDomainRepository>(

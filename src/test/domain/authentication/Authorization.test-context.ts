@@ -6,7 +6,7 @@ import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/Scope
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { AuthConfig } from "@infrastructure/config/configs";
-import { plainToConfig } from "@infrastructure/config/configs/utility";
+import { plainToConfig } from "@infrastructure/config/utility";
 import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
 import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
 import { UserDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.in-memory";

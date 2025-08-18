@@ -94,7 +94,7 @@ export class AuthorizationService {
         }),
     );
     Assert(
-      this.appConfig.env !== "production" ||
+      this.appConfig.nodeEnv !== "production" ||
         (!!codeChallenge &&
           CodeChallengeMethodValue.fromUnknown(codeChallengeMethod).isEqual(
             CodeChallengeMethodValue.METHOD_S256(),
