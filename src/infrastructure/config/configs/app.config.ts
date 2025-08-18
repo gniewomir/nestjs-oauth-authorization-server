@@ -55,16 +55,18 @@ export class AppConfig {
             },
             logLevel: {
               fromEnv: "required",
-              description: `Lowest log level that will be logged. Accepted values ${logLevels.join(", ")}.`,
+              description:
+                `Lowest log level that will be logged.\n` +
+                `Accepted values ${logLevels.join(", ")}.`,
             },
             nodeEnv: {
               fromEnv: "required",
               envKey: "NODE_ENV",
               description:
-                "Current application environment." +
-                ' "development" & "test" are lenient when it comes to error reporting & configuration.' +
-                ' "Production" limits error reporting outside logs and enforces stricter configuration.' +
-                ` Accepted values ${acceptedEnvs.join(", ")}.`,
+                "Current application environment.\n" +
+                '"development" & "test" are lenient when it comes to error reporting & configuration.\n' +
+                '"production" limits error reporting outside logs and enforces stricter configuration.\n' +
+                `Accepted values ${acceptedEnvs.join(", ")}.`,
             },
           },
           AppConfig.defaults(),

@@ -11,7 +11,7 @@ import {
 import { pascalCaseToConstantCase } from "@infrastructure/config/utility/pascalCaseToConstantCase";
 import { LoggerInterface } from "@infrastructure/logger/logger.interface";
 
-type TConfigurationVariable = {
+export type TConfigurationVariable = {
   fromEnv: boolean;
   required: boolean;
   configKey: string;

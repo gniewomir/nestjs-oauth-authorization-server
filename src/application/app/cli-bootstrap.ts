@@ -20,6 +20,11 @@ type TCommandPayload = (context: {
   appConfig: AppConfig;
 }) => Promise<void>;
 
+type TCommandPayloadNoLog = (context: {
+  application: INestApplicationContext;
+  appConfig: AppConfig;
+}) => Promise<void>;
+
 export async function cliBootstrap({
   baseModule,
   name,
@@ -45,6 +50,29 @@ export async function cliBootstrap({
 
   try {
     await payload({ application: command, logger, appConfig });
+  } catch (error) {
+    new CliExceptionFilter().log(error);
+  }
+
+  await command.close();
+}
+
+export async function cliBootstrapNoLogging({
+  baseModule,
+  payload,
+}: {
+  name: string;
+  baseModule: Type<any> | DynamicModule | ForwardReference;
+  payload: TCommandPayloadNoLog;
+}) {
+  const command = await NestFactory.createApplicationContext(baseModule, {
+    logger: false,
+  });
+
+  const appConfig = await command.resolve<AppConfig>(AppConfig);
+
+  try {
+    await payload({ application: command, appConfig });
   } catch (error) {
     new CliExceptionFilter().log(error);
   }
