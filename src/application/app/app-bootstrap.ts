@@ -23,7 +23,7 @@ export async function appBootstrap() {
   const appConfig = app.get(AppConfig);
   const openApiConfig = app.get(OpenApiConfig);
 
-  if (openApiConfig.exposed && appConfig.nodeEnv !== "production") {
+  if (openApiConfig.exposed) {
     const options = new DocumentBuilder()
       .setTitle("Core")
       .setVersion("v1")
