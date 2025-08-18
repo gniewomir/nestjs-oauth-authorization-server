@@ -1,4 +1,4 @@
-import { NotFoundException } from "@infrastructure/repositories/NotFoundException";
+import { DatabaseNotFoundException } from "@infrastructure/repositories/DatabaseNotFoundException";
 
 export async function NotFoundToDomainException<T>(
   callback: () => Promise<T>,
@@ -7,7 +7,7 @@ export async function NotFoundToDomainException<T>(
   try {
     return await callback();
   } catch (error) {
-    if (error instanceof NotFoundException) {
+    if (error instanceof DatabaseNotFoundException) {
       throw errorFactory(error);
     }
     throw error;

@@ -1,7 +1,7 @@
 import { Request } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { IdentityValue } from "@domain/IdentityValue";
-import { NotFoundException } from "@infrastructure/repositories/NotFoundException";
+import { DatabaseNotFoundException } from "@infrastructure/repositories/DatabaseNotFoundException";
 
 export class RequestDomainRepositoryInMemory implements RequestInterface {
   public requests = new Map<string, Request>();
@@ -12,7 +12,7 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
         return Promise.resolve(request);
       }
     }
-    throw new NotFoundException("Authorization request not found");
+    throw new DatabaseNotFoundException("Authorization request not found");
   }
 
   async persist(authorisationRequest: Request): Promise<void> {
@@ -26,7 +26,7 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
       return Promise.resolve(request);
     }
     return Promise.reject(
-      new NotFoundException("Authorization request not found"),
+      new DatabaseNotFoundException("Authorization request not found"),
     );
   }
 }
