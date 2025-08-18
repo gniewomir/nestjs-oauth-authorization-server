@@ -11,14 +11,14 @@ Repo will be intentionally heavily overengineered for what it actually does.
 
 The Repository contains documentation organized in the `./docs` directory with two main categories:
 
-## Hand-Written Documentation (`./docs/human/`)
+## Mostly Hand-Written Documentation (`./docs`)
 
 Decision documentation written by hand during development:
 * `ADD-{decisions-subject}.md` - reasoning behind architecture decisions 
 * `DDD-{decisions-subject}.md` - reasoning behind domain decisions 
 * `TDD-{decisions-subject}.md` - reasoning behind technical decisions
 
-## Generated Documentation (`./docs/generated/`)
+## Generated Documentation (`./docs/overview/`)
 
 Comprehensive architectural documentation generated using LLM from codebase analysis:
 * `ARCHITECTURE-OVERVIEW.md` - high-level introduction to architectural patterns
@@ -27,6 +27,11 @@ Comprehensive architectural documentation generated using LLM from codebase anal
 * `ARCHITECTURE-TESTING.md` - comprehensive testing strategies and patterns
 * `ARCHITECTURE-DOMAIN-MODEL.md` - detailed domain model and business concepts
 * `ARCHITECTURE-SUMMARY.md` - overview of all documentation and reading guide
+
+## Cursor docs (`./cursor`)
+
+Attempts at convincing LLM's to adhere to the conventions I want to establish in this code base. Hit or miss. 
+
 
 # Setup
 ```shell
