@@ -70,7 +70,7 @@ export class OpenApiConfig {
           nestConfigService,
           {
             exposed: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Should API docs should be exposed to the world?",
             },
           },

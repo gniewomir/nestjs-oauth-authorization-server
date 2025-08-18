@@ -10,19 +10,24 @@ import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayloa
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
+import {
+  createPrivateKey,
+  createPublicKey,
+} from "@infrastructure/security/jwt/keys";
 
 export class JwtServiceFake implements TokenPayloadsInterface {
   constructor(private readonly authConfig: AuthConfig) {}
 
-  verifyIdToken(idToken: string): Promise<IdTokenPayload> {
-    const verified = jwt_verify(idToken, this.authConfig.jwtSecret, {
+  async verifyIdToken(idToken: string): Promise<IdTokenPayload> {
+    const key = await createPublicKey(this.authConfig.jwtKeyPath);
+    const verified = jwt_verify(idToken, key, {
       algorithms: [this.authConfig.jwtAlgorithm],
       complete: false,
     });
 
     assert(typeof verified === "object");
 
-    return Promise.resolve(IdTokenPayload.fromUnknown(verified));
+    return IdTokenPayload.fromUnknown(verified);
   }
 
   decode(token: string): Promise<TokenPayload> {
@@ -36,15 +41,16 @@ export class JwtServiceFake implements TokenPayloadsInterface {
     return Promise.resolve(TokenPayload.fromUnknown(payload));
   }
 
-  sign(tokenPayload: Record<string, unknown>): Promise<string> {
-    const signed = jwt_sign(tokenPayload, this.authConfig.jwtSecret, {
+  async sign(tokenPayload: Record<string, unknown>): Promise<string> {
+    const key = await createPrivateKey(this.authConfig.jwtKeyPath);
+    return jwt_sign(tokenPayload, key, {
       algorithm: this.authConfig.jwtAlgorithm,
     });
-    return Promise.resolve(signed);
   }
 
-  verify(token: string): Promise<TokenPayload> {
-    const verified = jwt_verify(token, this.authConfig.jwtSecret, {
+  async verify(token: string): Promise<TokenPayload> {
+    const key = await createPublicKey(this.authConfig.jwtKeyPath);
+    const verified = jwt_verify(token, key, {
       algorithms: [this.authConfig.jwtAlgorithm],
       complete: false,
     });

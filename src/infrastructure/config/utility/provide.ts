@@ -13,13 +13,14 @@ import { LoggerInterface } from "@infrastructure/logger/logger.interface";
 
 export type TConfigurationVariable = {
   fromEnv: boolean;
-  required: boolean;
+  allowDefault: boolean;
   configKey: string;
   envKey: string;
   type: "string" | "number" | "boolean";
   description?: string;
   defaultValue?: unknown;
   configName: string;
+  allowed?: string[];
 };
 const registry: TConfigurationVariable[] = [];
 const register = (configurationVariable: TConfigurationVariable) => {
@@ -30,7 +31,7 @@ export const inspectRegistry = () => {
 };
 
 export const provide = async <T>(
-  prefix: string,
+  envVarsPrefix: string,
   configName: string,
   config: ClassConstructor<T>,
   logger: LoggerInterface,
@@ -38,7 +39,12 @@ export const provide = async <T>(
   input: Partial<
     Record<
       keyof T,
-      { fromEnv: "required" | "optional"; description: string; envKey?: string }
+      {
+        allowDefault: boolean;
+        description: string;
+        envKey?: string;
+        allowed?: string[];
+      }
     >
   >,
   defaults: Record<keyof T, unknown>,
@@ -54,7 +60,7 @@ export const provide = async <T>(
     const envName = input[key].envKey
       ? input[key].envKey
       : pascalCaseToConstantCase(
-          prefix.toLowerCase() + key[0].toUpperCase() + key.slice(1),
+          envVarsPrefix.toLowerCase() + key[0].toUpperCase() + key.slice(1),
         );
     if (typeof defaultValue === "string") {
       const envValue = nestConfigService.get<string>(envName);
@@ -62,7 +68,7 @@ export const provide = async <T>(
         result[key] = envValue;
       }
       Assert(
-        typeof envValue === "string" || input[key].fromEnv === "optional",
+        typeof envValue === "string" || input[key].allowDefault,
         `${envName} is required`,
       );
       register({
@@ -73,7 +79,8 @@ export const provide = async <T>(
         description: input[key].description,
         envKey: envName,
         fromEnv: typeof envValue !== "undefined",
-        required: input[key].fromEnv === "required",
+        allowDefault: input[key].allowDefault,
+        allowed: input[key].allowed,
       });
     }
     if (typeof defaultValue === "number") {
@@ -83,7 +90,7 @@ export const provide = async <T>(
         result[key] = envValue;
       }
       Assert(
-        typeof envValue === "number" || input[key].fromEnv === "optional",
+        typeof envValue === "number" || input[key].allowDefault,
         `${envName} is required`,
       );
       register({
@@ -94,7 +101,8 @@ export const provide = async <T>(
         description: input[key].description,
         envKey: envName,
         fromEnv: typeof envValue !== "undefined",
-        required: input[key].fromEnv === "required",
+        allowDefault: input[key].allowDefault,
+        allowed: input[key].allowed,
       });
     }
     if (typeof defaultValue === "boolean") {
@@ -106,7 +114,7 @@ export const provide = async <T>(
         result[key] = ["true", "1"].includes(envValue);
       }
       Assert(
-        typeof envValue === "string" || input[key].fromEnv === "optional",
+        typeof envValue === "string" || input[key].allowDefault,
         `${envName} is required`,
       );
       register({
@@ -117,7 +125,8 @@ export const provide = async <T>(
         description: input[key].description,
         envKey: envName,
         fromEnv: typeof envValue !== "undefined",
-        required: input[key].fromEnv === "required",
+        allowDefault: input[key].allowDefault,
+        allowed: input[key].allowed,
       });
     }
   }

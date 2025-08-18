@@ -4,6 +4,10 @@ import { JwtService as NestJwtService } from "@nestjs/jwt";
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
+import {
+  createPrivateKey,
+  loadPublicKey,
+} from "@infrastructure/security/jwt/keys";
 
 @Injectable()
 export class JwtService implements TokenPayloadsInterface {
@@ -13,10 +17,11 @@ export class JwtService implements TokenPayloadsInterface {
   ) {}
 
   async verify(token: string): Promise<TokenPayload> {
+    const key = await loadPublicKey(this.authConfig.jwtKeyPath);
     return TokenPayload.fromUnknown(
       await this.jwtService.verifyAsync(token, {
         algorithms: [this.authConfig.jwtAlgorithm],
-        secret: this.authConfig.jwtSecret,
+        publicKey: key,
         complete: false,
       }),
     );
@@ -34,9 +39,10 @@ export class JwtService implements TokenPayloadsInterface {
   }
 
   async sign(tokenPayload: Record<string, unknown>): Promise<string> {
+    const key = await createPrivateKey(this.authConfig.jwtKeyPath);
     return await this.jwtService.signAsync(tokenPayload, {
       algorithm: this.authConfig.jwtAlgorithm,
-      secret: this.authConfig.jwtSecret,
+      privateKey: key,
     });
   }
 }

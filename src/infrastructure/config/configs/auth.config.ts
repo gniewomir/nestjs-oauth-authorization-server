@@ -1,7 +1,9 @@
+import * as constants from "node:constants";
+import * as fs from "node:fs";
+
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { ConfigService } from "@nestjs/config";
-import { randomString } from "@test/utility/randomString";
-import { IsInt, IsNotEmpty, IsString, Length, Max } from "class-validator";
+import { IsIn, IsInt, IsNotEmpty, IsString, Max } from "class-validator";
 import { Algorithm } from "jsonwebtoken";
 
 import {
@@ -11,6 +13,16 @@ import {
 } from "@infrastructure/clock";
 import { provide } from "@infrastructure/config/utility/provide";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
+
+const allowedAlgorithms = ["ES512"];
+
+function assertFileIsReadable(filePath: string, message: string) {
+  try {
+    fs.accessSync(filePath, constants.R_OK);
+  } catch (error) {
+    throw new Error(message, { cause: error });
+  }
+}
 
 export class AuthConfig {
   @IsNotEmpty()
@@ -38,11 +50,11 @@ export class AuthConfig {
 
   @IsNotEmpty()
   @IsString()
-  @Length(64, 64)
-  jwtSecret: string;
+  jwtKeyPath: string;
 
   @IsNotEmpty()
   @IsString()
+  @IsIn(allowedAlgorithms)
   jwtAlgorithm: Algorithm;
 
   @IsNotEmpty()
@@ -53,8 +65,8 @@ export class AuthConfig {
   public static defaults(): AuthConfig {
     return {
       passwordSaltingRounds: 10,
-      jwtAlgorithm: "HS256" satisfies Algorithm,
-      jwtSecret: randomString(64),
+      jwtAlgorithm: "ES512" satisfies Algorithm,
+      jwtKeyPath: "keys/ours-key-es512",
       jwtIssuer: "Gniewomir Świechowski <gniewomir.swiechowski@gmail.com>",
       jwtAccessTokenExpirationSeconds: ONE_MINUTE_IN_SECONDS * 5,
       jwtRefreshTokenExpirationSeconds: ONE_HOUR_IN_SECONDS,
@@ -71,20 +83,38 @@ export class AuthConfig {
         logger: LoggerInterface,
       ) => {
         logger.setContext("AuthConfig factory");
-        return await provide(
+        const config = await provide(
           "auth",
           "AuthConfig",
           AuthConfig,
           logger,
           nestConfigService,
           {
-            jwtSecret: {
-              fromEnv: "required",
-              description: "Secret string used to sign jwt tokens",
+            jwtAlgorithm: {
+              allowDefault: true,
+              description: "Algorithm used for signing JWT tokens.",
+              allowed: allowedAlgorithms,
+            },
+            jwtKeyPath: {
+              allowDefault: false,
+              description:
+                "Path to private key used to sign jwt tokens (absolute or relative to the project root)",
             },
           },
           AuthConfig.defaults(),
         );
+
+        assertFileIsReadable(
+          config.jwtKeyPath,
+          `Cannot read private key file ${config.jwtKeyPath}`,
+        );
+
+        assertFileIsReadable(
+          `${config.jwtKeyPath}.pub`,
+          `Cannot read public key file ${config.jwtKeyPath}.pub`,
+        );
+
+        return config;
       },
       inject: [ConfigService, LoggerInterfaceSymbol],
     };

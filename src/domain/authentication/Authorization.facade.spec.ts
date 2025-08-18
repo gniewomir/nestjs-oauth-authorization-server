@@ -23,6 +23,7 @@ import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/Scope
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
+import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { plainToConfig } from "@infrastructure/config/utility";
@@ -891,8 +892,8 @@ describe("AuthorizationFacade", () => {
       const modifiedAuthConfig = await plainToConfig(
         {
           ...authConfig,
-          jwtSecret: randomString(64),
-        },
+          jwtKeyPath: "keys/theirs-key-es512",
+        } satisfies AuthConfig,
         AuthConfig,
       );
       const tokenPayloadsWithModifiedConfig = new JwtServiceFake(
@@ -905,9 +906,17 @@ describe("AuthorizationFacade", () => {
         scope: defaultTestClientScopesMother(),
         client,
       });
+      /**
+       * Perfectly valid token - but signed with different key
+       */
       const accessTokenWithInvalidSignature = await newRefreshToken.sign(
         tokenPayloadsWithModifiedConfig,
       );
+      user.rotateRefreshToken(
+        RefreshTokenValue.fromTokenPayload(newRefreshToken),
+        clock,
+      );
+      await users.persist(user);
 
       await expect(
         AuthorizationFacade.refreshTokenGrant(

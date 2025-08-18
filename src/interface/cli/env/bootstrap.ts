@@ -1,14 +1,48 @@
-import { cliBootstrapNoLogging } from "@application/app";
+import { ConfigService } from "@nestjs/config";
+
+import { cliBootstrap } from "@application/app";
 import {
   inspectRegistry,
   TConfigurationVariable,
 } from "@infrastructure/config/utility/provide";
 import { EnvModule } from "@interface/cli/env/env.module";
 
-void cliBootstrapNoLogging({
-  name: "docs:env",
+void cliBootstrap({
+  name: "env",
   baseModule: EnvModule,
-  payload: () => {
+  payload: ({ application }) => {
+    const args = process.argv.slice(2);
+    const command = args.shift();
+
+    const describeUsage = () => {
+      console.log("Usage:");
+      console.log(
+        `${"".padEnd(5, " ")}help`.padEnd(20, " "),
+        "Print available commands.",
+      );
+      console.log(
+        `${"".padEnd(5, " ")}merge`.padEnd(20, " "),
+        "Merge current .env with defaults and print new env file to console.",
+      );
+      console.log(
+        `${"".padEnd(5, " ")}default`.padEnd(20, " "),
+        "Print default .env file to console.",
+      );
+    };
+
+    if (!["help", "merge", "default"].includes(command || "")) {
+      console.error(`Unrecognized command "${command}"`);
+      describeUsage();
+    }
+    if (command === "help") {
+      describeUsage();
+      return Promise.resolve();
+    }
+
+    console.log("Gathering env variables...");
+
+    const nestConfigService = application.get<ConfigService>(ConfigService);
+
     const describeConfig = (val: TConfigurationVariable) => {
       const title = `${"".padEnd(5, "#")} ${val.configName} ${"".padEnd(5, "#")}`;
       console.log("".padEnd(title.length, "#"));
@@ -18,7 +52,7 @@ void cliBootstrapNoLogging({
 
     const describeEnv = (val: TConfigurationVariable) => {
       console.log(
-        `# ${val.envKey} -> ${val.configName}.${val.configKey} ${val.required ? "(required)" : "(optional)"}`,
+        `# ${val.envKey} -> ${val.configName}.${val.configKey} ${val.allowDefault ? "(optional)" : "(required)"}`,
       );
       console.log(`# DEFAULT/EXAMPLE: ${String(val.defaultValue)}`);
       if (val.description) {
@@ -31,8 +65,17 @@ void cliBootstrapNoLogging({
         } else {
           console.log(`# DESCRIPTION: ${val.description}`);
         }
+        if (val.allowed) {
+          console.log(`# ALLOWED: ${val.allowed.join(", ")}`);
+        }
       }
-      console.log(`${val.envKey}=${String(val.defaultValue).trim()}`);
+      if (command === "merge") {
+        console.log(
+          `${val.envKey}=${String(nestConfigService.get(val.envKey) || val.defaultValue).trim()}`,
+        );
+      } else {
+        console.log(`${val.envKey}=${String(val.defaultValue).trim()}`);
+      }
     };
 
     console.log(`# BEGIN ENV FILE\n\n`);

@@ -55,23 +55,23 @@ export class DatabaseConfig {
           nestConfigService,
           {
             port: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Database port",
             },
             host: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Database host",
             },
             database: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Database name",
             },
             password: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Database password",
             },
             user: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Database user",
             },
           },

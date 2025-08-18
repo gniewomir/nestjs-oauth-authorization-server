@@ -50,23 +50,22 @@ export class AppConfig {
           nestConfigService,
           {
             port: {
-              fromEnv: "required",
+              allowDefault: true,
               description: "Port on which application will be running.",
             },
             logLevel: {
-              fromEnv: "required",
-              description:
-                `Lowest log level that will be logged.\n` +
-                `Accepted values ${logLevels.join(", ")}.`,
+              allowDefault: true,
+              description: `Lowest log level that will be logged.`,
+              allowed: logLevels,
             },
             nodeEnv: {
-              fromEnv: "required",
+              allowDefault: true,
               envKey: "NODE_ENV",
               description:
                 "Current application environment.\n" +
                 '"development" & "test" are lenient when it comes to error reporting & configuration.\n' +
-                '"production" limits error reporting outside logs and enforces stricter configuration.\n' +
-                `Accepted values ${acceptedEnvs.join(", ")}.`,
+                '"production" limits error reporting outside logs and enforces stricter configuration.',
+              allowed: acceptedEnvs,
             },
           },
           AppConfig.defaults(),

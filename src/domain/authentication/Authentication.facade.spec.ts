@@ -90,7 +90,7 @@ describe("AuthenticationFacade", () => {
       const modifiedAuthConfig = await plainToConfig(
         {
           ...authConfig,
-          jwtSecret: randomString(64),
+          jwtKeyPath: "keys/theirs-key-es512",
         },
         AuthConfig,
       );
