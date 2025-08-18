@@ -3,9 +3,11 @@
 I want to:
 - test some of my ideas on how to apply DDD to TS based backends.
 - test how well coding LLMs can follow patterns
-- have a base for future projects 
+- have an own OAuth auth server for future projects 
 
 Repo will be intentionally heavily overengineered for what it actually does.
+
+If somebody will find any use for it, great. But as long as it is not deployed I might force updates and squash migrations. You have been warned.  
 
 # Documentation 
 
