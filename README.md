@@ -40,13 +40,19 @@ Attempts at convincing LLM's to adhere to the conventions I want to establish in
 $ cp .env.dist .env
 $ nvm use 
 $ npm install 
+$ npm run crypto:keys
 $ npm run test
 ```
 
 # Env
-To generate new default env file based on configuration (can be piped)
+To generate new default env file based on configuration (will replace .env.dist)
 ```shell
-$ ./bin/env.sh
+$ ./bin/default-env.sh
+```
+
+To merge current environment with configuration changes (will replace .env preserving values for KNOWN variables)
+```shell
+$ ./bin/merge-env.sh
 ```
 
 # Database
