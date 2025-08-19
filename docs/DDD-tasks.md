@@ -20,10 +20,8 @@
                 * important bit: in the context of the current filter
 * Every `Goal` is archivable by completing enough `Tasks`
     * Goal order is subject to change
-        * Arbitrary changes
 * `Context`
     * Context order is subject to change
-        * Arbitrary changes
 * Every `Task` is doable only in particular `Context`, i.e.
     * I cannot dead-lift if I do not have barbell/dumbbells at home, therefore
         * If my `Goal` is getting jacked
