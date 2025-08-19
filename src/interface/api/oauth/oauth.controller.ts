@@ -30,7 +30,7 @@ import { IdentityValue } from "@domain/IdentityValue";
 import { AppConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 import { TemplateService } from "@infrastructure/template/template.service";
-import { TemplateInterfaceSymbol } from "@interface/api/authorization/Template.interface";
+import { TemplateInterfaceSymbol } from "@interface/api/Template.interface";
 
 import { AuthorizeRequestDto } from "./dto/authorize-request.dto";
 import { PromptRequestDto } from "./dto/prompt-request.dto";

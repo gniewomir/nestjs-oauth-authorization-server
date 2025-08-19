@@ -17,4 +17,4 @@ import { OauthController } from "./oauth.controller";
   controllers: [OauthController],
   providers: [],
 })
-export class AuthorizationApiModule {}
+export class OauthApiModule {}

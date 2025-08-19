@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
 
-import { AuthorizationApiModule } from "./authorization/authorization-api.module";
+import { OauthApiModule } from "@interface/api/oauth/oauth-api.module";
+
 import { StatusApiModule } from "./status";
 
 @Module({
-  imports: [StatusApiModule, AuthorizationApiModule],
+  imports: [StatusApiModule, OauthApiModule],
   controllers: [],
   providers: [],
 })
