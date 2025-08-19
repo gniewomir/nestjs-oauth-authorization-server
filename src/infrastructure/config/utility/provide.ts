@@ -44,6 +44,9 @@ export const provide = async <T>(
         description: string;
         envKey?: string;
         allowed?: string[];
+        isArray?: boolean;
+        arraySeparator?: string;
+        arrayTrim?: boolean;
       }
     >
   >,
@@ -62,11 +65,44 @@ export const provide = async <T>(
       : pascalCaseToConstantCase(
           envVarsPrefix.toLowerCase() + key[0].toUpperCase() + key.slice(1),
         );
-    if (typeof defaultValue === "string") {
+    if (typeof defaultValue === "string" || Array.isArray(defaultValue)) {
       const envValue = nestConfigService.get<string>(envName);
-      if (envValue) {
+      if (
+        envValue &&
+        input[key].isArray !== true &&
+        !Array.isArray(defaultValue)
+      ) {
         result[key] = envValue;
       }
+      if (
+        envValue &&
+        input[key].isArray === true &&
+        Array.isArray(defaultValue)
+      ) {
+        Assert(
+          [input[key].isArray, input[key].arraySeparator, input[key].arrayTrim]
+            .map((val) => typeof val !== "undefined")
+            .every((val) => val),
+          `For arrays you need to specify all three options isArray, arraySeparator, arrayTrim. ` +
+            `Validation failed for field ${key} in ${configName}`,
+        );
+        const separator = input[key].arraySeparator;
+        Assert(
+          typeof separator === "string",
+          `You have to specify array separator for ${key} in ${configName}.`,
+        );
+        const trim =
+          typeof input[key].arrayTrim === "undefined"
+            ? true
+            : input[key].arrayTrim;
+        result[key] = envValue
+          .split(separator)
+          .map((val) => (trim ? val.trim() : val));
+      }
+      Assert(
+        typeof result[key] !== "undefined",
+        `Is ${key} in ${configName} array or string?`,
+      );
       Assert(
         typeof envValue === "string" || input[key].allowDefault,
         `${envName} is required`,
@@ -106,12 +142,21 @@ export const provide = async <T>(
       });
     }
     if (typeof defaultValue === "boolean") {
-      const accepted = ["true", "false", "0", "1"];
+      Assert(
+        typeof input[key].allowed === "undefined",
+        `You cannot specify allowed values for boolean field ${key} from config ${configName}.`,
+      );
+      const accepted = ["true", "TRUE", "false", "FALSE", "1", "0"];
       const envString = nestConfigService.get<string>(envName);
-      const envValue = envString ? (envString || "").toLowerCase() : undefined;
+      const envValue = envString
+        ? (envString.trim() || "").toLowerCase()
+        : undefined;
       if (envValue) {
-        Assert(accepted.includes(envValue));
-        result[key] = ["true", "1"].includes(envValue);
+        Assert(
+          accepted.includes(envValue),
+          `Field ${key} in ${configName} is outside allowed values.`,
+        );
+        result[key] = ["TRUE", "true", "1"].includes(envValue);
       }
       Assert(
         typeof envValue === "string" || input[key].allowDefault,
@@ -126,10 +171,11 @@ export const provide = async <T>(
         envKey: envName,
         fromEnv: typeof envValue !== "undefined",
         allowDefault: input[key].allowDefault,
-        allowed: input[key].allowed,
+        allowed: input[key].allowed ?? accepted,
       });
     }
   }
+
   return deepFreeze(
     await configValidator(plainToInstance(config, result), logger),
   );
