@@ -90,7 +90,7 @@ $ ./bin/reset-test-db.sh
 It will: 
 * create or recreate container named `postgres_test` and run it on port 5432
   * data will be removed 
-* build project and run migrations against it
+* build project and run migrations against db it
 
 ## Migrations 
 ```shell
