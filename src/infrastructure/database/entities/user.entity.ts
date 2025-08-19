@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
+import { RefreshTokenValue } from "@domain/auth/OAuth/User/RefreshTokenValue";
 
 @Entity()
 export class User {

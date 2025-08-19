@@ -1,4 +1,4 @@
-import { User } from "@domain/authentication/OAuth/User/User";
+import { User } from "@domain/auth/OAuth/User/User";
 
 import { userMother } from "./User.mother";
 

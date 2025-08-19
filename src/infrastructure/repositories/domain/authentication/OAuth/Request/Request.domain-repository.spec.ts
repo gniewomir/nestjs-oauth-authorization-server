@@ -2,8 +2,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { requestMother } from "@test/domain/authentication/Request.mother";
 
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
-import { Request as DomainAuthorizationRequest } from "@domain/authentication/OAuth/Authorization/Request";
+import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
+import { Request as DomainAuthorizationRequest } from "@domain/auth/OAuth/Authorization/Request";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { ConfigModule } from "@infrastructure/config";

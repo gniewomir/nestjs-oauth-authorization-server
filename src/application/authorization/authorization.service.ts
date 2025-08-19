@@ -1,46 +1,46 @@
 import { Inject, Injectable } from "@nestjs/common";
 
 import { Assert } from "@domain/Assert";
-import { AuthorizationFacade } from "@domain/authentication/Authorization.facade";
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { AuthorizationFacade } from "@domain/auth/Authorization.facade";
+import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import {
   CodeInterface,
   CodeInterfaceSymbol,
-} from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
-import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+} from "@domain/auth/OAuth/Authorization/Code/Code.interface";
+import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import {
   PKCEInterface,
   PKCEInterfaceSymbol,
-} from "@domain/authentication/OAuth/Authorization/PKCE/PKCE.interface";
+} from "@domain/auth/OAuth/Authorization/PKCE/PKCE.interface";
 import {
   RequestInterface,
   RequestInterfaceSymbol,
-} from "@domain/authentication/OAuth/Authorization/Request.interface";
-import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
+} from "@domain/auth/OAuth/Authorization/Request.interface";
+import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
 import {
   ClientInterface,
   ClientInterfaceSymbol,
-} from "@domain/authentication/OAuth/Client/Client.interface";
+} from "@domain/auth/OAuth/Client/Client.interface";
 import {
   OauthInvalidRequestException,
   OauthServerErrorException,
-} from "@domain/authentication/OAuth/Errors";
-import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+} from "@domain/auth/OAuth/Errors";
+import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
+import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
 import {
   TokenPayloadInterfaceSymbol,
   TokenPayloadsInterface,
-} from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
+} from "@domain/auth/OAuth/Token/TokenPayloads.interface";
+import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
 import {
   PasswordInterface,
   PasswordInterfaceSymbol,
-} from "@domain/authentication/OAuth/User/Credentials/Password.interface";
-import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
+} from "@domain/auth/OAuth/User/Credentials/Password.interface";
+import { PasswordValue } from "@domain/auth/OAuth/User/Credentials/PasswordValue";
 import {
   UsersInterface,
   UsersInterfaceSymbol,
-} from "@domain/authentication/OAuth/User/Users.interface";
+} from "@domain/auth/OAuth/User/Users.interface";
 import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";

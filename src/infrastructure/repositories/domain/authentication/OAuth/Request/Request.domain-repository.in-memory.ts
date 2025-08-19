@@ -1,5 +1,5 @@
-import { Request } from "@domain/authentication/OAuth/Authorization/Request";
-import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
+import { Request } from "@domain/auth/OAuth/Authorization/Request";
+import { RequestInterface } from "@domain/auth/OAuth/Authorization/Request.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { DatabaseNotFoundException } from "@infrastructure/repositories/DatabaseNotFoundException";
 

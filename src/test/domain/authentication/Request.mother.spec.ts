@@ -1,4 +1,4 @@
-import { Request } from "@domain/authentication/OAuth/Authorization/Request";
+import { Request } from "@domain/auth/OAuth/Authorization/Request";
 
 import { requestMother } from "./Request.mother";
 

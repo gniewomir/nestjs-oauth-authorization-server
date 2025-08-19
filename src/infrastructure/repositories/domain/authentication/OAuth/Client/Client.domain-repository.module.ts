@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { ClientInterfaceSymbol } from "@domain/authentication/OAuth/Client/Client.interface";
+import { ClientInterfaceSymbol } from "@domain/auth/OAuth/Client/Client.interface";
 import { OauthClient } from "@infrastructure/database/entities/oauth-client.entity";
 
 import { ClientDomainRepository } from "./Client.domain-repository";

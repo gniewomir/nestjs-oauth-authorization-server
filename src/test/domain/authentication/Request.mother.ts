@@ -1,13 +1,13 @@
 import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import { randomString } from "@test/utility/randomString";
 
-import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import {
   Request,
   TRequestConstructorParam,
-} from "@domain/authentication/OAuth/Authorization/Request";
-import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
-import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
+} from "@domain/auth/OAuth/Authorization/Request";
+import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
+import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const requestMother = (

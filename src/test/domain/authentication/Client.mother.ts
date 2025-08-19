@@ -3,8 +3,8 @@ import { defaultTestClientScopesMother } from "@test/domain/authentication/Scope
 import {
   Client,
   TClientConstructorParam,
-} from "@domain/authentication/OAuth/Client/Client";
-import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
+} from "@domain/auth/OAuth/Client/Client";
+import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {

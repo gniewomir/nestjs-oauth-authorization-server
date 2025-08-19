@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 
-import { OauthException } from "@domain/authentication/OAuth/Errors";
+import { OauthException } from "@domain/auth/OAuth/Errors";
 import { LoggerService } from "@infrastructure/logger";
 
 export interface ErrorResponse {

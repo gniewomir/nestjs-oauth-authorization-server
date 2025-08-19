@@ -2,7 +2,7 @@ import { clientMother } from "@test/domain/authentication/Client.mother";
 import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import { userMother } from "@test/domain/authentication/User.mother";
 
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { AuthConfig } from "@infrastructure/config/configs";

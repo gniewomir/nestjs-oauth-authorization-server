@@ -6,7 +6,7 @@ import {
 import { Request } from "express";
 
 import { Assert } from "@domain/Assert";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
 
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): TokenPayload => {

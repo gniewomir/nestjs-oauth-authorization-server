@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
 import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 
 import { AuthenticationService } from "./authentication.service";

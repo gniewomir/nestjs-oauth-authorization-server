@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { randomBytes } from "crypto";
 
-import { CodeInterface } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
+import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
 
 @Injectable()
 export class AuthorizationCodeService implements CodeInterface {

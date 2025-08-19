@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { createHash } from "crypto";
 
-import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
-import { PKCEInterface } from "@domain/authentication/OAuth/Authorization/PKCE/PKCE.interface";
-import { OauthInvalidRequestException } from "@domain/authentication/OAuth/Errors";
+import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { PKCEInterface } from "@domain/auth/OAuth/Authorization/PKCE/PKCE.interface";
+import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
 
 @Injectable()
 export class PKCEService implements PKCEInterface {

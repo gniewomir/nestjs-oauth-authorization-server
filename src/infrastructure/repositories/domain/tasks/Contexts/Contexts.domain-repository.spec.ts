@@ -4,7 +4,7 @@ import { userMother } from "@test/domain/authentication";
 import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { contextMother } from "@test/domain/tasks/Context.mother";
 
-import { UsersInterfaceSymbol } from "@domain/authentication/OAuth/User/Users.interface";
+import { UsersInterfaceSymbol } from "@domain/auth/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { Context as DomainContext } from "@domain/tasks/context/Context";
 import { ContextsInterfaceSymbol } from "@domain/tasks/context/Contexts.interface";

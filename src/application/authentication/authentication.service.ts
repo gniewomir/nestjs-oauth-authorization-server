@@ -1,11 +1,11 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { AuthenticationFacade } from "@domain/authentication/Authentication.facade";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { AuthenticationFacade } from "@domain/auth/Authentication.facade";
+import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
 import {
   TokenPayloadInterfaceSymbol,
   TokenPayloadsInterface,
-} from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
+} from "@domain/auth/OAuth/Token/TokenPayloads.interface";
 import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
 

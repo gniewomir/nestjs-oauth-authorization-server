@@ -25,7 +25,7 @@ import {
   OauthInvalidCredentialsException,
   OauthInvalidRequestException,
   OauthUnsupportedGrantTypeException,
-} from "@domain/authentication/OAuth/Errors";
+} from "@domain/auth/OAuth/Errors";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AppConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";

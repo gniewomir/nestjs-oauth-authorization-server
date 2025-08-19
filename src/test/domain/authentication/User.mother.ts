@@ -1,10 +1,7 @@
 import { randomString } from "@test/utility/randomString";
 
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import {
-  TUserConstructorParam,
-  User,
-} from "@domain/authentication/OAuth/User/User";
+import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
+import { TUserConstructorParam, User } from "@domain/auth/OAuth/User/User";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const userMother = (params: Partial<TUserConstructorParam> = {}) => {

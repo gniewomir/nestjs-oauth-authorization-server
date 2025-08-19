@@ -4,7 +4,7 @@ import { userMother } from "@test/domain/authentication";
 import { assignedMother } from "@test/domain/tasks/Assigned.mother";
 import { goalMother } from "@test/domain/tasks/Goal.mother";
 
-import { UsersInterfaceSymbol } from "@domain/authentication/OAuth/User/Users.interface";
+import { UsersInterfaceSymbol } from "@domain/auth/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { DescriptionValue } from "@domain/tasks/DescriptionValue";
 import { Goal as DomainGoal } from "@domain/tasks/goal/Goal";

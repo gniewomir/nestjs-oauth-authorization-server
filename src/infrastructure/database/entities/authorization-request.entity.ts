@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 
 @Entity()
 export class AuthorizationRequest {

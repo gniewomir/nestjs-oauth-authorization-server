@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { Request, Response } from "express";
 
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
+import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
 import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 import { plainToConfig } from "@infrastructure/config/utility";
 

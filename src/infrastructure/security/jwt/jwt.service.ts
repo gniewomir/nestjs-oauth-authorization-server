@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService as NestJwtService } from "@nestjs/jwt";
 
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
+import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
+import { TokenPayloadsInterface } from "@domain/auth/OAuth/Token/TokenPayloads.interface";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
 import {
   createPrivateKey,

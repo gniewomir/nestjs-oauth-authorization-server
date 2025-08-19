@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 
-import { CodeInterfaceSymbol } from "@domain/authentication/OAuth/Authorization/Code/Code.interface";
+import { CodeInterfaceSymbol } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
 
 import { AuthorizationCodeService } from "./authorization-code.service";
 

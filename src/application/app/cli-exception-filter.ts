@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 
-import { OauthException } from "@domain/authentication/OAuth/Errors";
+import { OauthException } from "@domain/auth/OAuth/Errors";
 import { LoggerService } from "@infrastructure/logger";
 
 export interface ErrorLog {

@@ -1,4 +1,4 @@
-import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { PKCEService } from "@infrastructure/security/pkce/pkce.service";
 import { PKCEServiceFake } from "@infrastructure/security/pkce/pkce.service.fake";
 

@@ -6,9 +6,9 @@ import {
   verify as jwt_verify,
 } from "jsonwebtoken";
 
-import { IdTokenPayload } from "@domain/authentication/OAuth/Token/IdTokenPayload";
-import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { TokenPayloadsInterface } from "@domain/authentication/OAuth/Token/TokenPayloads.interface";
+import { IdTokenPayload } from "@domain/auth/OAuth/Token/IdTokenPayload";
+import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
+import { TokenPayloadsInterface } from "@domain/auth/OAuth/Token/TokenPayloads.interface";
 import { AuthConfig } from "@infrastructure/config/configs";
 import {
   createPrivateKey,

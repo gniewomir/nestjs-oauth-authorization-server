@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 
-import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
+import { PasswordInterface } from "@domain/auth/OAuth/User/Credentials/Password.interface";
 
 export class PasswordServiceFake implements PasswordInterface {
   comparePlaintextAndHashedPassword(

@@ -1,4 +1,4 @@
-import { Client } from "@domain/authentication/OAuth/Client/Client";
+import { Client } from "@domain/auth/OAuth/Client/Client";
 
 import { clientMother } from "./Client.mother";
 

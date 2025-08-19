@@ -1,6 +1,6 @@
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { User } from "@domain/authentication/OAuth/User/User";
-import { UsersInterface } from "@domain/authentication/OAuth/User/Users.interface";
+import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
+import { User } from "@domain/auth/OAuth/User/User";
+import { UsersInterface } from "@domain/auth/OAuth/User/Users.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { DatabaseNotFoundException } from "@infrastructure/repositories/DatabaseNotFoundException";
 

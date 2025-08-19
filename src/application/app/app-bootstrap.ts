@@ -3,7 +3,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 import { AppModule } from "@application/app";
 import { AppExceptionFilter } from "@application/app/app-exception-filter";
-import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
 

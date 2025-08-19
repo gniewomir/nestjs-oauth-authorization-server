@@ -2,10 +2,10 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { userMother } from "@test/domain/authentication/User.mother";
 
-import { NumericDateValue } from "@domain/authentication/OAuth/NumericDateValue";
-import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
-import { RefreshTokenValue } from "@domain/authentication/OAuth/User/RefreshTokenValue";
-import { User as DomainUser } from "@domain/authentication/OAuth/User/User";
+import { NumericDateValue } from "@domain/auth/OAuth/NumericDateValue";
+import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
+import { RefreshTokenValue } from "@domain/auth/OAuth/User/RefreshTokenValue";
+import { User as DomainUser } from "@domain/auth/OAuth/User/User";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ONE_DAY_IN_SECONDS } from "@infrastructure/clock";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";

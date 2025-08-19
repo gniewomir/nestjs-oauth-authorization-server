@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { clientMother } from "@test/domain/authentication/Client.mother";
 
-import { Client as DomainClient } from "@domain/authentication/OAuth/Client/Client";
+import { Client as DomainClient } from "@domain/auth/OAuth/Client/Client";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";

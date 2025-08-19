@@ -3,7 +3,7 @@ import * as assert from "node:assert";
 import { Injectable } from "@nestjs/common";
 import { compare, hash } from "bcrypt";
 
-import { PasswordInterface } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
+import { PasswordInterface } from "@domain/auth/OAuth/User/Credentials/Password.interface";
 import { AuthConfig } from "@infrastructure/config/configs/auth.config";
 
 @Injectable()

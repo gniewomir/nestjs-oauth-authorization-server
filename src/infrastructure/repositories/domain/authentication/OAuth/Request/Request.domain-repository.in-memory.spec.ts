@@ -1,7 +1,7 @@
 import { requestMother } from "@test/domain/authentication/Request.mother";
 import { randomString } from "@test/utility/randomString";
 
-import { Code } from "@domain/authentication/OAuth/Authorization/Code/Code";
+import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import { IdentityValue } from "@domain/IdentityValue";
 
 import { RequestDomainRepositoryInMemory } from "./Request.domain-repository.in-memory";
