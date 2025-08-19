@@ -7,7 +7,7 @@ import {
   TRequestConstructorParam,
 } from "@domain/authentication/OAuth/Authorization/Request";
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const requestMother = (

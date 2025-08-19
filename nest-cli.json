@@ -6,10 +6,8 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "include": "interface/api/authorization/**/*.html"
-      },
-      {
-        "include": "src/infrastructure/template/**/*.html"
+        "include":"**/*.html",
+        "outDir":"dist/src"
       }
     ]
   }

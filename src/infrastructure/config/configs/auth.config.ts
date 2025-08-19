@@ -78,7 +78,7 @@ export class AuthConfig {
       jwtRefreshTokenExpirationSeconds: ONE_HOUR_IN_SECONDS,
       jwtLongTTLRefreshTokenExpirationSeconds: ONE_DAY_IN_SECONDS * 14,
       oauthAuthorizationCodeExpirationSeconds: ONE_MINUTE_IN_SECONDS * 2,
-      authUnprotectedPaths: ["/status*", "/oauth/*"],
+      authUnprotectedPaths: ["/status*", "/oauth*", "/favicon.ico*"],
     };
   }
 
@@ -115,9 +115,9 @@ export class AuthConfig {
                 'They have to start with a "/", and can end with a "*" wildcard.\n' +
                 "Without wildcard only exact match will be unprotected.\n" +
                 "With wildcard all requests matching path will be unprotected.\n" +
-                'Provided values must be separated by "|".',
+                'Provided values must be separated by ",".',
               isArray: true,
-              arraySeparator: "|",
+              arraySeparator: ",",
               arrayTrim: true,
               validator: (config) => {
                 assert(

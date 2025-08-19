@@ -4,7 +4,7 @@ import {
   Client,
   TClientConstructorParam,
 } from "@domain/authentication/OAuth/Client/Client";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {

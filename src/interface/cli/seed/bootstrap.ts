@@ -1,10 +1,11 @@
+import * as assert from "node:assert";
+
 import { clientMother, userMother } from "@test/domain/authentication";
 import { rememberMeTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 
 import { cliBootstrap } from "@application/app";
-import { Assert } from "@domain/Assert";
 import { ClientInterfaceSymbol } from "@domain/authentication/OAuth/Client/Client.interface";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
 import { EmailValue } from "@domain/authentication/OAuth/User/Credentials/EmailValue";
 import { PasswordInterfaceSymbol } from "@domain/authentication/OAuth/User/Credentials/Password.interface";
 import { PasswordValue } from "@domain/authentication/OAuth/User/Credentials/PasswordValue";
@@ -19,7 +20,7 @@ void cliBootstrap({
   name: "test:manual:seed",
   baseModule: SeedModule,
   payload: async ({ application, logger, appConfig }) => {
-    Assert(
+    assert(
       appConfig.nodeEnv === "development" || appConfig.nodeEnv === "test",
       "Expected development of test environment",
     );

@@ -1,5 +1,5 @@
 import { Assert } from "@domain/Assert";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";

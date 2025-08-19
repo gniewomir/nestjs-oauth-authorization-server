@@ -7,7 +7,7 @@ import { CodeChallengeMethodValue } from "@domain/authentication/OAuth/Authoriza
 import { Request as DomainRequest } from "@domain/authentication/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/authentication/OAuth/Authorization/Request.interface";
 import { ResponseTypeValue } from "@domain/authentication/OAuth/Authorization/ResponseTypeValue";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";

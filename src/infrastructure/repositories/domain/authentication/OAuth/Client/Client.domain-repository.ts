@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 
 import { Client } from "@domain/authentication/OAuth/Client/Client";
 import { ClientInterface } from "@domain/authentication/OAuth/Client/Client.interface";
-import { RedirectUriValue } from "@domain/authentication/OAuth/RedirectUriValue";
+import { RedirectUriValue } from "@domain/authentication/OAuth/Client/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";

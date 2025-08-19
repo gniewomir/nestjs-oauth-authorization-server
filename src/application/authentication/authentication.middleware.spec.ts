@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Request, Response } from "express";
 
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { AuthConfig } from "@infrastructure/config/configs";
+import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 import { plainToConfig } from "@infrastructure/config/utility";
 
 import { AuthenticationMiddleware } from "./authentication.middleware";
@@ -48,6 +48,18 @@ describe("AuthenticationMiddleware", () => {
             );
           },
         },
+        {
+          provide: AppConfig,
+          useFactory: async () => {
+            return await plainToConfig(
+              {
+                nodeEnv: "development",
+              },
+              AppConfig.defaults(),
+              AppConfig,
+            );
+          },
+        },
       ],
     }).compile();
 
@@ -66,8 +78,7 @@ describe("AuthenticationMiddleware", () => {
 
     beforeEach(() => {
       mockRequest = {
-        baseUrl: "/api",
-        path: "/protected",
+        originalUrl: "/api/protected",
         headers: {},
       };
       mockResponse = {};
@@ -77,8 +88,7 @@ describe("AuthenticationMiddleware", () => {
     it("should allow access to unprotected paths without authentication", async () => {
       const request = {
         ...mockRequest,
-        baseUrl: "/status",
-        path: "/health",
+        originalUrl: "/status/health",
       } as Request;
 
       await middleware.use(request, mockResponse as Response, mockNext);
@@ -96,16 +106,23 @@ describe("AuthenticationMiddleware", () => {
         AuthConfig.defaults(),
         AuthConfig,
       );
+      const appConfig = await plainToConfig(
+        {
+          nodeEnv: "development",
+        },
+        AppConfig.defaults(),
+        AppConfig,
+      );
 
       const wildcardMiddleware = new AuthenticationMiddleware(
         authenticationService,
         wildcardAuthConfig,
+        appConfig,
       );
 
       const request = {
         ...mockRequest,
-        baseUrl: "/status",
-        path: "/health",
+        originalUrl: "/status/health",
       } as Request;
 
       await wildcardMiddleware.use(request, mockResponse as Response, mockNext);
@@ -118,8 +135,7 @@ describe("AuthenticationMiddleware", () => {
     it("should require authentication for non-unprotected paths", async () => {
       const request = {
         ...mockRequest,
-        baseUrl: "/api",
-        path: "/protected",
+        originalUrl: "/api/protected",
         headers: {
           authorization: "Bearer valid-token",
         },
@@ -139,8 +155,7 @@ describe("AuthenticationMiddleware", () => {
     it("should throw UnauthorizedException for missing Authorization header", async () => {
       const request = {
         ...mockRequest,
-        baseUrl: "/api",
-        path: "/protected",
+        originalUrl: "/api/protected",
         headers: {},
       } as Request;
 
@@ -154,8 +169,7 @@ describe("AuthenticationMiddleware", () => {
     it("should throw UnauthorizedException for invalid Authorization header format", async () => {
       const request = {
         ...mockRequest,
-        baseUrl: "/api",
-        path: "/protected",
+        originalUrl: "/api/protected",
         headers: {
           authorization: "InvalidFormat token",
         },
@@ -171,8 +185,7 @@ describe("AuthenticationMiddleware", () => {
     it("should throw UnauthorizedException for invalid token", async () => {
       const request = {
         ...mockRequest,
-        baseUrl: "/api",
-        path: "/protected",
+        originalUrl: "/api/protected",
         headers: {
           authorization: "Bearer invalid-token",
         },
@@ -186,6 +199,41 @@ describe("AuthenticationMiddleware", () => {
       ).rejects.toThrow("Invalid or expired token");
 
       expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it("should allow access to unprotected paths with wildcard", async () => {
+      const wildcardAuthConfig = await plainToConfig(
+        {
+          authUnprotectedPaths: ["/status*"],
+        },
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
+      const appConfig = await plainToConfig(
+        {
+          nodeEnv: "production",
+        },
+        AppConfig.defaults(),
+        AppConfig,
+      );
+
+      const wildcardMiddleware = new AuthenticationMiddleware(
+        authenticationService,
+        wildcardAuthConfig,
+        appConfig,
+      );
+
+      const request = {
+        ...mockRequest,
+        protocol: "http",
+        originalUrl: "/status/health",
+      } as Request;
+
+      await expect(
+        wildcardMiddleware.use(request, mockResponse as Response, mockNext),
+      ).rejects.toThrow(
+        "Only https protocol is allowed in production environment.",
+      );
     });
   });
 });

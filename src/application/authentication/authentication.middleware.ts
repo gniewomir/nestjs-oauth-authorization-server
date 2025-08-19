@@ -1,3 +1,5 @@
+import * as assert from "node:assert";
+
 import {
   Injectable,
   NestMiddleware,
@@ -6,7 +8,7 @@ import {
 import { NextFunction, Request, Response } from "express";
 
 import { TokenPayload } from "@domain/authentication/OAuth/Token/TokenPayload";
-import { AuthConfig } from "@infrastructure/config/configs";
+import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 
 import { AuthenticationService } from "./authentication.service";
 
@@ -15,13 +17,19 @@ export class AuthenticationMiddleware implements NestMiddleware {
   constructor(
     private readonly authenticationService: AuthenticationService,
     private readonly authConfig: AuthConfig,
+    private readonly appConfig: AppConfig,
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
+    assert(
+      req.protocol === "https" || this.appConfig.nodeEnv !== "production",
+      "Only https protocol is allowed in production environment.",
+    );
+
     /**
      * Ref: https://expressjs.com/en/api.html#req.originalUrl
      */
-    const path = req.baseUrl + req.path;
+    const path = req.originalUrl.split("?")[0];
 
     if (this.isPathUnprotected(path)) {
       return next();
