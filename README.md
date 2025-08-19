@@ -67,12 +67,18 @@ $ npm run start:dev
 # Env
 To generate new default env file based on configuration (will replace .env.dist)
 ```shell
-$ ./bin/default-env.sh
+# preview new .env.dist
+$ npm run env:default:show
+# replace .env.dist
+$ npm run env:default:save
 ```
 
 To merge current environment with configuration changes (will replace .env preserving values for KNOWN variables)
 ```shell
-$ ./bin/merge-env.sh
+# preview new .env
+$ npm run env:merge:show
+# replace .env
+$ npm run env:merge:save
 ```
 
 # Database
