@@ -49,7 +49,7 @@ export class StatusController {
 
 // API Module
 @Module({
-  imports: [StatusModule],
+  imports: [StatusApiModule],
   controllers: [],
   providers: [],
 })
@@ -475,7 +475,7 @@ export class AppModule {}
 
 // Interface Layer Module
 @Module({
-  imports: [StatusModule],
+  imports: [StatusApiModule],
   controllers: [],
   providers: [],
 })
