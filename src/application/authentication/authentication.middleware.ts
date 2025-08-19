@@ -18,7 +18,10 @@ export class AuthenticationMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const path = req.path;
+    /**
+     * Ref: https://expressjs.com/en/api.html#req.originalUrl
+     */
+    const path = req.baseUrl + req.path;
 
     if (this.isPathUnprotected(path)) {
       return next();

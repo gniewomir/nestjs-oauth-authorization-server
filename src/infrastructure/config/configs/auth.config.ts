@@ -1,5 +1,4 @@
-import * as constants from "node:constants";
-import * as fs from "node:fs";
+import * as assert from "node:assert";
 
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import {
@@ -12,24 +11,16 @@ import {
 } from "class-validator";
 import { Algorithm } from "jsonwebtoken";
 
-import { Assert } from "@domain/Assert";
 import {
   ONE_DAY_IN_SECONDS,
   ONE_HOUR_IN_SECONDS,
   ONE_MINUTE_IN_SECONDS,
 } from "@infrastructure/clock";
+import { assertFileIsReadable } from "@infrastructure/config/utility";
 
 import { ConfigService } from "../config.service";
 
 const allowedAlgorithms = ["ES512"];
-
-function assertFileIsReadable(filePath: string, message: string) {
-  try {
-    fs.accessSync(filePath, constants.R_OK);
-  } catch (error) {
-    throw new Error(message, { cause: error });
-  }
-}
 
 export class AuthConfig {
   @IsNotEmpty()
@@ -131,11 +122,15 @@ export class AuthConfig {
               arraySeparator: "|",
               arrayTrim: true,
               validator: (config) => {
-                Assert(
+                assert(
                   config.authUnprotectedPaths.every((val) =>
                     val.startsWith("/"),
                   ),
-                  'Every path on unprotected routes list have to start with "/".',
+                  'Every path on unprotected paths list have to start with "/".',
+                );
+                assert(
+                  config.authUnprotectedPaths.every((val) => val !== "/*"),
+                  'Overly broad wildcards like "/*" are not allowed on unprotected paths list.',
                 );
                 return Promise.resolve();
               },

@@ -41,7 +41,7 @@ describe("AuthenticationMiddleware", () => {
           useFactory: async () => {
             return await plainToConfig(
               {
-                authUnprotectedPaths: ["/api/status*"],
+                authUnprotectedPaths: ["/status*"],
               },
               AuthConfig.defaults(),
               AuthConfig,
@@ -66,7 +66,8 @@ describe("AuthenticationMiddleware", () => {
 
     beforeEach(() => {
       mockRequest = {
-        path: "/api/protected",
+        baseUrl: "/api",
+        path: "/protected",
         headers: {},
       };
       mockResponse = {};
@@ -76,7 +77,8 @@ describe("AuthenticationMiddleware", () => {
     it("should allow access to unprotected paths without authentication", async () => {
       const request = {
         ...mockRequest,
-        path: "/api/status",
+        baseUrl: "/status",
+        path: "/health",
       } as Request;
 
       await middleware.use(request, mockResponse as Response, mockNext);
@@ -89,7 +91,7 @@ describe("AuthenticationMiddleware", () => {
     it("should allow access to unprotected paths with wildcard", async () => {
       const wildcardAuthConfig = await plainToConfig(
         {
-          authUnprotectedPaths: ["/api/status*", "/oauth/*"],
+          authUnprotectedPaths: ["/status*"],
         },
         AuthConfig.defaults(),
         AuthConfig,
@@ -102,7 +104,8 @@ describe("AuthenticationMiddleware", () => {
 
       const request = {
         ...mockRequest,
-        path: "/api/status/health",
+        baseUrl: "/status",
+        path: "/health",
       } as Request;
 
       await wildcardMiddleware.use(request, mockResponse as Response, mockNext);
@@ -115,7 +118,8 @@ describe("AuthenticationMiddleware", () => {
     it("should require authentication for non-unprotected paths", async () => {
       const request = {
         ...mockRequest,
-        path: "/api/protected",
+        baseUrl: "/api",
+        path: "/protected",
         headers: {
           authorization: "Bearer valid-token",
         },
@@ -135,7 +139,8 @@ describe("AuthenticationMiddleware", () => {
     it("should throw UnauthorizedException for missing Authorization header", async () => {
       const request = {
         ...mockRequest,
-        path: "/api/protected",
+        baseUrl: "/api",
+        path: "/protected",
         headers: {},
       } as Request;
 
@@ -149,7 +154,8 @@ describe("AuthenticationMiddleware", () => {
     it("should throw UnauthorizedException for invalid Authorization header format", async () => {
       const request = {
         ...mockRequest,
-        path: "/api/protected",
+        baseUrl: "/api",
+        path: "/protected",
         headers: {
           authorization: "InvalidFormat token",
         },
@@ -165,7 +171,8 @@ describe("AuthenticationMiddleware", () => {
     it("should throw UnauthorizedException for invalid token", async () => {
       const request = {
         ...mockRequest,
-        path: "/api/protected",
+        baseUrl: "/api",
+        path: "/protected",
         headers: {
           authorization: "Bearer invalid-token",
         },
