@@ -1,4 +1,3 @@
-import * as assert from "node:assert";
 import * as crypto from "node:crypto";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
@@ -49,14 +48,4 @@ export const loadPublicKey = async (pathString: string) => {
   }
   keyPath = path.normalize(keyPath);
   return await fs.readFile(keyPath, "utf8");
-};
-
-export const assertValidPrivateKey = async (pathString: string) => {
-  const key = await createPrivateKey(pathString);
-  assert(key.type === "private");
-};
-
-export const assertValidPublicKey = async (pathString: string) => {
-  const key = await createPublicKey(pathString);
-  assert(key.type === "public");
 };

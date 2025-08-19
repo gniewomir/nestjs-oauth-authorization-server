@@ -16,7 +16,10 @@ import {
   ONE_HOUR_IN_SECONDS,
   ONE_MINUTE_IN_SECONDS,
 } from "@infrastructure/clock";
-import { assertFileIsReadable } from "@infrastructure/config/utility";
+import {
+  assertValidPrivateKey,
+  assertValidPublicKey,
+} from "@infrastructure/config/utility/assertions";
 
 import { ConfigService } from "../config.service";
 
@@ -98,15 +101,10 @@ export class AuthConfig {
               allowDefault: false,
               description:
                 "Path to private key used to sign jwt tokens (absolute or relative to the project root)",
-              validator: (config) => {
-                assertFileIsReadable(
-                  config.jwtKeyPath,
-                  `Cannot read private key file ${config.jwtKeyPath}`,
-                );
-                assertFileIsReadable(
-                  `${config.jwtKeyPath}.pub`,
-                  `Cannot read public key file ${config.jwtKeyPath}.pub`,
-                );
+              validator: async (config) => {
+                await assertValidPrivateKey(config.jwtKeyPath);
+                await assertValidPublicKey(`${config.jwtKeyPath}.pub`);
+
                 return Promise.resolve();
               },
             },
