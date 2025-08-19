@@ -44,6 +44,26 @@ $ npm run crypto:keys
 $ npm run test
 ```
 
+# Test
+```shell
+$ nvm use
+# seed database with example oauth client and user (not credentials in console)
+$ npm run test:manual:seed
+# update env
+$ sed -i '/OPENAPI_EXPOSED=false/c\OPENAPI_EXPOSED=true' .env
+$ sed -i '/NODE_ENV=production/c\NODE_ENV=development' .env
+$ sed -i '/APP_LOG_LEVEL=warn/c\APP_LOG_LEVEL=debug' .env
+# build application
+$ npm run build
+# start application
+$ npm run start:dev
+# go to http://localhost:3000/open-api
+# chose "authorize"
+# provide oauth client id
+# choose all scopes
+# have fun
+```
+
 # Env
 To generate new default env file based on configuration (will replace .env.dist)
 ```shell
