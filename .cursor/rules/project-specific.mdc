@@ -2,4 +2,5 @@
 description: Rules specific to this particular project
 alwaysApply: true
 ---
-* Do not attempt to import transactional tests setup from `src/test/infrastructure/database` anywhere. It is already included via jest configuration files. 
+* Do not attempt to import transactional tests setup from `src/test/infrastructure/database` anywhere. It is already included via jest configuration files.
+* All imports form node have to be in form `import * as path from "node:path"` - DO NOT import like this `import path from "node:path"`
