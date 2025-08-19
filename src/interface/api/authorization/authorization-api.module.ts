@@ -5,7 +5,7 @@ import { ConfigModule } from "@infrastructure/config";
 import { LoggerModule } from "@infrastructure/logger";
 import { TemplateModule } from "@infrastructure/template";
 
-import { AuthorizationController } from "./authorization.controller";
+import { OauthController } from "./oauth.controller";
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { AuthorizationController } from "./authorization.controller";
     TemplateModule,
     LoggerModule,
   ],
-  controllers: [AuthorizationController],
+  controllers: [OauthController],
   providers: [],
 })
-export class AuthorizationModule {}
+export class AuthorizationApiModule {}

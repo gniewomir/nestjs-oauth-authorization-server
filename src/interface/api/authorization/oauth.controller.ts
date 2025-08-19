@@ -39,7 +39,7 @@ import { TokenResponseDto } from "./dto/token-response.dto";
 
 @ApiTags("OAuth2 Authorization")
 @Controller("oauth")
-export class AuthorizationController {
+export class OauthController {
   constructor(
     @Inject(LoggerInterfaceSymbol) private readonly logger: LoggerInterface,
     private readonly appConfig: AppConfig,

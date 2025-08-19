@@ -1,1 +1,1 @@
-export { StatusModule } from "./status.module";
+export { StatusApiModule } from "./status-api.module";

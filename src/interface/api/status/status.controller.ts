@@ -1,8 +1,8 @@
 import { Controller, Get } from "@nestjs/common";
 
-@Controller()
+@Controller("status")
 export class StatusController {
-  @Get("status")
+  @Get()
   getStatus(): string {
     return "OK";
   }
