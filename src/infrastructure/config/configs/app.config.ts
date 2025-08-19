@@ -1,12 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
-import { ConfigService } from "@nestjs/config";
 import { IsIn, IsInt, IsNotEmpty, IsString } from "class-validator";
 
-import { provide } from "@infrastructure/config/utility/provide";
 import { logLevels } from "@infrastructure/logger/logger.interface";
 
-import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
+import { ConfigService } from "../config.service";
 
 const acceptedEnvs = ["development", "test", "production"];
 
@@ -37,18 +35,12 @@ export class AppConfig {
   public static provider(): Provider {
     return {
       provide: AppConfig,
-      useFactory: async (
-        nestConfigService: ConfigService,
-        logger: LoggerInterface,
-      ) => {
-        logger.setContext("AppConfig factory");
-        return await provide(
-          "app",
-          "AppConfig",
-          AppConfig,
-          logger,
-          nestConfigService,
-          {
+      useFactory: async (configService: ConfigService) => {
+        return configService.provide({
+          configName: "AppConfig",
+          configCls: AppConfig,
+          envVariablesPrefix: "app",
+          options: {
             port: {
               allowDefault: true,
               description: "Port on which application will be running.",
@@ -60,7 +52,7 @@ export class AppConfig {
             },
             nodeEnv: {
               allowDefault: true,
-              envKey: "NODE_ENV",
+              envVariableKey: "NODE_ENV",
               description:
                 "Current application environment.\n" +
                 '"development" & "test" are lenient when it comes to error reporting & configuration.\n' +
@@ -68,10 +60,10 @@ export class AppConfig {
               allowed: acceptedEnvs,
             },
           },
-          AppConfig.defaults(),
-        );
+          defaults: AppConfig.defaults(),
+        });
       },
-      inject: [ConfigService, LoggerInterfaceSymbol],
+      inject: [ConfigService],
     };
   }
 }

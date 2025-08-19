@@ -1,11 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
-import { ConfigService } from "@nestjs/config";
 import { IsInt, IsNotEmpty, IsString } from "class-validator";
 
-import { provide } from "@infrastructure/config/utility/provide";
-
-import { LoggerInterface, LoggerInterfaceSymbol } from "../../logger";
+import { ConfigService } from "../config.service";
 
 @Injectable()
 export class DatabaseConfig {
@@ -42,18 +39,12 @@ export class DatabaseConfig {
   public static provider(): Provider {
     return {
       provide: DatabaseConfig,
-      useFactory: async (
-        nestConfigService: ConfigService,
-        logger: LoggerInterface,
-      ) => {
-        logger.setContext("DatabaseConfig factory");
-        return await provide(
-          "db",
-          "DatabaseConfig",
-          DatabaseConfig,
-          logger,
-          nestConfigService,
-          {
+      useFactory: async (configService: ConfigService) => {
+        return await configService.provide({
+          configName: "DatabaseConfig",
+          configCls: DatabaseConfig,
+          envVariablesPrefix: "db",
+          options: {
             port: {
               allowDefault: true,
               description: "Database port",
@@ -75,10 +66,10 @@ export class DatabaseConfig {
               description: "Database user",
             },
           },
-          DatabaseConfig.defaults(),
-        );
+          defaults: DatabaseConfig.defaults(),
+        });
       },
-      inject: [ConfigService, LoggerInterfaceSymbol],
+      inject: [ConfigService],
     };
   }
 }

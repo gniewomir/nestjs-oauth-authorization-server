@@ -1,12 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
-import { ConfigService } from "@nestjs/config";
 import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
 
 import { ScopeValue } from "@domain/authentication/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/authentication/OAuth/Scope/ScopeValueImmutableSet";
-import { provide } from "@infrastructure/config/utility/provide";
-import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
+
+import { ConfigService } from "../config.service";
 
 import { AppConfig } from "./app.config";
 
@@ -57,27 +56,23 @@ export class OpenApiConfig {
     return {
       provide: OpenApiConfig,
       useFactory: async (
-        nestConfigService: ConfigService,
-        logger: LoggerInterface,
+        configService: ConfigService,
         appConfig: AppConfig,
       ) => {
-        logger.setContext("OpenApiConfig factory");
-        return await provide(
-          "openapi",
-          "OpenApiConfig",
-          OpenApiConfig,
-          logger,
-          nestConfigService,
-          {
+        return await configService.provide({
+          configName: "OpenApiConfig",
+          configCls: OpenApiConfig,
+          envVariablesPrefix: "openapi",
+          options: {
             exposed: {
               allowDefault: true,
               description: "Should API docs should be exposed to the world?",
             },
           },
-          OpenApiConfig.defaults({ port: appConfig.port }),
-        );
+          defaults: OpenApiConfig.defaults({ port: appConfig.port }),
+        });
       },
-      inject: [ConfigService, LoggerInterfaceSymbol, AppConfig],
+      inject: [ConfigService, AppConfig],
     };
   }
 }

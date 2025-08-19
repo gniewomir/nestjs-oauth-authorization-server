@@ -30,7 +30,7 @@ export const createAuthorizationTestContext = async ({
   const requestId = IdentityValue.create();
 
   const users = new UserDomainRepositoryInMemory();
-  const authConfig = await plainToConfig(AuthConfig.defaults(), AuthConfig);
+  const authConfig = await plainToConfig({}, AuthConfig.defaults(), AuthConfig);
   const passwords = new PasswordService(authConfig);
   const userPassword = "abcdefghijklmnopqrstq";
   const user = userMother({

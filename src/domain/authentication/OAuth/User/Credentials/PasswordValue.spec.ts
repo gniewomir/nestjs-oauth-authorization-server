@@ -37,7 +37,7 @@ describe("PasswordValue", () => {
     await expect(
       PasswordValue.fromString("abcdefghijkl").toPasswordHash(
         new PasswordService(
-          await plainToConfig(AuthConfig.defaults(), AuthConfig),
+          await plainToConfig({}, AuthConfig.defaults(), AuthConfig),
         ),
       ),
     ).resolves.toHaveLength(expectedLengthOfBcryptHash);
@@ -45,7 +45,7 @@ describe("PasswordValue", () => {
   it("It can compare plaintext password with correct hash", async () => {
     const plaintextPassword = "abcdefghijkl";
     const hasher = new PasswordService(
-      await plainToConfig(AuthConfig.defaults(), AuthConfig),
+      await plainToConfig({}, AuthConfig.defaults(), AuthConfig),
     );
     const hashedPassword =
       await PasswordValue.fromString(plaintextPassword).toPasswordHash(hasher);
@@ -59,7 +59,7 @@ describe("PasswordValue", () => {
   it("It can check if plaintext password match hashed one", async () => {
     const plaintextPassword = "abcdefghijkl";
     const hasher = new PasswordService(
-      await plainToConfig(AuthConfig.defaults(), AuthConfig),
+      await plainToConfig({}, AuthConfig.defaults(), AuthConfig),
     );
     const invalidPasswordHash = "invalid-hash".padEnd(60, "X");
     await expect(

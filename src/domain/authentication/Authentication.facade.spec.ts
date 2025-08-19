@@ -89,9 +89,9 @@ describe("AuthenticationFacade", () => {
 
       const modifiedAuthConfig = await plainToConfig(
         {
-          ...authConfig,
           jwtKeyPath: "keys/theirs-key-es512",
         },
+        authConfig,
         AuthConfig,
       );
       const tokenPayloadsWithModifiedConfig = new JwtServiceFake(
@@ -123,9 +123,9 @@ describe("AuthenticationFacade", () => {
 
       const modifiedAuthConfig = await plainToConfig(
         {
-          ...authConfig,
           jwtIssuer: "John Doe <john.doe@gmail.com>",
         },
+        authConfig,
         AuthConfig,
       );
       const tokenPayloadsWithModifiedConfig = new JwtServiceFake(

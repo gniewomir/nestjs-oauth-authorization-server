@@ -86,7 +86,11 @@ describe("RequestDomainRepository", () => {
       // Arrange
       const clock = new ClockServiceFake();
       const authCodeService = new AuthorizationCodeService();
-      const authConfig = await plainToConfig(AuthConfig.defaults(), AuthConfig);
+      const authConfig = await plainToConfig(
+        {},
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
 
       const userId = IdentityValue.create();
       const authCode = Code.create(userId, authCodeService, clock, authConfig);
@@ -147,7 +151,11 @@ describe("RequestDomainRepository", () => {
       // Arrange
       const clock = new ClockServiceFake();
       const authCodeService = new AuthorizationCodeService();
-      const authConfig = await plainToConfig(AuthConfig.defaults(), AuthConfig);
+      const authConfig = await plainToConfig(
+        {},
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
 
       const userId = IdentityValue.create();
       const authCode = Code.create(userId, authCodeService, clock, authConfig);

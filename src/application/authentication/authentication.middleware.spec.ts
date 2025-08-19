@@ -41,9 +41,9 @@ describe("AuthenticationMiddleware", () => {
           useFactory: async () => {
             return await plainToConfig(
               {
-                ...AuthConfig.defaults(),
                 authUnprotectedPaths: ["/api/status*"],
               },
+              AuthConfig.defaults(),
               AuthConfig,
             );
           },
@@ -89,9 +89,9 @@ describe("AuthenticationMiddleware", () => {
     it("should allow access to unprotected paths with wildcard", async () => {
       const wildcardAuthConfig = await plainToConfig(
         {
-          ...AuthConfig.defaults(),
           authUnprotectedPaths: ["/api/status*", "/oauth/*"],
         },
+        AuthConfig.defaults(),
         AuthConfig,
       );
 

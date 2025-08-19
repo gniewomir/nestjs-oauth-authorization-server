@@ -2,7 +2,6 @@ import * as constants from "node:constants";
 import * as fs from "node:fs";
 
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
-import { ConfigService } from "@nestjs/config";
 import {
   IsArray,
   IsIn,
@@ -19,8 +18,8 @@ import {
   ONE_HOUR_IN_SECONDS,
   ONE_MINUTE_IN_SECONDS,
 } from "@infrastructure/clock";
-import { provide } from "@infrastructure/config/utility/provide";
-import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
+
+import { ConfigService } from "../config.service";
 
 const allowedAlgorithms = ["ES512"];
 
@@ -92,18 +91,13 @@ export class AuthConfig {
   public static provider(): Provider {
     return {
       provide: AuthConfig,
-      useFactory: async (
-        nestConfigService: ConfigService,
-        logger: LoggerInterface,
-      ) => {
-        logger.setContext("AuthConfig factory");
-        const config = await provide(
-          "auth",
-          "AuthConfig",
-          AuthConfig,
-          logger,
-          nestConfigService,
-          {
+      useFactory: async (configService: ConfigService) => {
+        return await configService.provide({
+          envVariablesPrefix: "auth",
+          configName: "AuthConfig",
+          configCls: AuthConfig,
+          defaults: AuthConfig.defaults(),
+          options: {
             jwtAlgorithm: {
               allowDefault: true,
               description: "Algorithm used for signing JWT tokens.",
@@ -113,6 +107,17 @@ export class AuthConfig {
               allowDefault: false,
               description:
                 "Path to private key used to sign jwt tokens (absolute or relative to the project root)",
+              validator: (config) => {
+                assertFileIsReadable(
+                  config.jwtKeyPath,
+                  `Cannot read private key file ${config.jwtKeyPath}`,
+                );
+                assertFileIsReadable(
+                  `${config.jwtKeyPath}.pub`,
+                  `Cannot read public key file ${config.jwtKeyPath}.pub`,
+                );
+                return Promise.resolve();
+              },
             },
             authUnprotectedPaths: {
               allowDefault: true,
@@ -125,29 +130,20 @@ export class AuthConfig {
               isArray: true,
               arraySeparator: "|",
               arrayTrim: true,
+              validator: (config) => {
+                Assert(
+                  config.authUnprotectedPaths.every((val) =>
+                    val.startsWith("/"),
+                  ),
+                  'Every path on unprotected routes list have to start with "/".',
+                );
+                return Promise.resolve();
+              },
             },
           },
-          AuthConfig.defaults(),
-        );
-
-        assertFileIsReadable(
-          config.jwtKeyPath,
-          `Cannot read private key file ${config.jwtKeyPath}`,
-        );
-
-        assertFileIsReadable(
-          `${config.jwtKeyPath}.pub`,
-          `Cannot read public key file ${config.jwtKeyPath}.pub`,
-        );
-
-        Assert(
-          config.authUnprotectedPaths.every((val) => val.startsWith("/")),
-          'Every path on unprotected routes list have to start with "/".',
-        );
-
-        return config;
+        });
       },
-      inject: [ConfigService, LoggerInterfaceSymbol],
+      inject: [ConfigService],
     };
   }
 }
