@@ -78,20 +78,20 @@ void cliBootstrap({
       }
     };
 
-    console.log(`# BEGIN ENV FILE\n\n`);
+    console.log(`# BEGIN ENV FILE\n`);
     inspectRegistry().reduce(
       (acc, val) => {
         if (val.configName in acc) {
           acc[val.configName].push(val);
         } else {
           describeConfig(val);
-          console.log("\n");
+          console.log("");
 
           acc[val.configName] = [];
         }
 
         describeEnv(val);
-        console.log("\n");
+        console.log("");
 
         return acc;
       },
