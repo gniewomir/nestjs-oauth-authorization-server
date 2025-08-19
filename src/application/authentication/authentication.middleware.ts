@@ -58,7 +58,7 @@ export class AuthenticationMiddleware implements NestMiddleware {
   }
 
   private isPathUnprotected(path: string): boolean {
-    return this.authConfig.authUnprotectedPaths.some((unprotectedPath) => {
+    return this.authConfig.unprotectedPaths.some((unprotectedPath) => {
       // Exact match
       if (unprotectedPath === path) {
         return true;

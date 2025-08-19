@@ -66,7 +66,7 @@ export class AuthConfig {
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
-  authUnprotectedPaths: string[];
+  unprotectedPaths: string[];
 
   public static defaults(): AuthConfig {
     return {
@@ -78,7 +78,12 @@ export class AuthConfig {
       jwtRefreshTokenExpirationSeconds: ONE_HOUR_IN_SECONDS,
       jwtLongTTLRefreshTokenExpirationSeconds: ONE_DAY_IN_SECONDS * 14,
       oauthAuthorizationCodeExpirationSeconds: ONE_MINUTE_IN_SECONDS * 2,
-      authUnprotectedPaths: ["/status*", "/oauth*", "/favicon.ico*"],
+      unprotectedPaths: [
+        "/status*",
+        "/oauth*",
+        "/favicon.ico*",
+        "/api/v1/user/register*",
+      ],
     };
   }
 
@@ -108,7 +113,7 @@ export class AuthConfig {
                 return Promise.resolve();
               },
             },
-            authUnprotectedPaths: {
+            unprotectedPaths: {
               allowDefault: true,
               description:
                 "Api paths that won't be protected by authentication middleware.\n" +
@@ -121,13 +126,11 @@ export class AuthConfig {
               arrayTrim: true,
               validator: (config) => {
                 assert(
-                  config.authUnprotectedPaths.every((val) =>
-                    val.startsWith("/"),
-                  ),
+                  config.unprotectedPaths.every((val) => val.startsWith("/")),
                   'Every path on unprotected paths list have to start with "/".',
                 );
                 assert(
-                  config.authUnprotectedPaths.every((val) => val !== "/*"),
+                  config.unprotectedPaths.every((val) => val !== "/*"),
                   'Overly broad wildcards like "/*" are not allowed on unprotected paths list.',
                 );
                 return Promise.resolve();

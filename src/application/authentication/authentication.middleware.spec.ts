@@ -41,7 +41,7 @@ describe("AuthenticationMiddleware", () => {
           useFactory: async () => {
             return await plainToConfig(
               {
-                authUnprotectedPaths: ["/status*"],
+                unprotectedPaths: ["/status*"],
               },
               AuthConfig.defaults(),
               AuthConfig,
@@ -101,7 +101,7 @@ describe("AuthenticationMiddleware", () => {
     it("should allow access to unprotected paths with wildcard", async () => {
       const wildcardAuthConfig = await plainToConfig(
         {
-          authUnprotectedPaths: ["/status*"],
+          unprotectedPaths: ["/status*"],
         },
         AuthConfig.defaults(),
         AuthConfig,
@@ -204,7 +204,7 @@ describe("AuthenticationMiddleware", () => {
     it("should allow access to unprotected paths with wildcard", async () => {
       const wildcardAuthConfig = await plainToConfig(
         {
-          authUnprotectedPaths: ["/status*"],
+          unprotectedPaths: ["/status*"],
         },
         AuthConfig.defaults(),
         AuthConfig,
