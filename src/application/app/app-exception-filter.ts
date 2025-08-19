@@ -34,7 +34,10 @@ export class AppExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const [statusCode, message, errorResponse] = this.parse(exception, request);
+    const [statusCode, message, errorResponse] = this.response(
+      exception,
+      request,
+    );
 
     this.logger.error({
       message,
@@ -45,12 +48,16 @@ export class AppExceptionFilter implements ExceptionFilter {
       statusCode: statusCode,
       exception: exception,
       requestId: this.extractRequestId(request),
+      cause:
+        typeof exception === "object" && exception && "cause" in exception
+          ? exception.cause
+          : null,
     });
 
     response.status(statusCode).json(errorResponse);
   }
 
-  private parse(
+  private response(
     exception: unknown,
     request: Request,
   ): [number, string, ErrorResponse] | [number, string, OauthErrorResponse] {
