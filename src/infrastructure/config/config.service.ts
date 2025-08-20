@@ -202,7 +202,10 @@ export class ConfigService {
     if (typeof defaultValue === "boolean") {
       return defaultValue ? "true" : "false";
     }
-    if (Array.isArray(defaultValue)) {
+    if (
+      Array.isArray(defaultValue) &&
+      defaultValue.every((opt) => typeof opt === "string")
+    ) {
       const separator = options.arraySeparator;
       assert(typeof separator !== "undefined");
       return defaultValue.join(options.arraySeparator);
