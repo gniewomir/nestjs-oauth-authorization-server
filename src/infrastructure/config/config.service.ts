@@ -26,7 +26,7 @@ type TEnvVariableOptions<T> = {
 };
 
 type TEnvVariableParserParam<T> = {
-  config: string;
+  configName: string;
   configKey: string;
   envVariableKey: string;
   envVariableValue: string;
@@ -34,15 +34,14 @@ type TEnvVariableParserParam<T> = {
 };
 
 export type TRegisteredEnvVariable = {
-  fromEnv: boolean;
-  allowDefault: boolean;
+  configName: string;
   configKey: string;
+  configDefaultValue: string;
   envVariableName: string;
   envVariableValue?: string;
-  description?: string;
-  configDefaultValue: string;
-  configName: string;
   allowed?: string[];
+  allowDefault: boolean;
+  description?: string;
 };
 
 export interface EnvironmentProvider {
@@ -63,7 +62,7 @@ export class ConfigService {
   }
 
   private parseStringAsBoolean<T>({
-    config,
+    configName,
     configKey,
     envVariableKey,
     envVariableValue,
@@ -77,7 +76,7 @@ export class ConfigService {
     ];
     assert(
       notAllowed.every((opt) => typeof envVariableOptions[opt] === "undefined"),
-      `${config}.${configKey}: Options ${notAllowed.join(", ")} are not allowed on boolean field`,
+      `${configName}.${configKey}: Options ${notAllowed.join(", ")} are not allowed on boolean field`,
     );
     const acceptedValues = ["true", "TRUE", "false", "FALSE", "1", "0"];
     assert(
@@ -97,7 +96,7 @@ export class ConfigService {
   }
 
   private parseStringAsNumber<T>({
-    config,
+    configName,
     configKey,
     envVariableValue,
     envVariableOptions,
@@ -110,7 +109,7 @@ export class ConfigService {
     ];
     assert(
       notAllowed.every((opt) => typeof envVariableOptions[opt] === "undefined"),
-      `${config}.${configKey}: Options ${notAllowed.join(", ")} are not allowed on number field`,
+      `${configName}.${configKey}: Options ${notAllowed.join(", ")} are not allowed on number field`,
     );
     return parseInt(envVariableValue, 10);
   }
@@ -193,14 +192,14 @@ export class ConfigService {
     defaultValue: unknown,
     options: TEnvVariableOptions<T>,
   ) {
+    if (typeof defaultValue === "boolean") {
+      return defaultValue ? "true" : "false";
+    }
     if (typeof defaultValue === "number") {
       return defaultValue.toString();
     }
     if (typeof defaultValue === "string") {
       return defaultValue;
-    }
-    if (typeof defaultValue === "boolean") {
-      return defaultValue ? "true" : "false";
     }
     if (
       Array.isArray(defaultValue) &&
@@ -258,7 +257,6 @@ export class ConfigService {
       ),
       description: envVariableOptions?.description,
       envVariableName,
-      fromEnv: typeof envVariableValue !== "undefined",
       allowDefault:
         typeof envVariableOptions?.allowDefault === "undefined"
           ? true
@@ -281,7 +279,7 @@ export class ConfigService {
     // if we are still here, test type of default value, to determine how to handle environment variable
     if (typeof configDefault === "boolean") {
       return this.parseStringAsBoolean({
-        config: configName,
+        configName: configName,
         envVariableValue,
         configKey,
         envVariableOptions,
@@ -292,7 +290,7 @@ export class ConfigService {
     // if we are still here, test type of default value, to determine how to handle environment variable
     if (typeof configDefault === "number") {
       return this.parseStringAsNumber({
-        config: configName,
+        configName: configName,
         envVariableValue,
         configKey,
         envVariableOptions,
@@ -362,7 +360,7 @@ export class ConfigService {
     const instance = plainToInstance(configCls, result);
     const errors = await validate(instance as object);
     for (const error of errors) {
-      this.logger.error(error.toString());
+      this.logger.error(error.toString(), { error });
     }
     assert(errors.length === 0, `Errors during config validation`);
     const frozen = deepFreeze(instance);
