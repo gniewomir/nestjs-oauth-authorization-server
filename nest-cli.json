@@ -6,8 +6,10 @@
     "deleteOutDir": true,
     "assets": [
       {
+        "glob":"**/*.html",
         "include":"**/*.html",
-        "outDir":"dist/src"
+        "outDir":"dist/src",
+        "watchAssets": true
       }
     ]
   }
