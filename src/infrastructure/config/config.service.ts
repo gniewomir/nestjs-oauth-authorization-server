@@ -42,6 +42,7 @@ export type TRegisteredEnvVariable = {
   allowed?: string[];
   allowDefault: boolean;
   description?: string;
+  arraySeparator?: string;
 };
 
 export interface EnvironmentProvider {
@@ -262,6 +263,10 @@ export class ConfigService {
           ? true
           : envVariableOptions.allowDefault,
       allowed: envVariableOptions?.allowed,
+      arraySeparator:
+        typeof envVariableOptions?.arraySeparator === "undefined"
+          ? undefined
+          : envVariableOptions.arraySeparator,
     });
 
     // if using default is disallowed, we expect to get value from environment
@@ -365,7 +370,7 @@ export class ConfigService {
     assert(errors.length === 0, `Errors during config validation`);
     const frozen = deepFreeze(instance);
 
-    // run validators
+    // run custom validators
     let optionsKey: keyof T;
     for (optionsKey in result) {
       assert(typeof optionsKey === "string", "configKey must be a string");

@@ -68,6 +68,9 @@ void cliBootstrap({
               : [`# ${val.description}`]
             ).map((line) => `# ${line}`),
             ...(val.allowed ? [`# ALLOWED: ${val.allowed.join(", ")}`] : []),
+            ...(val.arraySeparator
+              ? [`# VALUES SEPARATOR (double-quoted): "${val.arraySeparator}"`]
+              : []),
             `${val.envVariableName}=${envValue(val, command)}`,
             "",
           ],
@@ -79,6 +82,8 @@ void cliBootstrap({
 
     render([
       `# BEGIN ENV FILE`,
+      "",
+      `# NOTE: empty values i.e. "APP_PORT=" will fallback to default value.`,
       "",
       ...Object.values(envByConfig).flat(),
       `# END ENV FILE`,

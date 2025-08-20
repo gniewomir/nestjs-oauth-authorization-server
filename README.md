@@ -44,7 +44,7 @@ $ npm run crypto:keys
 $ npm run test
 ```
 
-# Test
+# Manual test & development
 ```shell
 $ nvm use
 # seed database with example oauth client and user (not credentials in console)
@@ -53,6 +53,7 @@ $ npm run test:manual:seed
 $ sed -i '/OPENAPI_EXPOSED=false/c\OPENAPI_EXPOSED=true' .env
 $ sed -i '/NODE_ENV=production/c\NODE_ENV=development' .env
 $ sed -i '/APP_LOG_LEVEL=warn/c\APP_LOG_LEVEL=debug' .env
+$ sed -i '/HTML_TEMPLATE_CACHE=true/c\HTML_TEMPLATE_CACHE=false' .env
 # build application
 $ npm run build
 # start application

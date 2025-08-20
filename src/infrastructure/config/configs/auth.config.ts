@@ -126,8 +126,7 @@ export class AuthConfig {
                 "Api paths that won't be protected by authentication middleware.\n" +
                 'They have to start with a "/", and can end with a "*" wildcard.\n' +
                 "Without wildcard only exact match will be unprotected.\n" +
-                "With wildcard all requests matching path will be unprotected.\n" +
-                'Provided values must be separated by ",".',
+                "With wildcard all requests matching path will be unprotected.",
               isArray: true,
               arraySeparator: ",",
               arrayTrim: true,
@@ -150,8 +149,7 @@ export class AuthConfig {
                 "Intended as a way to ensure routes useful in dev won't be exposed in production.\n" +
                 'They have to start with a "/", and can end with a "*" wildcard.\n' +
                 "Without wildcard only exact match will be unprotected.\n" +
-                "With wildcard all requests matching path will be unprotected.\n" +
-                'Provided values must be separated by ",".',
+                "With wildcard all requests matching path will be unprotected.",
               isArray: true,
               arraySeparator: ",",
               arrayTrim: true,
