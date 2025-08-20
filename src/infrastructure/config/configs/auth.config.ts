@@ -68,6 +68,11 @@ export class AuthConfig {
   @IsString({ each: true })
   unprotectedPaths: string[];
 
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  forbiddenPaths: string[];
+
   public static defaults(): AuthConfig {
     return {
       passwordSaltingRounds: 10,
@@ -79,11 +84,13 @@ export class AuthConfig {
       jwtLongTTLRefreshTokenExpirationSeconds: ONE_DAY_IN_SECONDS * 14,
       oauthAuthorizationCodeExpirationSeconds: ONE_MINUTE_IN_SECONDS * 2,
       unprotectedPaths: [
+        "/dev*",
         "/status*",
         "/oauth*",
         "/favicon.ico*",
         "/api/v1/user/register*",
       ],
+      forbiddenPaths: ["/dev*"],
     };
   }
 
@@ -117,6 +124,30 @@ export class AuthConfig {
               allowDefault: true,
               description:
                 "Api paths that won't be protected by authentication middleware.\n" +
+                'They have to start with a "/", and can end with a "*" wildcard.\n' +
+                "Without wildcard only exact match will be unprotected.\n" +
+                "With wildcard all requests matching path will be unprotected.\n" +
+                'Provided values must be separated by ",".',
+              isArray: true,
+              arraySeparator: ",",
+              arrayTrim: true,
+              validator: (config) => {
+                assert(
+                  config.unprotectedPaths.every((val) => val.startsWith("/")),
+                  'Every path on unprotected paths list have to start with "/".',
+                );
+                assert(
+                  config.unprotectedPaths.every((val) => val !== "/*"),
+                  'Overly broad wildcards like "/*" are not allowed on unprotected paths list.',
+                );
+                return Promise.resolve();
+              },
+            },
+            forbiddenPaths: {
+              allowDefault: true,
+              description:
+                "Api paths that always will return 403.\n" +
+                "Intended as a way to ensure routes useful in dev won't be exposed in production.\n" +
                 'They have to start with a "/", and can end with a "*" wildcard.\n' +
                 "Without wildcard only exact match will be unprotected.\n" +
                 "With wildcard all requests matching path will be unprotected.\n" +
