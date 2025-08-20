@@ -7,59 +7,28 @@ import {
 } from "@infrastructure/config/config.service";
 import { EnvModule } from "@interface/cli/env/env.module";
 
-const quoteValuesContainingSpace = (val: string) => {
-  return val.includes(" ") ? `"${val}"` : val;
-};
-
 const describeUsage = () => {
-  console.log("Usage:");
-  console.log(
-    `${"".padEnd(5, " ")}help`.padEnd(20, " "),
-    "Print available commands.",
-  );
-  console.log(
-    `${"".padEnd(5, " ")}merge`.padEnd(20, " "),
-    "Merge current .env with defaults and print new env file to console.",
-  );
-  console.log(
-    `${"".padEnd(5, " ")}default`.padEnd(20, " "),
-    "Print default .env file to console.",
-  );
+  render([
+    "Usage:",
+    `${"".padEnd(5, " ")}help`.padEnd(20, " ") + "Print available commands.",
+    `${"".padEnd(5, " ")}merge`.padEnd(20, " ") +
+      "Merge current .env with defaults and print new env file to console.",
+    `${"".padEnd(5, " ")}default`.padEnd(20, " ") +
+      "Print default .env file to console.",
+  ]);
 };
 
-const describeConfig = (val: TRegisteredEnvVariable) => {
-  const title = `${"".padEnd(5, "#")} ${val.configName} ${"".padEnd(5, "#")}`;
-  console.log("".padEnd(title.length, "#"));
-  console.log(title);
-  console.log("".padEnd(title.length, "#"));
-};
-
-const describeEnv = (val: TRegisteredEnvVariable, command: string) => {
-  console.log(
-    `# ${val.envVariableName} -> ${val.configName}.${val.configKey} ${val.allowDefault ? "(optional)" : "(required)"}`,
-  );
-  console.log(`# DEFAULT/EXAMPLE: ${String(val.configDefaultValue)}`);
-  if (val.description) {
-    const split = val.description.split("\n");
-    if (split.length > 1) {
-      console.log(`# DESCRIPTION:`);
-      for (const line of split) {
-        console.log(`# ${line}`);
-      }
-    } else {
-      console.log(`# DESCRIPTION: ${val.description}`);
-    }
-    if (val.allowed) {
-      console.log(`# ALLOWED: ${val.allowed.join(", ")}`);
-    }
-  }
+const envValue = (val: TRegisteredEnvVariable, command: string) => {
   let res;
   res = command === "merge" ? val.envVariableValue : val.configDefaultValue;
   res = command === "default" ? val.configDefaultValue : res;
   assert(typeof res === "string");
   res = res.trim();
-  res = quoteValuesContainingSpace(res);
-  console.log(`${val.envVariableName}=${res}`);
+  return res.includes(" ") ? `"${res}"` : res;
+};
+
+const render = (lines: string[]) => {
+  lines.forEach((line) => console.log(`${line.trim()}`));
 };
 
 void cliBootstrap({
@@ -78,30 +47,42 @@ void cliBootstrap({
       return Promise.resolve();
     }
 
-    console.log("Gathering env variables...");
-
-    console.log(`# BEGIN ENV FILE\n`);
     const configService = application.get(ConfigService);
-
-    configService.registered().reduce(
-      (acc, val) => {
-        if (val.configName in acc) {
-          acc[val.configName].push(val);
-        } else {
-          describeConfig(val);
-          console.log(""); // new line
-
-          acc[val.configName] = [];
+    const envByConfig = configService.registered().reduce(
+      (carry, val) => {
+        if (!(val.configName in carry)) {
+          const title = `${"".padEnd(5, "#")} ${val.configName} ${"".padEnd(5, "#")}`;
+          carry[val.configName] = [
+            "".padEnd(title.length, "#"),
+            title,
+            "".padEnd(title.length, "#"),
+            "",
+          ];
         }
-
-        describeEnv(val, command);
-        console.log(""); // new line
-
-        return acc;
+        carry[val.configName].push(
+          ...[
+            `# ${val.envVariableName} -> ${val.configName}.${val.configKey} ${val.allowDefault ? "(optional)" : "(required)"}`,
+            `# DEFAULT/EXAMPLE: ${val.configDefaultValue}`,
+            ...(val.description
+              ? val.description.split("\n")
+              : [`# ${val.description}`]
+            ).map((line) => `# ${line}`),
+            ...(val.allowed ? [`# ALLOWED: ${val.allowed.join(", ")}`] : []),
+            `${val.envVariableName}=${envValue(val, command)}`,
+            "",
+          ],
+        );
+        return carry;
       },
-      {} as Record<string, TRegisteredEnvVariable[]>,
+      {} as Record<string, string[]>,
     );
-    console.log(`# END ENV FILE`);
+
+    render([
+      `# BEGIN ENV FILE`,
+      "",
+      ...Object.values(envByConfig).flat(),
+      `# END ENV FILE`,
+    ]);
 
     return Promise.resolve();
   },
