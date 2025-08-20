@@ -33,19 +33,9 @@ export const createPublicKey = async (pathString: string) => {
 };
 
 export const loadPublicKey = async (pathString: string) => {
-  let keyPath: string;
-  if (path.isAbsolute(pathString)) {
-    keyPath = pathString;
-  } else {
-    keyPath = path.join(
-      __dirname,
-      ..."../../../..".split("/"),
-      ...pathString.split("/"),
-    );
-  }
-  if (!keyPath.endsWith(".pub")) {
-    keyPath = `${keyPath}.pub`;
-  }
-  keyPath = path.normalize(keyPath);
-  return await fs.readFile(keyPath, "utf8");
+  return await fs.readFile(resolvePrivateKeyPath(pathString), "utf8");
+};
+
+export const loadPrivateKey = async (pathString: string) => {
+  return await fs.readFile(resolvePrivateKeyPath(pathString), "utf8");
 };

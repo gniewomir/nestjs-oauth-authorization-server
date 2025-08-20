@@ -1,3 +1,5 @@
+import { KeyObject } from "node:crypto";
+
 import { Injectable } from "@nestjs/common";
 import { JwtService as NestJwtService } from "@nestjs/jwt";
 
@@ -11,17 +13,22 @@ import {
 
 @Injectable()
 export class JwtService implements TokenPayloadsInterface {
+  private publicKeyCache: string | undefined;
+  private privateKeyCache: KeyObject | undefined;
+
   constructor(
     private readonly jwtService: NestJwtService,
     private readonly authConfig: AuthConfig,
   ) {}
 
   async verify(token: string): Promise<TokenPayload> {
-    const key = await loadPublicKey(this.authConfig.jwtKeyPath);
+    this.publicKeyCache = this.publicKeyCache
+      ? this.publicKeyCache
+      : await loadPublicKey(this.authConfig.jwtKeyPath);
     return TokenPayload.fromUnknown(
       await this.jwtService.verifyAsync(token, {
         algorithms: [this.authConfig.jwtAlgorithm],
-        publicKey: key,
+        publicKey: this.publicKeyCache,
         complete: false,
       }),
     );
@@ -39,10 +46,12 @@ export class JwtService implements TokenPayloadsInterface {
   }
 
   async sign(tokenPayload: Record<string, unknown>): Promise<string> {
-    const key = await createPrivateKey(this.authConfig.jwtKeyPath);
+    this.privateKeyCache = this.privateKeyCache
+      ? this.privateKeyCache
+      : await createPrivateKey(this.authConfig.jwtKeyPath);
     return await this.jwtService.signAsync(tokenPayload, {
       algorithm: this.authConfig.jwtAlgorithm,
-      privateKey: key,
+      privateKey: this.privateKeyCache,
     });
   }
 }
