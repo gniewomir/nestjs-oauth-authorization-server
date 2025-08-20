@@ -6,10 +6,12 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "glob":"**/*.html",
         "include":"**/*.html",
-        "outDir":"dist/src",
-        "watchAssets": true
+        "outDir":"dist/src"
+      },
+      {
+        "include":"test/keys/**/*",
+        "outDir":"dist/src"
       }
     ]
   }

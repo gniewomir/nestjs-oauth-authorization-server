@@ -2,7 +2,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-const keysDir = path.join(__dirname, "..", "keys");
+const keysDir = path.join(__dirname, "..", "src", "test", "keys");
 const keyPairs = ["ours-key-es512", "theirs-key-es512"].map((name) => [
   path.join(keysDir, name),
   path.join(keysDir, `${name}.pub`),

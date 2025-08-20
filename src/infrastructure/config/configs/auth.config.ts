@@ -77,7 +77,7 @@ export class AuthConfig {
     return {
       passwordSaltingRounds: 10,
       jwtAlgorithm: "ES512" satisfies Algorithm,
-      jwtKeyPath: "keys/ours-key-es512",
+      jwtKeyPath: "src/test/keys/ours-key-es512",
       jwtIssuer: "Gniewomir Świechowski <gniewomir.swiechowski@gmail.com>",
       jwtAccessTokenExpirationSeconds: ONE_MINUTE_IN_SECONDS * 5,
       jwtRefreshTokenExpirationSeconds: ONE_HOUR_IN_SECONDS,
