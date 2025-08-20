@@ -17,7 +17,7 @@ export class HtmlConfig {
   public static defaults(): HtmlConfig {
     return {
       templateCache: true,
-      projectTitle: "Enraged - OAuth Authorization Server",
+      projectTitle: "Enraged | OAuth Authorization Server",
     };
   }
 
