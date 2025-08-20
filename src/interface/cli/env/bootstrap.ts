@@ -1,4 +1,4 @@
-import { ConfigService as NestConfigService } from "@nestjs/config";
+import * as assert from "node:assert";
 
 import { cliBootstrap } from "@application/app";
 import {
@@ -6,6 +6,10 @@ import {
   TRegisteredEnvVariable,
 } from "@infrastructure/config/config.service";
 import { EnvModule } from "@interface/cli/env/env.module";
+
+const quoteValuesContainingSpace = (val: string) => {
+  return val.includes(" ") ? `"${val}"` : val;
+};
 
 const describeUsage = () => {
   console.log("Usage:");
@@ -30,11 +34,7 @@ const describeConfig = (val: TRegisteredEnvVariable) => {
   console.log("".padEnd(title.length, "#"));
 };
 
-const describeEnv = (
-  val: TRegisteredEnvVariable,
-  command: string,
-  nestConfigService: NestConfigService,
-) => {
+const describeEnv = (val: TRegisteredEnvVariable, command: string) => {
   console.log(
     `# ${val.envVariableName} -> ${val.configName}.${val.configKey} ${val.allowDefault ? "(optional)" : "(required)"}`,
   );
@@ -53,15 +53,13 @@ const describeEnv = (
       console.log(`# ALLOWED: ${val.allowed.join(", ")}`);
     }
   }
-  if (command === "merge") {
-    console.log(
-      `${val.envVariableName}=${String(nestConfigService.get(val.envVariableName) || val.configDefaultValue).trim()}`,
-    );
-  } else {
-    console.log(
-      `${val.envVariableName}=${String(val.configDefaultValue).trim()}`,
-    );
-  }
+  let res;
+  res = command === "merge" ? val.envVariableValue : val.configDefaultValue;
+  res = command === "default" ? val.configDefaultValue : res;
+  assert(typeof res === "string");
+  res = res.trim();
+  res = quoteValuesContainingSpace(res);
+  console.log(`${val.envVariableName}=${res}`);
 };
 
 void cliBootstrap({
@@ -91,13 +89,13 @@ void cliBootstrap({
           acc[val.configName].push(val);
         } else {
           describeConfig(val);
-          console.log("");
+          console.log(""); // new line
 
           acc[val.configName] = [];
         }
 
-        describeEnv(val, command, application.get(NestConfigService));
-        console.log("");
+        describeEnv(val, command);
+        console.log(""); // new line
 
         return acc;
       },

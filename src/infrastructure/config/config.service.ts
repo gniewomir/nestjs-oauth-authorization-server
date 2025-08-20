@@ -38,8 +38,9 @@ export type TRegisteredEnvVariable = {
   allowDefault: boolean;
   configKey: string;
   envVariableName: string;
+  envVariableValue?: string;
   description?: string;
-  configDefaultValue?: unknown;
+  configDefaultValue: string;
   configName: string;
   allowed?: string[];
 };
@@ -188,6 +189,27 @@ export class ConfigService {
       });
   }
 
+  private defaultToString<T>(
+    defaultValue: unknown,
+    options: TEnvVariableOptions<T>,
+  ) {
+    if (typeof defaultValue === "number") {
+      return defaultValue.toString();
+    }
+    if (typeof defaultValue === "string") {
+      return defaultValue;
+    }
+    if (typeof defaultValue === "boolean") {
+      return defaultValue ? "true" : "false";
+    }
+    if (Array.isArray(defaultValue)) {
+      const separator = options.arraySeparator;
+      assert(typeof separator !== "undefined");
+      return defaultValue.join(options.arraySeparator);
+    }
+    throw new Error("Unsupported defaultValue type");
+  }
+
   private handleConfigurationEntry = <KT extends keyof T, T>({
     configName,
     configKey,
@@ -224,9 +246,13 @@ export class ConfigService {
 
     // register env variable, so we can later generate env file
     this.registry.set(envVariableName, {
+      envVariableValue,
       configName: configName,
       configKey: configKey,
-      configDefaultValue: configDefault,
+      configDefaultValue: this.defaultToString(
+        configDefault,
+        envVariableOptions,
+      ),
       description: envVariableOptions?.description,
       envVariableName,
       fromEnv: typeof envVariableValue !== "undefined",
@@ -324,7 +350,7 @@ export class ConfigService {
       result[configKey] = this.handleConfigurationEntry({
         configName,
         configKey,
-        configDefault: result[configKey],
+        configDefault: cloneDeep(defaults[configKey]),
         envVariableOptions: keyOptions,
         envPrefix: envVariablesPrefix,
       });

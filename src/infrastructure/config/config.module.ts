@@ -8,6 +8,7 @@ import {
   AppConfig,
   AuthConfig,
   DatabaseConfig,
+  HtmlConfig,
   OpenApiConfig,
 } from "./configs";
 
@@ -19,7 +20,8 @@ import {
     AuthConfig.provider(),
     DatabaseConfig.provider(),
     OpenApiConfig.provider(),
+    HtmlConfig.provider(),
   ],
-  exports: [AppConfig, AuthConfig, DatabaseConfig, OpenApiConfig],
+  exports: [AppConfig, AuthConfig, DatabaseConfig, OpenApiConfig, HtmlConfig],
 })
 export class ConfigModule {}
