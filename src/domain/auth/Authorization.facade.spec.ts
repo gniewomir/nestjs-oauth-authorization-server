@@ -1060,4 +1060,14 @@ describe("AuthorizationFacade", () => {
       ).toEqual(true);
     });
   });
+
+  describe("registerPrompt", () => {
+    it.todo("should successfully register a new user");
+
+    it.todo("should throw error when email already exists");
+
+    it.todo(
+      "should throw error when client does not allow registration of new users",
+    );
+  });
 });

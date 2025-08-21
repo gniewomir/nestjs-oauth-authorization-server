@@ -28,9 +28,9 @@ import {
 import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
 import {
-  TokenPayloadInterfaceSymbol,
-  TokenPayloadsInterface,
-} from "@domain/auth/OAuth/Token/TokenPayloads.interface";
+  EmailSanitizerInterface,
+  EmailSanitizerInterfaceSymbol,
+} from "@domain/auth/OAuth/User/Credentials/EmailSanitizer.interface";
 import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
 import {
   PasswordInterface,
@@ -67,6 +67,8 @@ export class AuthorizationService {
     private readonly pkce: PKCEInterface,
     @Inject(TokenPayloadInterfaceSymbol)
     private readonly tokenPayloads: TokenPayloadsInterface,
+    @Inject(EmailSanitizerInterfaceSymbol)
+    private readonly emailSanitizer: EmailSanitizerInterface,
   ) {}
 
   async createAuthorizationRequest({
@@ -173,7 +175,10 @@ export class AuthorizationService {
       {
         requestId: IdentityValue.fromString(params.requestId),
         credentials: {
-          email: EmailValue.fromString(params.credentials.email),
+          email: EmailValue.create(
+            params.credentials.email,
+            this.emailSanitizer,
+          ),
           password: PasswordValue.fromString(params.credentials.password),
           rememberMe: params.credentials.rememberMe || false,
         },
@@ -275,6 +280,44 @@ export class AuthorizationService {
       expiresIn: expiresAt - this.clock.nowAsSecondsSinceEpoch(),
       scope: scope.toString(),
       tokenType: "Bearer",
+    };
+  }
+
+  async register(params: { email: string; password: string }): Promise<{
+    userId: string;
+    email: string;
+    emailVerified: boolean;
+  }> {
+    const email = EmailValue.create(params.email, this.emailSanitizer);
+    const password = PasswordValue.fromString(params.password);
+
+    const result = await AuthorizationFacade.registerPrompt(
+      { email, password },
+      this.users,
+      this.passwords,
+    );
+
+    return {
+      userId: result.identity.toString(),
+      email: result.user.email.toString(),
+      emailVerified: result.user.emailVerified,
+    };
+  }
+
+  async show(params: { userId: string }): Promise<{
+    userId: string;
+    email: string;
+    emailVerified: boolean;
+  }> {
+    const user = await NotFoundToDomainException(
+      () => this.users.retrieve(IdentityValue.fromString(params.userId)),
+      () => new Error(`User with ID ${params.userId} not found`),
+    );
+
+    return {
+      userId: user.identity.toString(),
+      email: user.email.toString(),
+      emailVerified: user.emailVerified,
     };
   }
 }

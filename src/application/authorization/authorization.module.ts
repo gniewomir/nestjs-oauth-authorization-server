@@ -6,6 +6,7 @@ import { ClientDomainRepositoryModule } from "@infrastructure/repositories/domai
 import { RequestDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.module";
 import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
 import { AuthorizationCodeModule } from "@infrastructure/security/authorization-code/authorization-code.module";
+import { EmailSanitizerModule } from "@infrastructure/security/email";
 import { JwtModule } from "@infrastructure/security/jwt";
 import { PasswordModule } from "@infrastructure/security/password";
 import { PKCEModule } from "@infrastructure/security/pkce";
@@ -23,6 +24,7 @@ import { AuthorizationService } from "./authorization.service";
     ConfigModule,
     PKCEModule,
     JwtModule,
+    EmailSanitizerModule,
   ],
   providers: [AuthorizationService],
   exports: [AuthorizationService],

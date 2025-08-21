@@ -87,13 +87,8 @@ export class IdTokenPayload {
           message: "jwt cannot expire before it was issued",
         }),
     );
-    Assert(
-      typeof payload.email_verified === "boolean",
-      () =>
-        new OauthInvalidRequestException({
-          message: "email_verified must be a boolean",
-        }),
-    );
+    Assert(typeof payload.email_verified === "boolean");
+    Assert(typeof payload.email === "string");
 
     return new IdTokenPayload({
       aud: IdentityValue.fromUnknown(payload.aud),
@@ -102,7 +97,7 @@ export class IdTokenPayload {
       iat,
       jti: IdentityValue.fromUnknown(payload.jti),
       sub: IdentityValue.fromUnknown(payload.sub),
-      email: EmailValue.fromUnknown(payload.email),
+      email: EmailValue.fromString(payload.email),
       email_verified: payload.email_verified,
     });
   }

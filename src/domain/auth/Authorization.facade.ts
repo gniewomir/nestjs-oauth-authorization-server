@@ -389,4 +389,44 @@ export class AuthorizationFacade {
       scope,
     } satisfies TSignedTokens;
   }
+
+  public static async registerPrompt(
+    params: {
+      email: EmailValue;
+      password: PasswordValue;
+    },
+    users: UsersInterface,
+    passwords: PasswordInterface,
+  ): Promise<{
+    user: User;
+    identity: IdentityValue;
+  }> {
+    const uniqueEmailSpecification = new UniqueEmailSpecification(users);
+
+    Assert(
+      await uniqueEmailSpecification.isSatisfied(params.email),
+      "User email must be unique",
+    );
+
+    const hashedPassword = await params.password.toPasswordHash(passwords);
+    const identity = IdentityValue.create();
+
+    const user = await User.create(
+      {
+        identity,
+        email: params.email,
+        emailVerified: false,
+        password: hashedPassword,
+        refreshTokens: [],
+      },
+      uniqueEmailSpecification,
+    );
+
+    await users.persist(user);
+
+    return {
+      user,
+      identity,
+    };
+  }
 }

@@ -6,7 +6,7 @@ import {
 } from "@domain/auth/OAuth/User/Errors/UserException";
 
 export class UserInvalidEmailException extends UserException {
-  constructor(params: TUserExceptionConstructorParm) {
+  constructor(params: Omit<TUserExceptionConstructorParm, "errorCode">) {
     super({
       ...params,
       errorCode: "invalid-email",
