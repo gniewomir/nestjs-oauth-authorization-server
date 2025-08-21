@@ -38,9 +38,13 @@ void cliBootstrap({
     const args = process.argv.slice(2);
     const command = args.shift() || "help";
 
-    if (!["help", "merge", "default"].includes(command)) {
-      console.error(`Unrecognized command "${command}"`);
+    if (
+      !["help", "merge", "default"].includes(command) ||
+      args.shift() !== undefined
+    ) {
+      console.error(`Unrecognized argument`);
       describeUsage();
+      return Promise.resolve();
     }
     if (command === "help") {
       describeUsage();
