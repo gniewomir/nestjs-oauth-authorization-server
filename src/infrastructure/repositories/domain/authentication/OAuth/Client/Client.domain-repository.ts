@@ -38,6 +38,7 @@ export class ClientDomainRepository implements ClientInterface {
       name: databaseClient.name,
       scope: ScopeValueImmutableSet.fromString(databaseClient.scope),
       redirectUri: RedirectUriValue.fromString(databaseClient.redirectUri),
+      registration: databaseClient.registration,
     });
   }
 
@@ -47,6 +48,7 @@ export class ClientDomainRepository implements ClientInterface {
       name: domainClient.name,
       scope: domainClient.scope.toString(),
       redirectUri: domainClient.redirectUri.toString(),
+      registration: domainClient.registration,
     } satisfies Omit<DatabaseClient, "createdAt" | "updatedAt">;
   }
 }

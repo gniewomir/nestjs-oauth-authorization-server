@@ -12,17 +12,20 @@ export class Client {
   public readonly name: string;
   public readonly scope: ScopeValueImmutableSet;
   public readonly redirectUri: RedirectUriValue;
+  public readonly registration: boolean;
 
   constructor(params: {
     id: IdentityValue;
     name: string;
     scope: ScopeValueImmutableSet;
     redirectUri: RedirectUriValue;
+    registration: boolean;
   }) {
     this.id = params.id;
     this.name = params.name;
     this.scope = params.scope;
     this.redirectUri = params.redirectUri;
+    this.registration = params.registration;
   }
 
   public static create(params: TClientConstructorParam): Client {
@@ -35,5 +38,9 @@ export class Client {
       "Client name is too long - max 128 characters",
     );
     return new Client(params);
+  }
+
+  public allowsRegistration(): boolean {
+    return this.registration;
   }
 }

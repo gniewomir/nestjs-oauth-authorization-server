@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Bootstrap1755550026917 implements MigrationInterface {
-  name = "Bootstrap1755550026917";
+export class Bootstrap1755775266938 implements MigrationInterface {
+  name = "Bootstrap1755775266938";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -19,18 +19,6 @@ export class Bootstrap1755550026917 implements MigrationInterface {
        )`,
     );
     await queryRunner.query(
-      `CREATE TABLE "oauth_clients"
-       (
-         "id"          uuid                   NOT NULL,
-         "name"        character varying(128) NOT NULL,
-         "scope"       text                   NOT NULL,
-         "redirectUri" text                   NOT NULL,
-         "createdAt"   TIMESTAMP              NOT NULL DEFAULT now(),
-         "updatedAt"   TIMESTAMP              NOT NULL DEFAULT now(),
-         CONSTRAINT "PK_c4759172d3431bae6f04e678e0d" PRIMARY KEY ("id")
-       )`,
-    );
-    await queryRunner.query(
       `CREATE TABLE "context"
        (
          "id"          uuid      NOT NULL,
@@ -40,6 +28,18 @@ export class Bootstrap1755550026917 implements MigrationInterface {
          "updatedAt"   TIMESTAMP NOT NULL DEFAULT now(),
          "userId"      uuid      NOT NULL,
          CONSTRAINT "PK_d1ff50573dd9c6c1d0896805701" PRIMARY KEY ("id")
+       )`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "goal"
+       (
+         "id"          uuid      NOT NULL,
+         "orderKey"    text      NOT NULL,
+         "description" text      NOT NULL,
+         "createdAt"   TIMESTAMP NOT NULL DEFAULT now(),
+         "updatedAt"   TIMESTAMP NOT NULL DEFAULT now(),
+         "userId"      uuid      NOT NULL,
+         CONSTRAINT "PK_88c8e2b461b711336c836b1e130" PRIMARY KEY ("id")
        )`,
     );
     await queryRunner.query(
@@ -57,15 +57,16 @@ export class Bootstrap1755550026917 implements MigrationInterface {
        )`,
     );
     await queryRunner.query(
-      `CREATE TABLE "goal"
+      `CREATE TABLE "oauth_clients"
        (
-         "id"          uuid      NOT NULL,
-         "orderKey"    text      NOT NULL,
-         "description" text      NOT NULL,
-         "createdAt"   TIMESTAMP NOT NULL DEFAULT now(),
-         "updatedAt"   TIMESTAMP NOT NULL DEFAULT now(),
-         "userId"      uuid      NOT NULL,
-         CONSTRAINT "PK_88c8e2b461b711336c836b1e130" PRIMARY KEY ("id")
+         "id"           uuid                   NOT NULL,
+         "name"         character varying(128) NOT NULL,
+         "scope"        text                   NOT NULL,
+         "redirectUri"  text                   NOT NULL,
+         "registration" boolean                NOT NULL,
+         "createdAt"    TIMESTAMP              NOT NULL DEFAULT now(),
+         "updatedAt"    TIMESTAMP              NOT NULL DEFAULT now(),
+         CONSTRAINT "PK_c4759172d3431bae6f04e678e0d" PRIMARY KEY ("id")
        )`,
     );
     await queryRunner.query(
@@ -90,6 +91,10 @@ export class Bootstrap1755550026917 implements MigrationInterface {
         ADD CONSTRAINT "FK_0322101a7b8da74eec6ed00cfe4" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
+      `ALTER TABLE "goal"
+        ADD CONSTRAINT "FK_40bd308ea814964cec7146c6dce" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "task"
         ADD CONSTRAINT "FK_266bc4eb256aee41118272eccf3" FOREIGN KEY ("goalId") REFERENCES "goal" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
@@ -101,17 +106,9 @@ export class Bootstrap1755550026917 implements MigrationInterface {
       `ALTER TABLE "task"
         ADD CONSTRAINT "FK_f316d3fe53497d4d8a2957db8b9" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
-    await queryRunner.query(
-      `ALTER TABLE "goal"
-        ADD CONSTRAINT "FK_40bd308ea814964cec7146c6dce" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "goal"
-        DROP CONSTRAINT "FK_40bd308ea814964cec7146c6dce"`,
-    );
     await queryRunner.query(
       `ALTER TABLE "task"
         DROP CONSTRAINT "FK_f316d3fe53497d4d8a2957db8b9"`,
@@ -125,14 +122,18 @@ export class Bootstrap1755550026917 implements MigrationInterface {
         DROP CONSTRAINT "FK_266bc4eb256aee41118272eccf3"`,
     );
     await queryRunner.query(
+      `ALTER TABLE "goal"
+        DROP CONSTRAINT "FK_40bd308ea814964cec7146c6dce"`,
+    );
+    await queryRunner.query(
       `ALTER TABLE "context"
         DROP CONSTRAINT "FK_0322101a7b8da74eec6ed00cfe4"`,
     );
     await queryRunner.query(`DROP TABLE "authorization_request"`);
-    await queryRunner.query(`DROP TABLE "goal"`);
-    await queryRunner.query(`DROP TABLE "task"`);
-    await queryRunner.query(`DROP TABLE "context"`);
     await queryRunner.query(`DROP TABLE "oauth_clients"`);
+    await queryRunner.query(`DROP TABLE "task"`);
+    await queryRunner.query(`DROP TABLE "goal"`);
+    await queryRunner.query(`DROP TABLE "context"`);
     await queryRunner.query(`DROP TABLE "user"`);
   }
 }

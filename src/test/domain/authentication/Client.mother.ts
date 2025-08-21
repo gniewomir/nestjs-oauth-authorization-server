@@ -13,6 +13,7 @@ export const clientMother = (params: Partial<TClientConstructorParam> = {}) => {
     name: "web",
     scope: defaultTestClientScopesMother(),
     redirectUri: RedirectUriValue.create("https://web.com/callback", "test"),
+    registration: true,
     ...params,
   });
 };

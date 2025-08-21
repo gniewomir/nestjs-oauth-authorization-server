@@ -20,6 +20,9 @@ export class OauthClient {
   @Column("text")
   redirectUri: string;
 
+  @Column("boolean")
+  registration: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
