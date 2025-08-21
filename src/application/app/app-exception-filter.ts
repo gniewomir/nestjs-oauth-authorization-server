@@ -25,6 +25,24 @@ export interface OauthErrorResponse {
   error_uri?: string;
 }
 
+export const formatException = (exception: unknown) => {
+  if (
+    exception instanceof Error &&
+    ["development", "test"].includes(process.env.NODE_ENV as unknown as string)
+  ) {
+    if (typeof exception.stack === "string") {
+      // @ts-expect-error type safety ends here
+      exception.stack = exception.stack
+        ? exception.stack.split("\n").map((str) => str.trim())
+        : exception.stack;
+    }
+    return JSON.parse(
+      JSON.stringify(exception, Object.getOwnPropertyNames(exception), 2),
+    ) as unknown as Record<string, unknown>;
+  }
+  return exception;
+};
+
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
   private readonly logger = new LoggerService();
@@ -46,12 +64,8 @@ export class AppExceptionFilter implements ExceptionFilter {
       userAgent: request.get("User-Agent"),
       ip: request.ip,
       statusCode: statusCode,
-      exception: exception,
+      exception: formatException(exception),
       requestId: this.extractRequestId(request),
-      cause:
-        typeof exception === "object" && exception && "cause" in exception
-          ? exception.cause
-          : null,
     });
 
     response.status(statusCode).json(errorResponse);
