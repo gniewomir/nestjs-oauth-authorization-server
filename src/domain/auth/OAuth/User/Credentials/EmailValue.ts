@@ -1,28 +1,30 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
+import { UserInvalidEmailException } from "@domain/auth/OAuth/User/Errors/UserInvalidEmailException";
 
 export class EmailValue {
   private constructor(private readonly email: string) {
     Assert(
       email.length === email.trim().length,
       () =>
-        new OauthInvalidRequestException({
-          errorDescription:
-            "Email cannot start and/or end with a space character(s)",
+        new UserInvalidEmailException({
+          errorCode: "invalid-email",
+          message: "Email cannot start and/or end with a space",
         }),
     );
     Assert(
       email.includes("@"),
       () =>
-        new OauthInvalidRequestException({
-          errorDescription: "No local and domain part separator in email",
+        new UserInvalidEmailException({
+          errorCode: "invalid-email",
+          message: "No local and domain part separator in email",
         }),
     );
     Assert(
       email.length <= 254,
       () =>
-        new OauthInvalidRequestException({
-          errorDescription: "Email is too long",
+        new UserInvalidEmailException({
+          errorCode: "invalid-email",
+          message: "Email is too long",
         }),
     );
   }
@@ -34,10 +36,7 @@ export class EmailValue {
   public static fromUnknown(email: unknown) {
     Assert(
       typeof email === "string" || email instanceof EmailValue,
-      () =>
-        new OauthInvalidRequestException({
-          message: "email value has to be instance of EmailValue or string",
-        }),
+      "email value has to be instance of EmailValue or string",
     );
     if (typeof email === "string") {
       return EmailValue.fromString(email);

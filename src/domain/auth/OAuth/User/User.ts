@@ -1,6 +1,6 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
 import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
+import { UserEmailFoundException } from "@domain/auth/OAuth/User/Errors/UserEmailFoundException";
 import { RefreshTokenValue } from "@domain/auth/OAuth/User/RefreshTokenValue";
 import { UniqueEmailSpecification } from "@domain/auth/OAuth/User/UniqueEmail.specification";
 import { ClockInterface } from "@domain/Clock.interface";
@@ -42,9 +42,9 @@ export class User {
     Assert(
       await uniqueEmailSpecification.isSatisfied(params.email),
       () =>
-        new OauthInvalidRequestException({
+        new UserEmailFoundException({
+          errorCode: "user-exists",
           message: "User email have to be unique",
-          errorDescription: "user with this email already exists",
         }),
     );
     return new User(params);

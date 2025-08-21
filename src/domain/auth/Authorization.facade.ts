@@ -26,6 +26,8 @@ import { TokenPayloadsInterface } from "@domain/auth/OAuth/Token/TokenPayloads.i
 import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
 import { PasswordInterface } from "@domain/auth/OAuth/User/Credentials/Password.interface";
 import { PasswordValue } from "@domain/auth/OAuth/User/Credentials/PasswordValue";
+import { UserEmailNotFoundException } from "@domain/auth/OAuth/User/Errors/UserEmailNotFoundException";
+import { UserPasswordMismatchException } from "@domain/auth/OAuth/User/Errors/UserPasswordMismatchException";
 import { User } from "@domain/auth/OAuth/User/User";
 import { UsersInterface } from "@domain/auth/OAuth/User/Users.interface";
 import { ClockInterface } from "@domain/Clock.interface";
@@ -109,27 +111,32 @@ export class AuthorizationFacade {
     );
     const user = await NotFoundToDomainException(
       () => users.getByEmail(params.credentials.email),
-      (error) =>
-        new OauthInvalidCredentialsException({
-          message: error.message,
+      () =>
+        new UserEmailNotFoundException({
+          errorCode: "unknown-email",
+          message: "User not found",
         }),
     );
 
     Assert(
       params.credentials.email.isEqual(user.email),
       () =>
-        new OauthInvalidCredentialsException({
-          message: "Email mismatch",
+        new UserEmailNotFoundException({
+          errorCode: "unknown-email",
+          message: "User not found",
         }),
     );
 
-    Assert(
+    const passwordsMatch =
       await params.credentials.password.matchHashedPassword(
         user.password,
         passwords,
-      ),
+      );
+    Assert(
+      passwordsMatch,
       () =>
-        new OauthInvalidCredentialsException({
+        new UserPasswordMismatchException({
+          errorCode: "unknown-password",
           message: "Password mismatch",
         }),
     );

@@ -89,7 +89,7 @@ describe("AuthenticationFacade", () => {
 
       const modifiedAuthConfig = await plainToConfig(
         {
-          jwtKeyPath: "keys/theirs-key-es512",
+          jwtKeyPath: "src/test/keys/theirs-key-es512",
         },
         authConfig,
         AuthConfig,

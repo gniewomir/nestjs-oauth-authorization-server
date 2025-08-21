@@ -1,6 +1,6 @@
 import { Assert } from "@domain/Assert";
-import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
 import { PasswordInterface } from "@domain/auth/OAuth/User/Credentials/Password.interface";
+import { UserInvalidPasswordException } from "@domain/auth/OAuth/User/Errors/UserInvalidPasswordException";
 
 export class PasswordValue {
   public static readonly minPasswordLength: number = 12;
@@ -12,16 +12,17 @@ export class PasswordValue {
     Assert(
       password.length === password.trim().length,
       () =>
-        new OauthInvalidRequestException({
-          errorDescription:
-            "Password cannot start and/or end with a space character(s)",
+        new UserInvalidPasswordException({
+          errorCode: "invalid-password",
+          message: "Password cannot start and/or end with a space character(s)",
         }),
     );
     Assert(
       password.length >= PasswordValue.minPasswordLength,
       () =>
-        new OauthInvalidRequestException({
-          errorDescription: `Minimal password length is ${PasswordValue.minPasswordLength}`,
+        new UserInvalidPasswordException({
+          errorCode: "password-too-short",
+          message: `Minimal password length is ${PasswordValue.minPasswordLength}`,
         }),
     );
     Assert(
@@ -32,16 +33,18 @@ export class PasswordValue {
         return acc + char;
       }, "").length >= PasswordValue.minUniqueCharacters,
       () =>
-        new OauthInvalidRequestException({
-          errorDescription: `Minimal number of unique characters in password is ${PasswordValue.minUniqueCharacters}`,
+        new UserInvalidPasswordException({
+          errorCode: "password-too-weak",
+          message: `Minimal number of unique characters in password is ${PasswordValue.minUniqueCharacters}`,
         }),
     );
     // ref https://www.npmjs.com/package/bcrypt#user-content-security-issues-and-concerns
     Assert(
       new Blob([password]).size <= 72, // size in bytes
       () =>
-        new OauthInvalidRequestException({
-          errorDescription: "Password should not be longer than 72 bytes",
+        new UserInvalidPasswordException({
+          errorCode: "password-too-long",
+          message: "Password should not be longer than 72 bytes",
         }),
     );
     return new PasswordValue(password);
