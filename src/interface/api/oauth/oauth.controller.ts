@@ -1,5 +1,3 @@
-import * as path from "node:path";
-
 import {
   BadRequestException,
   Body,
@@ -19,18 +17,23 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 
 import { AuthorizationService } from "@application/authorization/authorization.service";
-import { Assert } from "@domain/Assert";
 import {
-  OauthException,
   OauthInvalidCredentialsException,
   OauthInvalidRequestException,
   OauthUnsupportedGrantTypeException,
 } from "@domain/auth/OAuth/Errors";
 import { IdentityValue } from "@domain/IdentityValue";
-import { AppConfig } from "@infrastructure/config/configs";
+import { AppConfig, HtmlConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
-import { TemplateService } from "@infrastructure/template/template.service";
-import { TemplateInterfaceSymbol } from "@interface/api/Template.interface";
+import { DefaultLayoutService } from "@infrastructure/template";
+import { assert } from "@interface/api/utility/assert";
+import { exceptionAsJsonString } from "@interface/api/utility/exception";
+import {
+  isEmailErrorCode,
+  isPasswordErrorCode,
+  isValidErrorCode,
+  userErrorCodeToMessage,
+} from "@interface/api/utility/user.error";
 
 import { AuthorizeRequestDto } from "./dto/authorize-request.dto";
 import { PromptRequestDto } from "./dto/prompt-request.dto";
@@ -44,8 +47,8 @@ export class OauthController {
     @Inject(LoggerInterfaceSymbol) private readonly logger: LoggerInterface,
     private readonly appConfig: AppConfig,
     private readonly authorizationService: AuthorizationService,
-    @Inject(TemplateInterfaceSymbol)
-    private readonly templateService: TemplateService,
+    private readonly defaultLayoutService: DefaultLayoutService,
+    private readonly htmlConfig: HtmlConfig,
   ) {
     this.logger.setContext("AuthorizationController");
   }
@@ -111,31 +114,79 @@ export class OauthController {
           requestId,
         });
 
-      const errorObject = {
-        [OauthInvalidCredentialsException.DEFAULT_CODE]: {
-          errorCode: OauthInvalidCredentialsException.DEFAULT_CODE,
-          errorMessage: "Provided credentials does not match our records.",
-        },
-        [OauthInvalidRequestException.DEFAULT_CODE]: {
-          errorCode: OauthInvalidRequestException.DEFAULT_CODE,
-          errorMessage: "Did you provided a valid email?",
-        },
-        "no-error": undefined,
-      }[error || "no-error"];
+      assert(
+        (error && isValidErrorCode(error)) || typeof error === "undefined",
+        () => new BadRequestException("Invalid error code!"),
+      );
 
-      return this.templateService.renderTemplate(
-        path.join(__dirname, "template", "prompt.html"),
-        {
-          requestId,
-          requestedScopes,
-          clientName,
-          allowRememberMe,
-          errorObject,
-        },
+      return this.defaultLayoutService.renderPageBuilder(
+        this.defaultLayoutService
+          .createPageBuilder()
+          .header({
+            title: `Authorization Required | ${this.htmlConfig.projectTitle}`,
+            headerTitle: "Authorization Required",
+            headerSubtitle: `Application "${clientName}" is requesting access to your account`,
+          })
+          .form({
+            formTitle: "Sign In",
+            formId: "authorize",
+            formAction: "/oauth/prompt",
+            formHiddenFields: [
+              {
+                name: "request_id",
+                value: requestId,
+              },
+            ],
+            formFields: [
+              {
+                id: "email",
+                name: "email",
+                type: "email",
+                label: "Email Address",
+                required: true,
+                error: isEmailErrorCode(error)
+                  ? userErrorCodeToMessage(error)
+                  : undefined,
+              },
+              {
+                id: "password",
+                name: "password",
+                type: "password",
+                label: "Password",
+                required: true,
+                error: isPasswordErrorCode(error)
+                  ? userErrorCodeToMessage(error)
+                  : undefined,
+              },
+            ],
+            rememberMe: allowRememberMe,
+            infoBox: {
+              title: "Permissions",
+              items: requestedScopes.map(({ humanName, description }) => ({
+                name: humanName,
+                description,
+              })),
+            },
+            formActions: [
+              {
+                name: "choice",
+                value: "authorize",
+                class: "btn-primary",
+                id: "authorizeBtn",
+                text: "Authorize",
+              },
+              {
+                name: "choice",
+                value: "deny",
+                class: "btn-secondary",
+                id: "denyBtn",
+                text: "Deny",
+              },
+            ],
+          }),
       );
     } catch (error) {
-      this.logger.error("Error during preparing OAuth prompt", error);
-      return this.renderErrorPage(error);
+      return this.logAndRenderErrorPage(error);
     }
   }
 
@@ -170,11 +221,7 @@ export class OauthController {
           statusCode: HttpStatus.FOUND,
         } satisfies HttpRedirectResponse;
       } catch (error) {
-        this.logger.info(
-          "Unhandled error during submitting OAuth prompt submission (denied)",
-          error,
-        );
-        return this.renderErrorPage(error);
+        return this.logAndRenderErrorPage(error);
       }
     }
 
@@ -215,11 +262,7 @@ export class OauthController {
             statusCode: HttpStatus.FOUND,
           } satisfies HttpRedirectResponse;
         }
-        this.logger.error(
-          "Unhandled error during submitting OAuth prompt submission (authorized)",
-          error,
-        );
-        return this.renderErrorPage(
+        return this.logAndRenderErrorPage(
           error,
           `/oauth/prompt?request_id=${body.request_id}`,
         );
@@ -227,55 +270,6 @@ export class OauthController {
     }
 
     throw new BadRequestException("Unknown user choice");
-  }
-
-  private renderErrorPage(exception: unknown, returnUrl?: string) {
-    Assert(exception instanceof Error);
-
-    const serializeException = (exception: Error) => {
-      // @ts-expect-error format stack in more readable way, without overthinking it
-      exception.stack = exception.stack
-        ? exception.stack.split("\n").map((str) => str.trim())
-        : exception.stack;
-      return this.appConfig.nodeEnv === "development"
-        ? JSON.stringify(exception, Object.getOwnPropertyNames(exception), 2)
-        : undefined;
-    };
-
-    if (exception instanceof OauthException) {
-      return this.templateService.renderTemplate(
-        path.join(__dirname, "template", "error.html"),
-        {
-          errorCode: exception.statusCode,
-          errorTitle: exception.errorCode,
-          errorDescription: exception.errorDescription,
-          errorDetails: serializeException(exception),
-          returnUrl: returnUrl,
-        },
-      );
-    }
-
-    if (exception instanceof HttpException) {
-      return this.templateService.renderTemplate(
-        path.join(__dirname, "template", "error.html"),
-        {
-          errorCode: exception.getStatus(),
-          errorTitle: exception.name,
-          errorDetails: serializeException(exception),
-          returnUrl: returnUrl,
-        },
-      );
-    }
-
-    return this.templateService.renderTemplate(
-      path.join(__dirname, "template", "error.html"),
-      {
-        errorCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        errorTitle: InternalServerErrorException.name,
-        errorDetails: serializeException(exception),
-        returnUrl: returnUrl,
-      },
-    );
   }
 
   @Post("token")
@@ -299,7 +293,7 @@ export class OauthController {
   })
   async token(@Body() body: TokenRequestDto): Promise<TokenResponseDto> {
     if (body.grant_type === "authorization_code") {
-      Assert(
+      assert(
         IdentityValue.isValid(body.client_id),
         () =>
           new OauthInvalidRequestException({
@@ -307,7 +301,7 @@ export class OauthController {
           }),
       );
 
-      Assert(
+      assert(
         typeof body.code === "string" && body.code.length > 0,
         () =>
           new OauthInvalidRequestException({
@@ -315,7 +309,7 @@ export class OauthController {
           }),
       );
 
-      Assert(
+      assert(
         typeof body.code_verifier === "string" ||
           this.appConfig.nodeEnv !== "production",
         () =>
@@ -347,7 +341,7 @@ export class OauthController {
       } satisfies TokenResponseDto;
     }
     if (body.grant_type === "refresh_token") {
-      Assert(
+      assert(
         typeof body.refresh_token === "string" && body.refresh_token.length > 0,
         () =>
           new OauthInvalidRequestException({
@@ -376,5 +370,76 @@ export class OauthController {
       } satisfies TokenResponseDto;
     }
     throw new OauthUnsupportedGrantTypeException();
+  }
+
+  private logAndRenderErrorPage(exception: unknown, returnUrl?: string) {
+    assert(
+      exception instanceof Error,
+      () =>
+        new InternalServerErrorException(
+          "Error page received value that is not instance of Error",
+          {
+            cause: exception,
+          },
+        ),
+    );
+
+    this.logger.error("Error in OAuth controller", exception);
+
+    if (exception instanceof HttpException) {
+      return this.defaultLayoutService.renderPageBuilder(
+        this.defaultLayoutService
+          .createPageBuilder()
+          .header({
+            title: `Error | ${this.htmlConfig.projectTitle}`,
+            headerTitle: "Oops! Something went wrong",
+            headerSubtitle: "We encountered an unexpected error",
+          })
+          .error({
+            errorMessage: "Error has been logged. We are looking into it",
+            errorName: exception.name,
+            errorStatus: exception.getStatus(),
+            errorDetails: exceptionAsJsonString(exception, this.appConfig),
+          })
+          .actions({
+            actions: returnUrl
+              ? [
+                  {
+                    class: "btn-primary",
+                    href: returnUrl,
+                    text: "Return",
+                  },
+                ]
+              : [],
+          }),
+      );
+    }
+
+    return this.defaultLayoutService.renderPageBuilder(
+      this.defaultLayoutService
+        .createPageBuilder()
+        .header({
+          title: `Error | ${this.htmlConfig.projectTitle}`,
+          headerTitle: "Oops! Something went wrong",
+          headerSubtitle: "We encountered an unexpected error",
+        })
+        .error({
+          errorMessage: "Error has been logged. We are looking into it",
+          errorName: InternalServerErrorException.name,
+          errorStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+          errorDetails: exceptionAsJsonString(exception, this.appConfig),
+        })
+        .actions({
+          actions: returnUrl
+            ? [
+                {
+                  class: "btn-primary",
+                  href: returnUrl,
+                  text: "Return",
+                },
+              ]
+            : [],
+        }),
+    );
   }
 }

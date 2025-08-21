@@ -6,12 +6,14 @@
     "deleteOutDir": true,
     "assets": [
       {
-        "include":"**/*.html",
-        "outDir":"dist/src"
+        "include": "**/*.html",
+        "outDir": "dist/src",
+        "watchAssets": true
       },
       {
-        "include":"test/keys/**/*",
-        "outDir":"dist/src"
+        "include": "test/keys/**/*",
+        "outDir": "dist/src",
+        "watchAssets": true
       }
     ]
   }

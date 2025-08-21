@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import * as fs from "fs";
 import * as Handlebars from "handlebars";
 
+import { HtmlConfig } from "@infrastructure/config/configs";
 import { TemplateInterface } from "@interface/api/Template.interface";
 
 @Injectable()
@@ -11,10 +12,15 @@ export class TemplateService implements TemplateInterface {
     HandlebarsTemplateDelegate
   >();
 
-  async renderTemplate(
-    path: string,
-    data: Record<string, unknown>,
-  ): Promise<string> {
+  constructor(private readonly htmlConfig: HtmlConfig) {}
+
+  async renderTemplate({
+    path,
+    data,
+  }: {
+    path: string;
+    data: Record<string, unknown>;
+  }): Promise<string> {
     const template = await this.getTemplate(path);
     return template(data);
   }
@@ -22,7 +28,7 @@ export class TemplateService implements TemplateInterface {
   private async getTemplate(
     templatePath: string,
   ): Promise<HandlebarsTemplateDelegate> {
-    if (this.templateCache.has(templatePath)) {
+    if (this.htmlConfig.templateCache && this.templateCache.has(templatePath)) {
       return this.templateCache.get(templatePath)!;
     }
 

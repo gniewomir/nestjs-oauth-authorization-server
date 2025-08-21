@@ -1,5 +1,13 @@
 export interface TemplateInterface {
-  renderTemplate(path: string, data: Record<string, unknown>): Promise<string>;
+  renderTemplate({
+    path,
+    data,
+    cacheKey,
+  }: {
+    path: string;
+    data: Record<string, unknown>;
+    cacheKey?: string;
+  }): Promise<string>;
 }
 
 export const TemplateInterfaceSymbol = Symbol.for("TemplateInterface");
