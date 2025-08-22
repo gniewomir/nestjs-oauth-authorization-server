@@ -15,8 +15,10 @@ import { User as DatabaseUser } from "@infrastructure/database/entities";
 import { Context as DatabaseContext } from "@infrastructure/database/entities/context.entity";
 import { Goal as DatabaseGoal } from "@infrastructure/database/entities/goal.entity";
 import { Task as DatabaseTask } from "@infrastructure/database/entities/task.entity";
-import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository";
-import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
+import {
+  UserDomainRepository,
+  UserDomainRepositoryModule,
+} from "@infrastructure/repositories/domain/authentication/OAuth";
 import { ContextsDomainRepository } from "@infrastructure/repositories/domain/tasks/Contexts/Contexts.domain-repository";
 import { ContextsDomainRepositoryModule } from "@infrastructure/repositories/domain/tasks/Contexts/Contexts.domain-repository.module";
 import { GoalsDomainRepository } from "@infrastructure/repositories/domain/tasks/Goals/Goals.domain-repository";

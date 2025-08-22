@@ -2,14 +2,16 @@ import { clientMother } from "@test/domain/authentication/Client.mother";
 import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import { userMother } from "@test/domain/authentication/User.mother";
 
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { AuthConfig } from "@infrastructure/config/configs";
 import { plainToConfig } from "@infrastructure/config/utility";
-import { ClientDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.in-memory";
-import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.in-memory";
-import { UserDomainRepositoryInMemory } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.in-memory";
+import {
+  ClientDomainRepositoryInMemory,
+  RequestDomainRepositoryInMemory,
+  UserDomainRepositoryInMemory,
+} from "@infrastructure/repositories/domain/authentication/OAuth";
 import { AuthorizationCodeService } from "@infrastructure/security/authorization-code/authorization-code.service";
 import { JwtServiceFake } from "@infrastructure/security/jwt";
 import { PasswordService } from "@infrastructure/security/password";

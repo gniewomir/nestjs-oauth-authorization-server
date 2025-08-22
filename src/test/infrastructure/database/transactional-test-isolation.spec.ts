@@ -6,7 +6,7 @@ import { DataSource } from "typeorm";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
 import { User as DatabaseUser } from "@infrastructure/database/entities/user.entity";
-import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User";
+import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth";
 
 /**
  * Correct results only when database is completely empty

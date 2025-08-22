@@ -4,15 +4,21 @@ import { clientMother, userMother } from "@test/domain/authentication";
 import { rememberMeTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 
 import { cliBootstrap } from "@application/app";
-import { ClientInterfaceSymbol } from "@domain/auth/OAuth/Client/Client.interface";
-import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
-import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
-import { PasswordInterfaceSymbol } from "@domain/auth/OAuth/User/Credentials/Password.interface";
-import { PasswordValue } from "@domain/auth/OAuth/User/Credentials/PasswordValue";
-import { UsersInterfaceSymbol } from "@domain/auth/OAuth/User/Users.interface";
+import {
+  ClientInterfaceSymbol,
+  RedirectUriValue,
+} from "@domain/auth/OAuth/Client";
+import { UsersInterfaceSymbol } from "@domain/auth/OAuth/User";
+import {
+  EmailValue,
+  PasswordInterfaceSymbol,
+  PasswordValue,
+} from "@domain/auth/OAuth/User/Credentials";
 import { IdentityValue } from "@domain/IdentityValue";
-import { ClientDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/Client";
-import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User";
+import {
+  ClientDomainRepository,
+  UserDomainRepository,
+} from "@infrastructure/repositories/domain/authentication/OAuth";
 import { PasswordService } from "@infrastructure/security/password";
 import { SeedModule } from "@interface/cli/seed/seed.module";
 

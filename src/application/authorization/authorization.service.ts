@@ -27,26 +27,20 @@ import {
   OauthInvalidRequestException,
   OauthServerErrorException,
 } from "@domain/auth/OAuth/Errors";
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import {
   TokenPayloadInterfaceSymbol,
   TokenPayloadsInterface,
-} from "@domain/auth/OAuth/Token/TokenPayloads.interface";
+} from "@domain/auth/OAuth/Token";
+import { UsersInterface, UsersInterfaceSymbol } from "@domain/auth/OAuth/User";
 import {
   EmailSanitizerInterface,
   EmailSanitizerInterfaceSymbol,
-} from "@domain/auth/OAuth/User/Credentials/EmailSanitizer.interface";
-import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
-import {
+  EmailValue,
   PasswordInterface,
   PasswordInterfaceSymbol,
-} from "@domain/auth/OAuth/User/Credentials/Password.interface";
-import { PasswordValue } from "@domain/auth/OAuth/User/Credentials/PasswordValue";
-import {
-  UsersInterface,
-  UsersInterfaceSymbol,
-} from "@domain/auth/OAuth/User/Users.interface";
+  PasswordValue,
+} from "@domain/auth/OAuth/User/Credentials";
 import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";

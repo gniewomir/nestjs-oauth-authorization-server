@@ -1,7 +1,6 @@
 import { Assert } from "@domain/Assert";
-import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import { RedirectUriValue } from "@domain/auth/OAuth/Client";
+import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export type TClientConstructorArgs = ConstructorParameters<typeof Client>;

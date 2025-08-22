@@ -2,8 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Provider } from "@nestjs/common/interfaces/modules/provider.interface";
 import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
 
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 
 import { ConfigService } from "../config.service";
 

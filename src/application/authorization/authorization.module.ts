@@ -2,10 +2,12 @@ import { Module } from "@nestjs/common";
 
 import { ClockModule } from "@infrastructure/clock";
 import { ConfigModule } from "@infrastructure/config";
-import { ClientDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/Client/Client.domain-repository.module";
-import { RequestDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/Request/Request.domain-repository.module";
-import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
-import { AuthorizationCodeModule } from "@infrastructure/security/authorization-code/authorization-code.module";
+import {
+  ClientDomainRepositoryModule,
+  RequestDomainRepositoryModule,
+  UserDomainRepositoryModule,
+} from "@infrastructure/repositories/domain/authentication/OAuth";
+import { AuthorizationCodeModule } from "@infrastructure/security/authorization-code";
 import { EmailSanitizerModule } from "@infrastructure/security/email";
 import { JwtModule } from "@infrastructure/security/jwt";
 import { PasswordModule } from "@infrastructure/security/password";

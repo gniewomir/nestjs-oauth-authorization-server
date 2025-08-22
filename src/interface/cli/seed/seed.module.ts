@@ -3,8 +3,10 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
 import { LoggerModule } from "@infrastructure/logger";
-import { ClientDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/Client";
-import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User";
+import {
+  ClientDomainRepositoryModule,
+  UserDomainRepositoryModule,
+} from "@infrastructure/repositories/domain/authentication/OAuth";
 import { PasswordModule } from "@infrastructure/security/password";
 
 @Module({

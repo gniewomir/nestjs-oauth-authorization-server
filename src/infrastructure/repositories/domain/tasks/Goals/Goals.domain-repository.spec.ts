@@ -13,8 +13,10 @@ import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
 import { User as DatabaseUser } from "@infrastructure/database/entities";
 import { Goal as DatabaseGoal } from "@infrastructure/database/entities/goal.entity";
-import { UserDomainRepository } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository";
-import { UserDomainRepositoryModule } from "@infrastructure/repositories/domain/authentication/OAuth/User/User.domain-repository.module";
+import {
+  UserDomainRepository,
+  UserDomainRepositoryModule,
+} from "@infrastructure/repositories/domain/authentication/OAuth";
 import { GoalsDomainRepositoryModule } from "@infrastructure/repositories/domain/tasks/Goals/Goals.domain-repository.module";
 
 import { GoalsDomainRepository } from "./Goals.domain-repository";

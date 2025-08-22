@@ -1,3 +1,5 @@
+import { cloneDeep } from "lodash";
+
 import { Assert } from "@domain/Assert";
 import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
 import { UserEmailFoundException } from "@domain/auth/OAuth/User/Errors/UserEmailFoundException";
@@ -54,7 +56,7 @@ export class User {
     refreshToken: RefreshTokenValue,
     clock: ClockInterface,
   ): void {
-    const nonExpired = this._refreshTokens.filter(
+    const nonExpired = cloneDeep(this._refreshTokens).filter(
       (token) => token.exp > clock.nowAsSecondsSinceEpoch(),
     );
     const onlyOtherClients = nonExpired.filter(

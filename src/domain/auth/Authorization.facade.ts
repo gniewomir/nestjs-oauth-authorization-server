@@ -1,14 +1,15 @@
 import { Assert } from "@domain/Assert";
-import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
-import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
-import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
-import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
-import { PKCEInterface } from "@domain/auth/OAuth/Authorization/PKCE/PKCE.interface";
-import { Request } from "@domain/auth/OAuth/Authorization/Request";
-import { RequestInterface } from "@domain/auth/OAuth/Authorization/Request.interface";
-import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
-import { Client } from "@domain/auth/OAuth/Client/Client";
-import { ClientInterface } from "@domain/auth/OAuth/Client/Client.interface";
+import {
+  Code,
+  CodeChallengeMethodValue,
+  CodeInterface,
+  IntentValue,
+  PKCEInterface,
+  Request,
+  RequestInterface,
+  ResponseTypeValue,
+} from "@domain/auth/OAuth/Authorization";
+import { Client, ClientInterface } from "@domain/auth/OAuth/Client";
 import {
   OauthInvalidClientException,
   OauthInvalidCredentialsException,
@@ -19,19 +20,26 @@ import {
   OauthServerErrorException,
   OauthTokenExpiredException,
 } from "@domain/auth/OAuth/Errors";
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
-import { IdTokenPayload } from "@domain/auth/OAuth/Token/IdTokenPayload";
-import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
-import { TokenPayloadsInterface } from "@domain/auth/OAuth/Token/TokenPayloads.interface";
-import { EmailValue } from "@domain/auth/OAuth/User/Credentials/EmailValue";
-import { PasswordInterface } from "@domain/auth/OAuth/User/Credentials/Password.interface";
-import { PasswordValue } from "@domain/auth/OAuth/User/Credentials/PasswordValue";
-import { UserEmailNotFoundException } from "@domain/auth/OAuth/User/Errors/UserEmailNotFoundException";
-import { UserPasswordMismatchException } from "@domain/auth/OAuth/User/Errors/UserPasswordMismatchException";
-import { UniqueEmailSpecification } from "@domain/auth/OAuth/User/UniqueEmail.specification";
-import { User } from "@domain/auth/OAuth/User/User";
-import { UsersInterface } from "@domain/auth/OAuth/User/Users.interface";
+import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
+import {
+  IdTokenPayload,
+  TokenPayload,
+  TokenPayloadsInterface,
+} from "@domain/auth/OAuth/Token";
+import {
+  UniqueEmailSpecification,
+  User,
+  UsersInterface,
+} from "@domain/auth/OAuth/User";
+import {
+  EmailValue,
+  PasswordInterface,
+  PasswordValue,
+} from "@domain/auth/OAuth/User/Credentials";
+import {
+  UserEmailNotFoundException,
+  UserPasswordMismatchException,
+} from "@domain/auth/OAuth/User/Errors";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";

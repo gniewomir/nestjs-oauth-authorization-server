@@ -1,11 +1,10 @@
 import { Assert } from "@domain/Assert";
-import { Client } from "@domain/auth/OAuth/Client/Client";
+import { NumericDateValue } from "@domain/auth/OAuth";
+import { Client } from "@domain/auth/OAuth/Client";
 import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
-import { NumericDateValue } from "@domain/auth/OAuth/NumericDateValue";
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
-import { TokenPayloadsInterface } from "@domain/auth/OAuth/Token/TokenPayloads.interface";
-import { User } from "@domain/auth/OAuth/User/User";
+import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
+import { TokenPayloadsInterface } from "@domain/auth/OAuth/Token";
+import { User } from "@domain/auth/OAuth/User";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthConfig } from "@infrastructure/config/configs";

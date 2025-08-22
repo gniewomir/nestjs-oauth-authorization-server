@@ -2,10 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { Client } from "@domain/auth/OAuth/Client/Client";
-import { ClientInterface } from "@domain/auth/OAuth/Client/Client.interface";
-import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import {
+  Client,
+  ClientInterface,
+  RedirectUriValue,
+} from "@domain/auth/OAuth/Client";
+import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
 import { AssertFound } from "@infrastructure/repositories/AssertFound";

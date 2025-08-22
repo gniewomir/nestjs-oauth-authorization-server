@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 
 import { DevApiModule } from "@interface/api/dev";
-import { OauthApiModule } from "@interface/api/oauth/oauth-api.module";
+import { OauthApiModule } from "@interface/api/oauth";
 
 import { StatusApiModule } from "./status";
 

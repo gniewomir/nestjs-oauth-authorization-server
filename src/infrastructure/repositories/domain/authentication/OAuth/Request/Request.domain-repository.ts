@@ -2,15 +2,17 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
-import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
-import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
-import { Request as DomainRequest } from "@domain/auth/OAuth/Authorization/Request";
-import { RequestInterface } from "@domain/auth/OAuth/Authorization/Request.interface";
-import { ResolutionValue } from "@domain/auth/OAuth/Authorization/ResolutionValue";
-import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
-import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import {
+  Code,
+  CodeChallengeMethodValue,
+  IntentValue,
+  Request as DomainRequest,
+  RequestInterface,
+  ResolutionValue,
+  ResponseTypeValue,
+} from "@domain/auth/OAuth/Authorization";
+import { RedirectUriValue } from "@domain/auth/OAuth/Client";
+import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";
 import { AssertFound } from "@infrastructure/repositories/AssertFound";

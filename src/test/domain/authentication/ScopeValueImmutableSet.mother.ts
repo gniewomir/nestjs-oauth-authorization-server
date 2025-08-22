@@ -1,5 +1,4 @@
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
-import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 
 export const defaultTestClientScopesMother = () => {
   return ScopeValueImmutableSet.fromArray([
