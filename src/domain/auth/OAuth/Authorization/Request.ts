@@ -1,7 +1,9 @@
 import { Assert } from "@domain/Assert";
 import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
+import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { ResolutionValue } from "@domain/auth/OAuth/Authorization/ResolutionValue";
 import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
 import { Client } from "@domain/auth/OAuth/Client/Client";
 import { ClientInterface } from "@domain/auth/OAuth/Client/Client.interface";
@@ -27,6 +29,8 @@ export class Request {
   public readonly codeChallengeMethod: CodeChallengeMethodValue;
   public readonly scope: ScopeValueImmutableSet;
   public readonly responseType: ResponseTypeValue;
+  public readonly intent: IntentValue | null;
+  public readonly resolution: ResolutionValue;
 
   constructor(params: {
     id: IdentityValue;
@@ -38,6 +42,8 @@ export class Request {
     codeChallenge: string;
     codeChallengeMethod: CodeChallengeMethodValue;
     authorizationCode: Code | null;
+    intent: IntentValue | null;
+    resolution: ResolutionValue;
   }) {
     Assert(
       params.responseType.isEqual(ResponseTypeValue.TYPE_CODE()),
@@ -52,6 +58,7 @@ export class Request {
     this.codeChallenge = params.codeChallenge;
     this.codeChallengeMethod = params.codeChallengeMethod;
     this._authorizationCode = params.authorizationCode;
+    this.resolution = params.resolution;
   }
 
   private _authorizationCode: Code | null;
@@ -61,15 +68,19 @@ export class Request {
   }
 
   public static async create(
-    params: Omit<TRequestConstructorParam, "authorizationCode">,
+    params: Omit<TRequestConstructorParam, "authorizationCode" | "resolution">,
     clientInterface: ClientInterface,
   ) {
     Assert(
       (await clientInterface.retrieve(params.clientId)) instanceof Client,
-      "OAuth client does not exist",
+      () =>
+        new OauthInvalidCredentialsException({
+          message: "OAuth client does not exist",
+        }),
     );
     return new Request({
       ...params,
+      resolution: ResolutionValue.PENDING(),
       authorizationCode: null,
     });
   }
@@ -80,6 +91,14 @@ export class Request {
     clock: ClockInterface,
     authConfig: AuthConfig,
   ) {
+    Assert(
+      this.resolution.isNotResolved(),
+      () =>
+        new OauthInvalidRequestException({
+          message:
+            "Cannot issue authorization code for already resolved authorization request",
+        }),
+    );
     this._authorizationCode = Code.create(
       userId,
       authorizationCodeInterface,

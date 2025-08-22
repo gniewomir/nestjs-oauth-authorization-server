@@ -1,6 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
+import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
+import { CodeChallengeMethodsEnum } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+
 export class AuthorizeRequestDto {
   @ApiProperty({
     description: "OAuth client identifier",
@@ -45,11 +48,22 @@ export class AuthorizeRequestDto {
   code_challenge: string;
 
   @ApiProperty({
-    description: 'PKCE code challenge method (must be "S256")',
-    example: "S256",
-    enum: ["S256", "plain"],
+    description: `PKCE code challenge method (must be "${CodeChallengeMethodsEnum.S256.toString()}")`,
+    example: CodeChallengeMethodsEnum.S256.toString(),
+    enum: Object.values(CodeChallengeMethodsEnum).map((val) => val.toString()),
   })
   @IsString()
-  @IsIn(["S256", "plain"])
+  @IsIn(Object.values(CodeChallengeMethodsEnum).map((val) => val.toString()))
   code_challenge_method: string;
+
+  @ApiProperty({
+    description:
+      `Non standard property to indicate,` +
+      ` if user should presented with registration or authorization form.`,
+    example: IntentEnum.AUTHORIZE_NEW_USER.toString(),
+    enum: Object.values(IntentEnum).map((val) => val.toString()),
+  })
+  @IsString()
+  @IsIn(Object.values(IntentEnum).map((val) => val.toString()))
+  intent: string;
 }

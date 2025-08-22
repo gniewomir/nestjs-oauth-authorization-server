@@ -19,7 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:manual:seed": "npm run tsnode -- src/interface/cli/seed/bootstrap.ts",
+    "test:seed": "npm run tsnode -- src/interface/cli/seed/bootstrap.ts",
     "env:default:show": "npm run tsnode -- src/interface/cli/env/bootstrap.ts default",
     "env:merge:show": "npm run tsnode -- src/interface/cli/env/bootstrap.ts merge",
     "env:default:save": "bash ./bin/default-env.sh",

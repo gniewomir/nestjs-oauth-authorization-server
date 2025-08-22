@@ -84,7 +84,7 @@ describe("AuthorizationFacade", () => {
       ).rejects.toThrow("Requested scope unavailable for provided client");
     });
   });
-  describe("prompt", () => {
+  describe("authorizePrompt", () => {
     it("accepts valid user credentials & creates authorization code", async () => {
       const {
         requests,
@@ -106,7 +106,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      await AuthorizationFacade.prompt(
+      await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {
@@ -151,7 +151,7 @@ describe("AuthorizationFacade", () => {
       );
 
       await expect(() =>
-        AuthorizationFacade.prompt(
+        AuthorizationFacade.authorizePrompt(
           {
             requestId,
             credentials: {
@@ -193,7 +193,7 @@ describe("AuthorizationFacade", () => {
       );
 
       await expect(() =>
-        AuthorizationFacade.prompt(
+        AuthorizationFacade.authorizePrompt(
           {
             requestId,
             credentials: {
@@ -245,7 +245,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } = await AuthorizationFacade.prompt(
+      const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {
@@ -332,7 +332,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } = await AuthorizationFacade.prompt(
+      const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {
@@ -417,7 +417,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } = await AuthorizationFacade.prompt(
+      const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {
@@ -498,7 +498,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } = await AuthorizationFacade.prompt(
+      const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {
@@ -568,7 +568,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } = await AuthorizationFacade.prompt(
+      const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {
@@ -637,7 +637,7 @@ describe("AuthorizationFacade", () => {
         clients,
       );
 
-      const { authorizationCode } = await AuthorizationFacade.prompt(
+      const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
         {
           requestId,
           credentials: {

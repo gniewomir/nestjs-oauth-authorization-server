@@ -6,6 +6,7 @@ import {
   Request,
   TRequestConstructorParam,
 } from "@domain/auth/OAuth/Authorization/Request";
+import { ResolutionValue } from "@domain/auth/OAuth/Authorization/ResolutionValue";
 import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
 import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
 import { IdentityValue } from "@domain/IdentityValue";
@@ -26,6 +27,8 @@ export const requestMother = (
     codeChallenge: randomString(),
     codeChallengeMethod: CodeChallengeMethodValue.METHOD_S256(),
     authorizationCode: null,
+    intent: null,
+    resolution: ResolutionValue.PENDING(),
     ...params,
   });
 };

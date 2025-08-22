@@ -17,7 +17,7 @@ import { PasswordService } from "@infrastructure/security/password";
 import { SeedModule } from "@interface/cli/seed/seed.module";
 
 void cliBootstrap({
-  name: "test:manual:seed",
+  name: "test:seed",
   baseModule: SeedModule,
   payload: async ({ application, logger, appConfig }) => {
     assert(

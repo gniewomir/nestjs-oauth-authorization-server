@@ -48,7 +48,7 @@ $ npm run test
 ```shell
 $ nvm use
 # seed database with example oauth client and user (not credentials in console)
-$ npm run test:manual:seed
+$ npm run test:seed
 # update env
 $ sed -i '/OPENAPI_EXPOSED=false/c\OPENAPI_EXPOSED=true' .env
 $ sed -i '/NODE_ENV=production/c\NODE_ENV=development' .env

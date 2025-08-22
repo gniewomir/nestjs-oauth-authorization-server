@@ -7,7 +7,12 @@ import { IdentityValue } from "@domain/IdentityValue";
 
 export class AdminFacade {
   public static async registerOauthClient(
-    { name, scope, redirectUri }: Omit<TClientConstructorParam, "id">,
+    {
+      name,
+      scope,
+      redirectUri,
+      registration,
+    }: Omit<TClientConstructorParam, "id">,
     clients: ClientInterface,
   ): Promise<void> {
     await clients.persist(
@@ -15,6 +20,7 @@ export class AdminFacade {
         name,
         scope,
         redirectUri,
+        registration,
         id: IdentityValue.create(),
       }),
     );

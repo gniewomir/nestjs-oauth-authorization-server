@@ -48,7 +48,7 @@ export const createAuthenticationTestContext = async (
     clients,
   );
 
-  const { authorizationCode } = await AuthorizationFacade.prompt(
+  const { authorizationCode } = await AuthorizationFacade.authorizePrompt(
     {
       requestId,
       credentials: {

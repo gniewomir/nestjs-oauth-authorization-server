@@ -13,6 +13,7 @@ type TFormField = {
   required: boolean;
   error?: string;
   tip?: string;
+  value?: string;
 };
 
 type TFormAction = {
@@ -38,19 +39,17 @@ type THeaderOptions = {
 };
 
 type TFormOptions = {
-  form: boolean;
   formTitle: string;
   formAction: string;
   formId: string;
   formHiddenFields: TFormHiddenField[];
   formFields: TFormField[];
-  rememberMe: boolean;
+  rememberMe?: boolean;
   infoBox?: TInfoBox;
   formActions: TFormAction[];
 };
 
 type TErrorOptions = {
-  error: true;
   errorStatus: number;
   errorName: string;
   errorMessage?: string;
@@ -91,20 +90,18 @@ export class DefaultLayoutBuilder {
     return this;
   }
 
-  form(options: Omit<TFormOptions, "form">): this {
+  form(options: TFormOptions): this {
     this.data = {
       ...this.data,
       ...options,
-      form: true,
     };
     return this;
   }
 
-  error(options: Omit<TErrorOptions, "error">): this {
+  error(options: TErrorOptions): this {
     this.data = {
       ...this.data,
       ...options,
-      error: true,
     };
     return this;
   }
@@ -113,7 +110,6 @@ export class DefaultLayoutBuilder {
     this.data = {
       ...this.data,
       ...options,
-      error: true,
     };
     return this;
   }

@@ -1,7 +1,6 @@
 import { BadRequestException, Controller, Get } from "@nestjs/common";
 import { v4 } from "uuid";
 
-import { AppConfig } from "@infrastructure/config/configs";
 import { DefaultLayoutService } from "@infrastructure/template";
 import { exceptionAsJsonString } from "@interface/api/utility/exception";
 
@@ -97,7 +96,6 @@ export class DevController {
               cause: "something",
               description: "something",
             }),
-            { nodeEnv: "development" } as unknown as AppConfig,
           ),
         })
         .actions({

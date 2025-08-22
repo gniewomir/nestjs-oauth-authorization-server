@@ -7,6 +7,7 @@ import {
   CodeInterface,
   CodeInterfaceSymbol,
 } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
+import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import {
   PKCEInterface,
@@ -22,11 +23,16 @@ import {
   ClientInterfaceSymbol,
 } from "@domain/auth/OAuth/Client/Client.interface";
 import {
+  OauthAccessDeniedException,
   OauthInvalidRequestException,
   OauthServerErrorException,
 } from "@domain/auth/OAuth/Errors";
 import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
+import {
+  TokenPayloadInterfaceSymbol,
+  TokenPayloadsInterface,
+} from "@domain/auth/OAuth/Token/TokenPayloads.interface";
 import {
   EmailSanitizerInterface,
   EmailSanitizerInterfaceSymbol,
@@ -45,6 +51,7 @@ import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
+import { assert } from "@interface/api/utility/assert";
 
 @Injectable()
 export class AuthorizationService {
@@ -78,6 +85,7 @@ export class AuthorizationService {
     state,
     codeChallenge,
     codeChallengeMethod,
+    intent,
   }: {
     clientId: string;
     responseType: string;
@@ -85,9 +93,8 @@ export class AuthorizationService {
     state?: string;
     codeChallengeMethod?: string;
     codeChallenge?: string;
-  }): Promise<{
-    requestId: string;
-  }> {
+    intent?: string;
+  }) {
     Assert(
       IdentityValue.isValid(clientId),
       () =>
@@ -97,13 +104,15 @@ export class AuthorizationService {
     );
     Assert(
       this.appConfig.nodeEnv !== "production" ||
-        (!!codeChallenge &&
-          CodeChallengeMethodValue.fromUnknown(codeChallengeMethod).isEqual(
-            CodeChallengeMethodValue.METHOD_S256(),
-          )),
+        Boolean(
+          codeChallenge &&
+            CodeChallengeMethodValue.fromUnknown(codeChallengeMethod).isEqual(
+              CodeChallengeMethodValue.METHOD_S256(),
+            ),
+        ),
       () =>
         new OauthInvalidRequestException({
-          errorDescription: `PKCE is mandatory outside testing and development`,
+          errorDescription: `PKCE using ${CodeChallengeMethodValue.METHOD_S256().toString()} method is mandatory outside testing and development`,
         }),
     );
     Assert(
@@ -113,6 +122,7 @@ export class AuthorizationService {
           errorDescription: `No scope in request`,
         }),
     );
+
     const request = await AuthorizationFacade.request(
       {
         clientId: IdentityValue.fromString(clientId),
@@ -126,6 +136,7 @@ export class AuthorizationService {
         codeChallengeMethod: codeChallengeMethod
           ? CodeChallengeMethodValue.fromUnknown(codeChallengeMethod)
           : CodeChallengeMethodValue.METHOD_NONE(),
+        intent: intent ? IntentValue.fromString(intent) : null,
       },
       this.requests,
       this.clients,
@@ -133,10 +144,18 @@ export class AuthorizationService {
 
     return {
       requestId: request.id.toString(),
+      intent: request.intent ? request.intent.toString() : undefined,
     };
   }
 
-  async prepareAuthorizationPrompt({ requestId }: { requestId: string }) {
+  async prepareAuthorizationPrompt({
+    requestId,
+    email,
+  }: {
+    requestId: string;
+    intent?: string;
+    email?: string;
+  }) {
     const request = await NotFoundToDomainException(
       () => this.requests.retrieve(IdentityValue.fromString(requestId)),
       () =>
@@ -152,12 +171,24 @@ export class AuthorizationService {
           message: error.message,
         }),
     );
+
+    const accessDeniedUrl = request.redirectUri.toURL();
+    accessDeniedUrl.searchParams.set("state", request.state);
+    accessDeniedUrl.searchParams.set(
+      "error",
+      OauthAccessDeniedException.ERROR_CODE,
+    );
+
     return {
       allowRememberMe: request.scope.hasScope(
         ScopeValue.TOKEN_REFRESH_ISSUE_LARGE_TTL(),
       ),
       requestedScopes: request.scope.describe(),
       clientName: client.name,
+      accessDeniedUrl: accessDeniedUrl.toString(),
+      sanitizedEmail: email
+        ? EmailValue.create(email, this.emailSanitizer).toString()
+        : undefined,
     };
   }
 
@@ -171,7 +202,7 @@ export class AuthorizationService {
   }): Promise<{
     redirectUriWithAuthorizationCodeAndState: string;
   }> {
-    const request = await AuthorizationFacade.prompt(
+    const request = await AuthorizationFacade.authorizePrompt(
       {
         requestId: IdentityValue.fromString(params.requestId),
         credentials: {
@@ -228,9 +259,34 @@ export class AuthorizationService {
     codeVerifier,
   }: {
     clientId: string;
-    code: string;
-    codeVerifier: string;
+    code: string | undefined;
+    codeVerifier: string | undefined;
   }) {
+    assert(
+      IdentityValue.isValid(clientId),
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "Invalid client ID",
+        }),
+    );
+
+    assert(
+      typeof code === "string" && code.length > 0,
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "No authorization code",
+        }),
+    );
+
+    assert(
+      (typeof codeVerifier === "string" && codeVerifier.length > 0) ||
+        this.appConfig.nodeEnv !== "production",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "No code verifier",
+        }),
+    );
+
     const { accessToken, idToken, expiresIn, refreshToken, scope } =
       await AuthorizationFacade.authorizationCodeGrant(
         {
@@ -257,7 +313,19 @@ export class AuthorizationService {
     };
   }
 
-  public async grantRefreshToken({ refreshToken }: { refreshToken: string }) {
+  public async grantRefreshToken({
+    refreshToken,
+  }: {
+    refreshToken: string | undefined;
+  }) {
+    assert(
+      typeof refreshToken === "string" && refreshToken.length > 0,
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: "No refresh token in request",
+        }),
+    );
+
     const {
       accessToken,
       refreshToken: newRefreshToken,

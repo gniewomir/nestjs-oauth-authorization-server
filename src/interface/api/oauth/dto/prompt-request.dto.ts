@@ -7,6 +7,8 @@ import {
   IsString,
 } from "class-validator";
 
+import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
+
 export class PromptRequestDto {
   @ApiProperty({
     description: "Authorization request identifier",
@@ -44,9 +46,20 @@ export class PromptRequestDto {
   @ApiProperty({
     description: "User choice - authorize or deny",
     example: "authorize",
-    required: true,
+    required: false,
     enum: ["authorize", "deny"],
   })
   @IsIn(["authorize", "deny"])
-  choice: string;
+  @IsOptional()
+  choice?: string;
+
+  @ApiProperty({
+    description: `Indicates if submission came from registration or authorization form`,
+    example: IntentEnum.AUTHORIZE_NEW_USER.toString(),
+    enum: Object.values(IntentEnum).map((val) => val.toString()),
+    required: true,
+  })
+  @IsString()
+  @IsIn(Object.values(IntentEnum).map((val) => val.toString()))
+  intent: string;
 }

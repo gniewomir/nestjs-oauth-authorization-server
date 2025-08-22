@@ -3,9 +3,11 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
+import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { Request as DomainRequest } from "@domain/auth/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/auth/OAuth/Authorization/Request.interface";
+import { ResolutionValue } from "@domain/auth/OAuth/Authorization/ResolutionValue";
 import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
 import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
@@ -66,6 +68,11 @@ export class RequestDomainRepository implements RequestInterface {
         databaseRequest.authorizationCode === null
           ? null
           : Code.fromUnknown(databaseRequest.authorizationCode),
+      intent:
+        databaseRequest.intent === null
+          ? null
+          : IntentValue.fromString(databaseRequest.intent),
+      resolution: ResolutionValue.fromString(databaseRequest.resolution),
     });
   }
 
@@ -82,6 +89,8 @@ export class RequestDomainRepository implements RequestInterface {
       codeChallengeMethod: domainRequest.codeChallengeMethod.toString(),
       scope: domainRequest.scope.toString(),
       authorizationCode: domainRequest.authorizationCode,
+      intent: domainRequest.intent ? domainRequest.intent.toString() : null,
+      resolution: domainRequest.resolution.toString(),
     };
   }
 }

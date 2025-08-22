@@ -12,7 +12,7 @@ const map: TUserCodesRecord = {
     "At least half of the characters in password have to be unique",
   "user-exists": "User with this email already exist",
   "unknown-email": "User with this email does not exist",
-  "unknown-password": "Password des not match our records",
+  "unknown-password": "Password does not match our records",
 };
 
 export const isEmailErrorCode = (

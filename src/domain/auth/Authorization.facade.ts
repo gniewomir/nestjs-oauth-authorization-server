@@ -1,6 +1,7 @@
 import { Assert } from "@domain/Assert";
 import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
+import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { PKCEInterface } from "@domain/auth/OAuth/Authorization/PKCE/PKCE.interface";
 import { Request } from "@domain/auth/OAuth/Authorization/Request";
@@ -28,6 +29,7 @@ import { PasswordInterface } from "@domain/auth/OAuth/User/Credentials/Password.
 import { PasswordValue } from "@domain/auth/OAuth/User/Credentials/PasswordValue";
 import { UserEmailNotFoundException } from "@domain/auth/OAuth/User/Errors/UserEmailNotFoundException";
 import { UserPasswordMismatchException } from "@domain/auth/OAuth/User/Errors/UserPasswordMismatchException";
+import { UniqueEmailSpecification } from "@domain/auth/OAuth/User/UniqueEmail.specification";
 import { User } from "@domain/auth/OAuth/User/User";
 import { UsersInterface } from "@domain/auth/OAuth/User/Users.interface";
 import { ClockInterface } from "@domain/Clock.interface";
@@ -54,6 +56,7 @@ export class AuthorizationFacade {
       state: string;
       codeChallenge: string;
       codeChallengeMethod: CodeChallengeMethodValue;
+      intent: IntentValue | null;
     },
     requests: RequestInterface,
     clients: ClientInterface,
@@ -86,7 +89,7 @@ export class AuthorizationFacade {
     return request;
   }
 
-  public static async prompt(
+  public static async authorizePrompt(
     params: {
       requestId: IdentityValue;
       credentials: {

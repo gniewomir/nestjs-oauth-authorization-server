@@ -57,6 +57,12 @@ export class AuthorizationRequest {
   })
   authorizationCode: Code | null;
 
+  @Column({ type: "varchar", length: 32, nullable: true })
+  intent: string | null;
+
+  @Column({ type: "varchar", length: 32 })
+  resolution: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
