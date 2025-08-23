@@ -29,7 +29,10 @@ import { ApiModule } from "@interface/api";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).forRoutes("*");
+    consumer
+      .apply(AuthenticationMiddleware)
+      .exclude("/status", "/oauth/*path")
+      .forRoutes("*");
     consumer.apply(AuthorizationMiddleware).forRoutes("*");
     consumer.apply(CsrfMiddleware).forRoutes("/oauth/prompt");
   }

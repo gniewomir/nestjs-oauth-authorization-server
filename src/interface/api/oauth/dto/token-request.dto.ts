@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsNotEmpty, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class TokenRequestDto {
   @ApiProperty({
@@ -18,6 +18,16 @@ export class TokenRequestDto {
   @IsString()
   @IsNotEmpty()
   client_id: string;
+
+  @ApiProperty({
+    description:
+      "Redirect URI (optional - must match registered client redirect URI)",
+    example: "https://client-website.com/callback",
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  redirect_uri?: string;
 
   @ApiProperty({
     description: "Authorization code (for authorization_code grant)",

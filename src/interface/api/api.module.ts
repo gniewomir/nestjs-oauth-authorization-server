@@ -1,12 +1,11 @@
 import { Module } from "@nestjs/common";
 
-import { DevApiModule } from "@interface/api/dev";
 import { OauthApiModule } from "@interface/api/oauth";
 
 import { StatusApiModule } from "./status";
 
 @Module({
-  imports: [DevApiModule, StatusApiModule, OauthApiModule],
+  imports: [StatusApiModule, OauthApiModule],
   controllers: [],
   providers: [],
 })

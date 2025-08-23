@@ -1,4 +1,7 @@
 import * as assert from "node:assert";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
 
 import { cliBootstrap } from "@application/app";
 import {
@@ -28,7 +31,9 @@ const envValue = (val: TRegisteredEnvVariable, command: string) => {
 };
 
 const render = (lines: string[]) => {
-  lines.forEach((line) => console.log(`${line.trim()}`));
+  return lines
+    .map((line) => `${line.trim()}${os.EOL}`)
+    .reduce((carry, val) => carry + val, "");
 };
 
 void cliBootstrap({
@@ -84,7 +89,7 @@ void cliBootstrap({
       {} as Record<string, string[]>,
     );
 
-    render([
+    const content = render([
       `# BEGIN ENV FILE`,
       "",
       `# NOTE: empty values i.e. "APP_PORT=" will fallback to default value.`,
@@ -92,6 +97,12 @@ void cliBootstrap({
       ...Object.values(envByConfig).flat(),
       `# END ENV FILE`,
     ]);
+    const file =
+      command === "merge"
+        ? path.join(__dirname, "..", "..", "..", "..", ".env")
+        : path.join(__dirname, "..", "..", "..", "..", ".env.dist");
+
+    fs.writeFileSync(file, content, "utf8");
 
     return Promise.resolve();
   },

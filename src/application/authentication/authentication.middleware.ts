@@ -26,15 +26,6 @@ export class AuthenticationMiddleware implements NestMiddleware {
       "Only https protocol is allowed in production environment.",
     );
 
-    /**
-     * Ref: https://expressjs.com/en/api.html#req.originalUrl
-     */
-    const path = req.originalUrl.split("?")[0];
-
-    if (this.isPathUnprotected(path)) {
-      return next();
-    }
-
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -55,21 +46,6 @@ export class AuthenticationMiddleware implements NestMiddleware {
         cause: error,
       });
     }
-  }
-
-  private isPathUnprotected(path: string): boolean {
-    return this.authConfig.unprotectedPaths.some((unprotectedPath) => {
-      // Exact match
-      if (unprotectedPath === path) {
-        return true;
-      }
-      // Wildcard match (if path ends with *)
-      if (unprotectedPath.endsWith("*")) {
-        const prefix = unprotectedPath.slice(0, -1);
-        return path.startsWith(prefix);
-      }
-      return false;
-    });
   }
 }
 

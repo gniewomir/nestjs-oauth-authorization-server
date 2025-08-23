@@ -82,6 +82,7 @@ export class OauthController {
       codeChallengeMethod: query.code_challenge_method,
       responseType: query.response_type,
       intent: query.intent,
+      redirectUri: query.redirect_uri,
     });
 
     res.redirect(
@@ -497,6 +498,7 @@ export class OauthController {
         clientId: body.client_id,
         code: body.code,
         codeVerifier: body.code_verifier,
+        redirectUri: body.redirect_uri,
       });
 
       return {

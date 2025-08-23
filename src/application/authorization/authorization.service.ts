@@ -22,9 +22,11 @@ import {
   ClientInterface,
   ClientInterfaceSymbol,
 } from "@domain/auth/OAuth/Client/Client.interface";
+import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
 import {
   OauthAccessDeniedException,
   OauthInvalidRequestException,
+  OauthRedirectUriMismatchException,
   OauthServerErrorException,
 } from "@domain/auth/OAuth/Errors";
 import { ScopeValue, ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
@@ -80,6 +82,7 @@ export class AuthorizationService {
     codeChallenge,
     codeChallengeMethod,
     intent,
+    redirectUri,
   }: {
     clientId: string;
     responseType: string;
@@ -88,6 +91,7 @@ export class AuthorizationService {
     codeChallengeMethod?: string;
     codeChallenge?: string;
     intent?: string;
+    redirectUri?: string;
   }) {
     Assert(
       IdentityValue.isValid(clientId),
@@ -118,6 +122,27 @@ export class AuthorizationService {
           errorDescription: `No scope in request`,
         }),
     );
+
+    // If redirect_uri is provided, validate it against the client's registered redirect URI
+    if (redirectUri) {
+      const client = await NotFoundToDomainException(
+        () => this.clients.retrieve(IdentityValue.fromString(clientId)),
+        (error) =>
+          new OauthServerErrorException({
+            message: error.message,
+          }),
+      );
+
+      const providedRedirectUri = RedirectUriValue.fromString(redirectUri);
+      Assert(
+        client.redirectUri.isEqual(providedRedirectUri),
+        () =>
+          new OauthRedirectUriMismatchException({
+            errorDescription:
+              "The redirect_uri provided in the request does not match the redirect_uri registered for the client application.",
+          }),
+      );
+    }
 
     const request = await AuthorizationFacade.request(
       {
@@ -252,10 +277,12 @@ export class AuthorizationService {
     clientId,
     code,
     codeVerifier,
+    redirectUri,
   }: {
     clientId: string;
     code: string | undefined;
     codeVerifier: string | undefined;
+    redirectUri: string | undefined;
   }) {
     assert(
       IdentityValue.isValid(clientId),
@@ -281,6 +308,27 @@ export class AuthorizationService {
           errorDescription: "No code verifier",
         }),
     );
+
+    // If redirect_uri is provided, validate it against the client's registered redirect URI
+    if (redirectUri) {
+      const client = await NotFoundToDomainException(
+        () => this.clients.retrieve(IdentityValue.fromString(clientId)),
+        (error) =>
+          new OauthServerErrorException({
+            message: error.message,
+          }),
+      );
+
+      const providedRedirectUri = RedirectUriValue.fromString(redirectUri);
+      Assert(
+        client.redirectUri.isEqual(providedRedirectUri),
+        () =>
+          new OauthRedirectUriMismatchException({
+            errorDescription:
+              "The redirect_uri provided in the request does not match the redirect_uri registered for the client application.",
+          }),
+      );
+    }
 
     const { accessToken, idToken, expiresIn, refreshToken, scope } =
       await AuthorizationFacade.authorizationCodeGrant(

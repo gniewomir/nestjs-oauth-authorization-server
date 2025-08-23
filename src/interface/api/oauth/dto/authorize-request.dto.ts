@@ -32,6 +32,16 @@ export class AuthorizeRequestDto {
 
   @ApiProperty({
     description:
+      "Redirect URI (optional - must match registered client redirect URI)",
+    example: "https://client-website.com/callback",
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  redirect_uri?: string;
+
+  @ApiProperty({
+    description:
       "State parameter for CSRF protection and keeping track of the request on the client side",
     example: "random-state-string",
     required: false,
