@@ -49,6 +49,7 @@ export class RequestDomainRepository implements RequestInterface {
   ): Promise<DomainRequest> {
     const result = await this.requestRepository
       .createQueryBuilder()
+      .setLock("pessimistic_write")
       .update(DatabaseRequest)
       .set({
         authorizationCode: () =>
