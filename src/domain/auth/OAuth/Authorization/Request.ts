@@ -106,23 +106,4 @@ export class Request {
       authConfig,
     );
   }
-
-  public useAuthorizationCode(code: string, clock: ClockInterface): void {
-    const knownCode = this._authorizationCode;
-    Assert(
-      knownCode !== null,
-      () =>
-        new OauthInvalidRequestException({
-          message:
-            "Authorization code was not yet issued for this authorization request",
-        }),
-    );
-    Assert(
-      knownCode.use(clock) === code,
-      () =>
-        new OauthInvalidCredentialsException({
-          message: "Failed authorization code verification",
-        }),
-    );
-  }
 }

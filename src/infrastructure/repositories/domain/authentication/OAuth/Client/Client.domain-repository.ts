@@ -10,7 +10,7 @@ import {
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { IdentityValue } from "@domain/IdentityValue";
 import { OauthClient as DatabaseClient } from "@infrastructure/database/entities/oauth-client.entity";
-import { AssertFound } from "@infrastructure/repositories/AssertFound";
+import { assertFound } from "@infrastructure/repositories/AssertFound";
 
 @Injectable()
 export class ClientDomainRepository implements ClientInterface {
@@ -29,7 +29,7 @@ export class ClientDomainRepository implements ClientInterface {
       where: { id: id.toString() },
     });
 
-    AssertFound(client, "Client not found");
+    assertFound(client, "Client not found");
 
     return this.mapToDomain(client);
   }

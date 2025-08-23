@@ -1,43 +1,32 @@
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
+import { DataSource, Repository } from "typeorm";
 
 import {
-  Code,
-  CodeChallengeMethodValue,
   IntentValue,
   Request as DomainRequest,
   RequestInterface,
   ResolutionValue,
   ResponseTypeValue,
 } from "@domain/auth/OAuth/Authorization";
+import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
+import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { RedirectUriValue } from "@domain/auth/OAuth/Client";
+import { OauthInvalidCredentialsException } from "@domain/auth/OAuth/Errors";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
+import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizationRequest as DatabaseRequest } from "@infrastructure/database/entities/authorization-request.entity";
-import { AssertFound } from "@infrastructure/repositories/AssertFound";
+import { assertFound } from "@infrastructure/repositories/AssertFound";
 
 @Injectable()
 export class RequestDomainRepository implements RequestInterface {
   constructor(
     @InjectRepository(DatabaseRequest)
     private readonly requestRepository: Repository<DatabaseRequest>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
-
-  async getByAuthorizationCode(
-    authorizationCode: string,
-  ): Promise<DomainRequest> {
-    const request = await this.requestRepository
-      .createQueryBuilder("request")
-      .where("request.\"authorizationCode\"->>'code' = :authorizationCode", {
-        authorizationCode,
-      })
-      .getOne();
-
-    AssertFound(request, "Authorization request not found");
-
-    return this.mapToDomain(request);
-  }
 
   async persist(authorizationRequest: DomainRequest): Promise<void> {
     const databaseRequest = this.mapToDatabase(authorizationRequest);
@@ -49,9 +38,39 @@ export class RequestDomainRepository implements RequestInterface {
       where: { id: id.toString() },
     });
 
-    AssertFound(request, "Authorization request not found");
+    assertFound(request, "Authorization request not found");
 
     return this.mapToDomain(request);
+  }
+
+  async useAuthorizationCodeAtomically(
+    authorizationCode: string,
+    clock: ClockInterface,
+  ): Promise<DomainRequest> {
+    const result = await this.requestRepository
+      .createQueryBuilder()
+      .update(DatabaseRequest)
+      .set({
+        authorizationCode: () =>
+          `jsonb_set("authorizationCode", '{used}', 'true')`,
+      })
+      .where("\"authorizationCode\"->>'code' = :code", {
+        code: authorizationCode,
+      })
+      .andWhere("\"authorizationCode\"->>'used' = :used", { used: false })
+      .andWhere("\"authorizationCode\"->>'exp' > :now", {
+        now: clock.nowAsSecondsSinceEpoch(),
+      })
+      .returning("*")
+      .execute();
+
+    if (result.affected === 0) {
+      throw new OauthInvalidCredentialsException({
+        message: "Authorization code not found, already used, or expired",
+      });
+    }
+
+    return this.mapToDomain((result.raw as DatabaseRequest[])[0]);
   }
 
   private mapToDomain(databaseRequest: DatabaseRequest): DomainRequest {
@@ -90,7 +109,9 @@ export class RequestDomainRepository implements RequestInterface {
       codeChallenge: domainRequest.codeChallenge,
       codeChallengeMethod: domainRequest.codeChallengeMethod.toString(),
       scope: domainRequest.scope.toString(),
-      authorizationCode: domainRequest.authorizationCode,
+      authorizationCode: domainRequest.authorizationCode
+        ? domainRequest.authorizationCode
+        : null,
       intent: domainRequest.intent ? domainRequest.intent.toString() : null,
       resolution: domainRequest.resolution.toString(),
     };

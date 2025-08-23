@@ -468,7 +468,9 @@ describe("AuthorizationFacade", () => {
           tokenPayloads,
           clients,
         ),
-      ).rejects.toThrow("Authorization Code already used!");
+      ).rejects.toThrow(
+        "Authorization code not found, already used, or expired",
+      );
     });
     it("authorization code cannot be used if it expired", async () => {
       const {
@@ -536,7 +538,9 @@ describe("AuthorizationFacade", () => {
           tokenPayloads,
           clients,
         ),
-      ).rejects.toThrow("Authorization code expired!");
+      ).rejects.toThrow(
+        "Authorization code not found, already used, or expired",
+      );
     });
 
     it("it rejects exchange if PKCE verifier does not match code challenge", async () => {

@@ -1,7 +1,6 @@
 import { Assert } from "@domain/Assert";
 import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
 import {
-  OauthInvalidCredentialsException,
   OauthInvalidRequestException,
   OauthServerErrorException,
 } from "@domain/auth/OAuth/Errors";
@@ -15,7 +14,7 @@ export class Code {
   public readonly code: string;
   public readonly exp: number;
   public readonly iat: number;
-  private used: boolean;
+  public used: boolean;
 
   private constructor(params: {
     sub: IdentityValue;
@@ -108,23 +107,8 @@ export class Code {
     });
   }
 
-  public use(clock: ClockInterface): string {
-    Assert(
-      !this.used,
-      () =>
-        new OauthInvalidCredentialsException({
-          message: "Authorization Code already used!",
-        }),
-    );
-    Assert(
-      this.exp > clock.nowAsSecondsSinceEpoch(),
-      () =>
-        new OauthInvalidCredentialsException({
-          message: "Authorization code expired!",
-        }),
-    );
+  public markAsUsed() {
     this.used = true;
-    return this.code;
   }
 
   public toString(): string {

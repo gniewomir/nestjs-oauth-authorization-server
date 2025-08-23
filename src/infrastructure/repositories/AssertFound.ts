@@ -1,6 +1,6 @@
 import { DatabaseNotFoundException } from "@infrastructure/repositories/DatabaseNotFoundException";
 
-export function AssertFound<T>(
+export function assertFound<T>(
   value: T,
   message?: string,
 ): asserts value is NonNullable<T> {

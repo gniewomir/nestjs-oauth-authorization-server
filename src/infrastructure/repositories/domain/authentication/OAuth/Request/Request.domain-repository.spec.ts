@@ -146,8 +146,8 @@ describe("RequestDomainRepository", () => {
     });
   });
 
-  describe("getByAuthorizationCode", () => {
-    it("should return authorization request when found by authorization code", async () => {
+  describe("useAuthorizationCodeAtomically", () => {
+    it("should successfully use authorization code and return updated request", async () => {
       // Arrange
       const clock = new ClockServiceFake();
       const authCodeService = new AuthorizationCodeService();
@@ -166,33 +166,204 @@ describe("RequestDomainRepository", () => {
       await repository.persist(domainRequest);
 
       // Act
-      const result = await repository.getByAuthorizationCode(authCode.code);
+      const result = await repository.useAuthorizationCodeAtomically(
+        authCode.code,
+        clock,
+      );
 
       // Assert
       expect(result).toBeInstanceOf(DomainAuthorizationRequest);
       expect(result.id.toString()).toBe(domainRequest.id.toString());
+      expect(result.authorizationCode).not.toBeNull();
+      expect(result.authorizationCode?.used).toBe(true);
       expect(result.authorizationCode?.code).toBe(authCode.code);
+
+      // Verify the code is actually marked as used in database
+      const retrievedRequest = await repository.retrieve(result.id);
+      expect(retrievedRequest.authorizationCode?.used).toBe(true);
     });
 
-    it("should throw error when OAuth request not found by authorization code", async () => {
+    it("should throw error when authorization code does not exist", async () => {
       // Arrange
-      const nonExistentCode = "non-existent-code";
+      const clock = new ClockServiceFake();
+      const nonExistentCode = "non-existent-authorization-code";
 
       // Act & Assert
       await expect(
-        repository.getByAuthorizationCode(nonExistentCode),
-      ).rejects.toThrow("Authorization request not found");
+        repository.useAuthorizationCodeAtomically(nonExistentCode, clock),
+      ).rejects.toThrow(
+        "Authorization code not found, already used, or expired",
+      );
     });
 
-    it("should throw error when searching for authorization code on request without one", async () => {
+    it("should throw error when authorization code is already used", async () => {
       // Arrange
+      const clock = new ClockServiceFake();
+      const authCodeService = new AuthorizationCodeService();
+      const authConfig = await plainToConfig(
+        {},
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
+
+      const userId = IdentityValue.create();
+      const authCode = Code.create(userId, authCodeService, clock, authConfig);
+
+      const domainRequest = requestMother({
+        authorizationCode: authCode,
+      });
+      await repository.persist(domainRequest);
+
+      // First usage - should succeed
+      await repository.useAuthorizationCodeAtomically(authCode.code, clock);
+
+      // Act & Assert - Second usage should fail
+      await expect(
+        repository.useAuthorizationCodeAtomically(authCode.code, clock),
+      ).rejects.toThrow(
+        "Authorization code not found, already used, or expired",
+      );
+    });
+
+    it("should throw error when authorization code is expired", async () => {
+      // Arrange
+      const clock = new ClockServiceFake();
+      const authCodeService = new AuthorizationCodeService();
+      const authConfig = await plainToConfig(
+        {},
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
+
+      const userId = IdentityValue.create();
+      const authCode = Code.create(userId, authCodeService, clock, authConfig);
+
+      const domainRequest = requestMother({
+        authorizationCode: authCode,
+      });
+      await repository.persist(domainRequest);
+
+      // Advance time beyond expiration
+      clock.timeTravelSeconds(
+        clock.nowAsSecondsSinceEpoch() +
+          authConfig.oauthAuthorizationCodeExpirationSeconds +
+          1,
+      );
+
+      // Act & Assert
+      await expect(
+        repository.useAuthorizationCodeAtomically(authCode.code, clock),
+      ).rejects.toThrow(
+        "Authorization code not found, already used, or expired",
+      );
+    });
+
+    it("should throw error when request has no authorization code", async () => {
+      // Arrange
+      const clock = new ClockServiceFake();
       const domainRequest = requestMother(); // No authorization code
       await repository.persist(domainRequest);
 
       // Act & Assert
       await expect(
-        repository.getByAuthorizationCode("some-code"),
-      ).rejects.toThrow("Authorization request not found");
+        repository.useAuthorizationCodeAtomically("some-code", clock),
+      ).rejects.toThrow(
+        "Authorization code not found, already used, or expired",
+      );
+    });
+
+    it("should handle concurrent requests and prevent race conditions", async () => {
+      // Arrange
+      const clock = new ClockServiceFake();
+      const authCodeService = new AuthorizationCodeService();
+      const authConfig = await plainToConfig(
+        {},
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
+
+      const userId = IdentityValue.create();
+      const authCode = Code.create(userId, authCodeService, clock, authConfig);
+
+      const domainRequest = requestMother({
+        authorizationCode: authCode,
+      });
+      await repository.persist(domainRequest);
+
+      // Act - Execute two concurrent requests
+      const [result1, result2] = await Promise.allSettled([
+        repository.useAuthorizationCodeAtomically(authCode.code, clock),
+        repository.useAuthorizationCodeAtomically(authCode.code, clock),
+      ]);
+
+      // Assert - One should succeed, one should fail
+      expect(result1.status).not.toBe(result2.status);
+
+      const successResult = result1.status === "fulfilled" ? result1 : result2;
+      const failureResult = result1.status === "rejected" ? result1 : result2;
+
+      expect(successResult.status).toBe("fulfilled");
+      expect(failureResult.status).toBe("rejected");
+      if (failureResult.status === "rejected") {
+        expect((failureResult.reason as Error).message).toContain(
+          "Authorization code not found, already used, or expired",
+        );
+      }
+
+      // Verify the successful result has the code marked as used
+      if (successResult.status === "fulfilled") {
+        expect(successResult.value.authorizationCode?.used).toBe(true);
+      }
+    });
+
+    it("should return request with all properties intact after atomic update", async () => {
+      // Arrange
+      const clock = new ClockServiceFake();
+      const authCodeService = new AuthorizationCodeService();
+      const authConfig = await plainToConfig(
+        {},
+        AuthConfig.defaults(),
+        AuthConfig,
+      );
+
+      const userId = IdentityValue.create();
+      const authCode = Code.create(userId, authCodeService, clock, authConfig);
+
+      const domainRequest = requestMother({
+        authorizationCode: authCode,
+      });
+      await repository.persist(domainRequest);
+
+      // Act
+      const result = await repository.useAuthorizationCodeAtomically(
+        authCode.code,
+        clock,
+      );
+
+      // Assert - All original properties should be preserved
+      expect(result.id.toString()).toBe(domainRequest.id.toString());
+      expect(result.clientId.toString()).toBe(
+        domainRequest.clientId.toString(),
+      );
+      expect(result.redirectUri.toString()).toBe(
+        domainRequest.redirectUri.toString(),
+      );
+      expect(result.state).toBe(domainRequest.state);
+      expect(result.codeChallenge).toBe(domainRequest.codeChallenge);
+      expect(result.scope.toString()).toEqual(domainRequest.scope.toString());
+      expect(result.responseType.toString()).toBe(
+        domainRequest.responseType.toString(),
+      );
+      expect(result.codeChallengeMethod.toString()).toBe(
+        domainRequest.codeChallengeMethod.toString(),
+      );
+
+      // Only the authorization code should be updated
+      expect(result.authorizationCode?.used).toBe(true);
+      expect(result.authorizationCode?.code).toBe(authCode.code);
+      expect(result.authorizationCode?.sub.toString()).toBe(
+        authCode.sub.toString(),
+      );
     });
   });
 });

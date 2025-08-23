@@ -178,13 +178,13 @@ export class AuthorizationFacade {
     clients: ClientInterface,
   ): Promise<TSignedTokens> {
     const request = await NotFoundToDomainException(
-      () => requests.getByAuthorizationCode(code),
+      () => requests.useAuthorizationCodeAtomically(code, clock),
       () =>
         new OauthInvalidCredentialsException({
-          message:
-            "There is no authorization request with matching authorization code",
+          message: "Authorization code not found, already used, or expired",
         }),
     );
+
     const client = await NotFoundToDomainException(
       () => clients.retrieve(request.clientId),
       (error) =>
@@ -200,7 +200,6 @@ export class AuthorizationFacade {
           message: "Provided clientId does not match authorization request",
         }),
     );
-
     Assert(
       request.redirectUri.isEqual(client.redirectUri),
       () =>
@@ -208,7 +207,6 @@ export class AuthorizationFacade {
           message: "Mismatch between saved and provided redirectUri",
         }),
     );
-
     Assert(
       PKCE.verify({
         codeChallenge: request.codeChallenge,
@@ -220,8 +218,6 @@ export class AuthorizationFacade {
           message: "Failed PKCE code challenge",
         }),
     );
-
-    request.useAuthorizationCode(code, clock);
 
     const user = await NotFoundToDomainException(
       () => {
@@ -248,8 +244,6 @@ export class AuthorizationFacade {
       tokenPayloads,
     );
 
-    // we have to persist spending of authorization code
-    await requests.persist(request);
     // we have to persist rotation of refresh token
     await users.persist(user);
 

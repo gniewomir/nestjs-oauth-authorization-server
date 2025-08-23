@@ -1,4 +1,5 @@
 import { Request } from "@domain/auth/OAuth/Authorization/Request";
+import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 
 export interface RequestInterface {
@@ -6,7 +7,10 @@ export interface RequestInterface {
 
   retrieve(id: IdentityValue): Promise<Request>;
 
-  getByAuthorizationCode(authorizationCode: string): Promise<Request>;
+  useAuthorizationCodeAtomically(
+    authorizationCode: string,
+    clock: ClockInterface,
+  ): Promise<Request>;
 }
 
 export const RequestInterfaceSymbol = Symbol.for("RequestInterface");
