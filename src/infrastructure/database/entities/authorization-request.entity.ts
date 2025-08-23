@@ -58,8 +58,7 @@ export class AuthorizationRequest {
     unique: true,
   })
   @Column({
-    type: "varchar",
-    length: 64,
+    type: "text",
     nullable: true,
   })
   authCode: string | null;
