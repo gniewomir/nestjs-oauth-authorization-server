@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Bootstrap1755982540994 implements MigrationInterface {
-  name = "Bootstrap1755982540994";
+export class Bootstrap1755985613960 implements MigrationInterface {
+  name = "Bootstrap1755985613960";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -76,7 +76,7 @@ export class Bootstrap1755982540994 implements MigrationInterface {
          "clientId"            uuid                    NOT NULL,
          "redirectUri"         character varying(2048) NOT NULL,
          "responseType"        character varying(64)   NOT NULL,
-         "state"               character varying(255)  NOT NULL,
+         "state"               character varying(255),
          "codeChallenge"       character varying(255)  NOT NULL,
          "codeChallengeMethod" character varying(16)   NOT NULL,
          "scope"               text                    NOT NULL,

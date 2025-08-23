@@ -30,8 +30,9 @@ export class AuthorizationRequest {
   @Column({
     type: "varchar",
     length: 255,
+    nullable: true,
   })
-  state: string;
+  state: string | null;
 
   @Column({
     type: "varchar",

@@ -24,7 +24,7 @@ export class Request {
   public readonly id: IdentityValue;
   public readonly clientId: IdentityValue;
   public readonly redirectUri: RedirectUriValue;
-  public readonly state: string;
+  public readonly state: string | null;
   public readonly codeChallenge: string;
   public readonly codeChallengeMethod: CodeChallengeMethodValue;
   public readonly scope: ScopeValueImmutableSet;
@@ -38,7 +38,7 @@ export class Request {
     clientId: IdentityValue;
     redirectUri: RedirectUriValue;
     scope: ScopeValueImmutableSet;
-    state: string;
+    state: string | null;
     codeChallenge: string;
     codeChallengeMethod: CodeChallengeMethodValue;
     intent: IntentValue | null;

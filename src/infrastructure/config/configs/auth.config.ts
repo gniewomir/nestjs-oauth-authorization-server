@@ -63,7 +63,7 @@ export class AuthConfig {
       jwtAccessTokenExpirationSeconds: ONE_MINUTE_IN_SECONDS * 5,
       jwtRefreshTokenExpirationSeconds: ONE_HOUR_IN_SECONDS,
       jwtLongTTLRefreshTokenExpirationSeconds: ONE_DAY_IN_SECONDS * 14,
-      oauthAuthorizationCodeExpirationSeconds: ONE_MINUTE_IN_SECONDS * 2,
+      oauthAuthorizationCodeExpirationSeconds: ONE_MINUTE_IN_SECONDS * 5,
     };
   }
 

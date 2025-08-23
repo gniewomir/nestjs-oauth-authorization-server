@@ -61,7 +61,7 @@ export class AuthorizationFacade {
       responseType: ResponseTypeValue;
       clientId: IdentityValue;
       scope: ScopeValueImmutableSet;
-      state: string;
+      state: string | null;
       codeChallenge: string;
       codeChallengeMethod: CodeChallengeMethodValue;
       intent: IntentValue | null;

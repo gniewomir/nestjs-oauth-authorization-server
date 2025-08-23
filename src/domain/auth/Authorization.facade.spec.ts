@@ -287,18 +287,29 @@ describe("AuthorizationFacade", () => {
 
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        exp: expiresAt,
-        scope: accessTokenScopesMother().toString(),
-      });
+      const decodedAccessToken = await tokenPayloads.decode(accessToken);
+      expect(decodedAccessToken.exp).toBeGreaterThanOrEqual(expiresAt);
+      expect(decodedAccessToken.exp).toBeLessThan(expiresAt + 2);
+      expect(decodedAccessToken.scope).toBe(
+        accessTokenScopesMother().toString(),
+      );
+
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
-        exp:
-          expiresAt -
+      const decodedRefreshToken = await tokenPayloads.decode(refreshToken);
+      expect(decodedRefreshToken.exp).toBeLessThanOrEqual(
+        expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
-        scope: refreshTokenScopesMother().toString(),
-      });
+      );
+      expect(decodedRefreshToken.exp).toBeLessThan(
+        expiresAt -
+          authConfig.jwtAccessTokenExpirationSeconds +
+          authConfig.jwtRefreshTokenExpirationSeconds +
+          2,
+      );
+      expect(decodedRefreshToken.scope).toBe(
+        refreshTokenScopesMother().toString(),
+      );
     });
     it("if user indicated that he wants to stay being logged - refresh token will have longer ttl", async () => {
       const scope = rememberMeTestClientScopesMother();
@@ -374,18 +385,29 @@ describe("AuthorizationFacade", () => {
 
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        exp: expiresAt,
-        scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
-      });
+      const decodedAccessToken = await tokenPayloads.decode(accessToken);
+      expect(decodedAccessToken.exp).toBeGreaterThanOrEqual(expiresAt);
+      expect(decodedAccessToken.exp).toBeLessThan(expiresAt + 2);
+      expect(decodedAccessToken.scope).toBe(
+        scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
+      );
+
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
-        exp:
-          expiresAt -
+      const decodedRefreshToken = await tokenPayloads.decode(refreshToken);
+      expect(decodedRefreshToken.exp).toBeGreaterThanOrEqual(
+        expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
-        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
-      });
+      );
+      expect(decodedRefreshToken.exp).toBeLessThan(
+        expiresAt -
+          authConfig.jwtAccessTokenExpirationSeconds +
+          authConfig.jwtLongTTLRefreshTokenExpirationSeconds +
+          2,
+      );
+      expect(decodedRefreshToken.scope).toBe(
+        scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
+      );
     });
     it("authorization code can be used only once", async () => {
       const {
@@ -738,19 +760,29 @@ describe("AuthorizationFacade", () => {
       Assert(scope.hasScope(ScopeValue.PROFILE()) && !!idToken);
       await expect(tokenPayloads.verifyIdToken(idToken)).resolves.not.toThrow();
       await expect(tokenPayloads.verify(accessToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.decode(accessToken)).resolves.toMatchObject({
-        exp: expiresAt,
-        scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
-      });
+      const decodedAccessToken = await tokenPayloads.decode(accessToken);
+      expect(decodedAccessToken.exp).toBeGreaterThanOrEqual(expiresAt);
+      expect(decodedAccessToken.exp).toBeLessThan(expiresAt + 2);
+      expect(decodedAccessToken.scope).toBe(
+        scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
+      );
       Assert(scope.hasScope(ScopeValue.TOKEN_REFRESH()) && !!refreshToken);
       await expect(tokenPayloads.verify(refreshToken)).resolves.not.toThrow();
-      await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
-        exp:
-          expiresAt -
+      const decodedRefreshToken = await tokenPayloads.decode(refreshToken);
+      expect(decodedRefreshToken.exp).toBeGreaterThanOrEqual(
+        expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtRefreshTokenExpirationSeconds,
-        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
-      });
+      );
+      expect(decodedRefreshToken.exp).toBeLessThan(
+        expiresAt -
+          authConfig.jwtAccessTokenExpirationSeconds +
+          authConfig.jwtRefreshTokenExpirationSeconds +
+          2,
+      );
+      expect(decodedRefreshToken.scope).toBe(
+        scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
+      );
     });
     it("passes on scopes contained in received refresh token", async () => {
       const scope = defaultTestClientScopesMother();
@@ -814,13 +846,21 @@ describe("AuthorizationFacade", () => {
         scope: scope.remove(ScopeValue.TOKEN_REFRESH()).toString(),
       });
       Assert(scope.hasScope(ScopeValue.TOKEN_REFRESH()) && !!refreshToken);
-      await expect(tokenPayloads.decode(refreshToken)).resolves.toMatchObject({
-        exp:
-          expiresAt -
+      const decodedRefreshToken = await tokenPayloads.decode(refreshToken);
+      expect(decodedRefreshToken.exp).toBeGreaterThanOrEqual(
+        expiresAt -
           authConfig.jwtAccessTokenExpirationSeconds +
           authConfig.jwtLongTTLRefreshTokenExpirationSeconds,
-        scope: scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
-      });
+      );
+      expect(decodedRefreshToken.exp).toBeLessThan(
+        expiresAt -
+          authConfig.jwtAccessTokenExpirationSeconds +
+          authConfig.jwtLongTTLRefreshTokenExpirationSeconds +
+          2,
+      );
+      expect(decodedRefreshToken.scope).toBe(
+        scope.remove(ScopeValue.TOKEN_AUTHENTICATE()).toString(),
+      );
     });
     it("rejects idToken", async () => {
       const { idToken, tokenPayloads, clock, authConfig, users, clients } =

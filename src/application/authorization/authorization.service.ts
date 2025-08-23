@@ -152,7 +152,7 @@ export class AuthorizationService {
         scope: scope
           ? ScopeValueImmutableSet.fromUnknown(scope)
           : ScopeValueImmutableSet.fromArray([]),
-        state: state || "",
+        state: typeof state === "undefined" ? null : state,
         codeChallenge: codeChallenge,
         codeChallengeMethod:
           CodeChallengeMethodValue.fromString(codeChallengeMethod),
@@ -193,7 +193,9 @@ export class AuthorizationService {
     );
 
     const accessDeniedUrl = request.redirectUri.toURL();
-    accessDeniedUrl.searchParams.set("state", request.state);
+    if (request.state) {
+      accessDeniedUrl.searchParams.set("state", request.state);
+    }
     accessDeniedUrl.searchParams.set(
       "error",
       OauthAccessDeniedException.ERROR_CODE,
@@ -246,7 +248,9 @@ export class AuthorizationService {
 
     const redirect = new URL(request.redirectUri.toString());
     redirect.searchParams.set("code", request.authorizationCode.toString());
-    redirect.searchParams.set("state", request.state);
+    if (request.state) {
+      redirect.searchParams.set("state", request.state);
+    }
 
     return {
       redirectUriWithAuthorizationCodeAndState: redirect.toString(),
@@ -266,7 +270,9 @@ export class AuthorizationService {
 
     const redirect = request.redirectUri.toURL();
     redirect.searchParams.set("error", "access_denied");
-    redirect.searchParams.set("state", request.state);
+    if (request.state) {
+      redirect.searchParams.set("state", request.state);
+    }
 
     return {
       redirectUriWithAccessDeniedErrorAndState: redirect.toString(),
