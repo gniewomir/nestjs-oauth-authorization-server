@@ -1,4 +1,7 @@
+import * as path from "node:path";
+
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { ServeStaticModule } from "@nestjs/serve-static";
 
 import {
   AuthenticationMiddleware,
@@ -23,6 +26,10 @@ import { ApiModule } from "@interface/api";
     DatabaseModule,
     ApiModule,
     CsrfModule,
+    ServeStaticModule.forRoot({
+      rootPath: path.join(process.cwd(), "static"),
+      serveRoot: "/static",
+    }),
   ],
   controllers: [],
   providers: [],
@@ -31,7 +38,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthenticationMiddleware)
-      .exclude("/status", "/oauth/*path")
+      .exclude("/status", "/oauth/*path", "/static/*path")
       .forRoutes("*");
     consumer.apply(AuthorizationMiddleware).forRoutes("*");
     consumer.apply(CsrfMiddleware).forRoutes("/oauth/prompt");

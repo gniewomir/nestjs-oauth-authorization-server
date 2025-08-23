@@ -8,7 +8,7 @@ import {
 import { NextFunction, Request, Response } from "express";
 
 import { TokenPayload } from "@domain/auth/OAuth/Token/TokenPayload";
-import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
+import { AppConfig } from "@infrastructure/config/configs";
 
 import { AuthenticationService } from "./authentication.service";
 
@@ -16,7 +16,6 @@ import { AuthenticationService } from "./authentication.service";
 export class AuthenticationMiddleware implements NestMiddleware {
   constructor(
     private readonly authenticationService: AuthenticationService,
-    private readonly authConfig: AuthConfig,
     private readonly appConfig: AppConfig,
   ) {}
 
