@@ -48,7 +48,7 @@ export class AuthorizeRequestDto {
   code_challenge: string;
 
   @ApiProperty({
-    description: `PKCE code challenge method (must be "${CodeChallengeMethodsEnum.S256.toString()}")`,
+    description: `PKCE code challenge method`,
     example: CodeChallengeMethodsEnum.S256.toString(),
     enum: Object.values(CodeChallengeMethodsEnum).map((val) => val.toString()),
   })

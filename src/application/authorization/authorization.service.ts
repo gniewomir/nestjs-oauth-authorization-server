@@ -97,16 +97,18 @@ export class AuthorizationService {
         }),
     );
     Assert(
-      this.appConfig.nodeEnv !== "production" ||
-        Boolean(
-          codeChallenge &&
-            CodeChallengeMethodValue.fromUnknown(codeChallengeMethod).isEqual(
-              CodeChallengeMethodValue.METHOD_S256(),
-            ),
-        ),
+      typeof codeChallenge !== "undefined" && codeChallenge.trim() !== "",
       () =>
         new OauthInvalidRequestException({
-          errorDescription: `PKCE using ${CodeChallengeMethodValue.METHOD_S256().toString()} method is mandatory outside testing and development`,
+          errorDescription: `Code challenge is missing - PKCE is mandatory`,
+        }),
+    );
+    Assert(
+      typeof codeChallengeMethod !== "undefined" &&
+        codeChallengeMethod.trim() !== "",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `Code challenge method is missing - PKCE is mandatory`,
         }),
     );
     Assert(
@@ -126,10 +128,9 @@ export class AuthorizationService {
           ? ScopeValueImmutableSet.fromUnknown(scope)
           : ScopeValueImmutableSet.fromArray([]),
         state: state || "",
-        codeChallenge: codeChallenge || "",
-        codeChallengeMethod: codeChallengeMethod
-          ? CodeChallengeMethodValue.fromUnknown(codeChallengeMethod)
-          : CodeChallengeMethodValue.METHOD_NONE(),
+        codeChallenge: codeChallenge,
+        codeChallengeMethod:
+          CodeChallengeMethodValue.fromString(codeChallengeMethod),
         intent: intent ? IntentValue.fromString(intent) : null,
       },
       this.requests,

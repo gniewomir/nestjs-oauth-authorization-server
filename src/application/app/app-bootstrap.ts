@@ -51,7 +51,13 @@ export async function appBootstrap() {
       .build();
 
     const document = SwaggerModule.createDocument(app, options);
-    SwaggerModule.setup(openApiConfig.path, app, document);
+    SwaggerModule.setup(openApiConfig.path, app, document, {
+      swaggerOptions: {
+        initOAuth: {
+          usePkceWithAuthorizationCodeGrant: true,
+        },
+      },
+    });
   }
 
   await app.listen(appConfig.port);

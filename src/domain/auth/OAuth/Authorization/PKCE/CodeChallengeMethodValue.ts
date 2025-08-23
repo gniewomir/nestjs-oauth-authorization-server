@@ -3,8 +3,6 @@ import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
 
 export enum CodeChallengeMethodsEnum {
   S256 = "S256",
-  PLAIN = "plain",
-  NONE = "none",
 }
 
 export class CodeChallengeMethodValue {
@@ -26,27 +24,7 @@ export class CodeChallengeMethodValue {
     );
   }
 
-  public static METHOD_PLAIN(): CodeChallengeMethodValue {
-    return CodeChallengeMethodValue.fromString(
-      CodeChallengeMethodsEnum.PLAIN.toString(),
-    );
-  }
-
-  public static METHOD_NONE(): CodeChallengeMethodValue {
-    return CodeChallengeMethodValue.fromString(
-      CodeChallengeMethodsEnum.NONE.toString(),
-    );
-  }
-
   public static fromString(value: string) {
-    return new CodeChallengeMethodValue(value);
-  }
-
-  public static fromUnknown(value: unknown) {
-    if (!value) {
-      return CodeChallengeMethodValue.METHOD_NONE();
-    }
-    Assert(typeof value === "string");
     return new CodeChallengeMethodValue(value);
   }
 

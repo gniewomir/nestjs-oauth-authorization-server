@@ -16,12 +16,6 @@ export class PKCEService implements PKCEInterface {
     codeVerifier: string;
     method: CodeChallengeMethodValue;
   }): boolean {
-    if (method.isEqual(CodeChallengeMethodValue.METHOD_NONE())) {
-      return true;
-    }
-    if (method.isEqual(CodeChallengeMethodValue.METHOD_PLAIN())) {
-      return codeVerifier === codeChallenge;
-    }
     if (method.isEqual(CodeChallengeMethodValue.METHOD_S256())) {
       const encoder = new TextEncoder();
       const data = encoder.encode(codeVerifier);
