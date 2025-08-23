@@ -521,7 +521,7 @@ describe("AuthorizationFacade", () => {
 
       Assert(authorizationCode !== null);
 
-      clock.timeTravelSeconds(authorizationCode.exp);
+      clock.timeTravelSeconds(authorizationCode.expires.toNumber());
 
       await expect(
         AuthorizationFacade.authorizationCodeGrant(

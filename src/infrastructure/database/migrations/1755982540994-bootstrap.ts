@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Bootstrap1755793094310 implements MigrationInterface {
-  name = "Bootstrap1755793094310";
+export class Bootstrap1755982540994 implements MigrationInterface {
+  name = "Bootstrap1755982540994";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -80,13 +80,20 @@ export class Bootstrap1755793094310 implements MigrationInterface {
          "codeChallenge"       character varying(255)  NOT NULL,
          "codeChallengeMethod" character varying(16)   NOT NULL,
          "scope"               text                    NOT NULL,
-         "authorizationCode"   jsonb,
          "intent"              character varying(32),
+         "authCode"            character varying(64),
+         "authCodeIssued"      integer,
+         "authCodeExpires"     integer,
+         "authCodeExchange"    integer,
+         "authCodeSubject"     uuid,
          "resolution"          character varying(32)   NOT NULL,
          "createdAt"           TIMESTAMP               NOT NULL DEFAULT now(),
          "updatedAt"           TIMESTAMP               NOT NULL DEFAULT now(),
          CONSTRAINT "PK_a5f71bde33c44d6d8c40aca488b" PRIMARY KEY ("id")
        )`,
+    );
+    await queryRunner.query(
+      `CREATE UNIQUE INDEX "IDX_e9d1e673b6d1ef4c1f6d4c3c9c" ON "authorization_request" ("authCode") `,
     );
     await queryRunner.query(
       `ALTER TABLE "context"
@@ -130,6 +137,9 @@ export class Bootstrap1755793094310 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "context"
         DROP CONSTRAINT "FK_0322101a7b8da74eec6ed00cfe4"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "public"."IDX_e9d1e673b6d1ef4c1f6d4c3c9c"`,
     );
     await queryRunner.query(`DROP TABLE "authorization_request"`);
     await queryRunner.query(`DROP TABLE "oauth_clients"`);

@@ -2,6 +2,7 @@ import * as assert from "node:assert";
 
 import { cloneDeep } from "lodash";
 
+import { Code, NumericDateValue } from "@domain/auth/OAuth";
 import { Request } from "@domain/auth/OAuth/Authorization/Request";
 import { RequestInterface } from "@domain/auth/OAuth/Authorization/Request.interface";
 import { ClockInterface } from "@domain/Clock.interface";
@@ -20,13 +21,15 @@ export class RequestDomainRepositoryInMemory implements RequestInterface {
       if (
         code &&
         code.code === authorizationCode &&
-        !code.used &&
-        code.exp > clock.nowAsSecondsSinceEpoch()
+        code.exchange === null &&
+        code.expires.toNumber() > clock.nowAsSecondsSinceEpoch()
       ) {
         const clonedRequest = cloneDeep(request);
-        const usedCode = clonedRequest.authorizationCode;
-        assert(usedCode);
-        usedCode.markAsUsed();
+        const code = clonedRequest.authorizationCode;
+        assert(code instanceof Code);
+        code.exchange = NumericDateValue.fromNumber(
+          clock.nowAsSecondsSinceEpoch(),
+        );
         this.requests.set(request.id.toString(), clonedRequest);
 
         return Promise.resolve(this.retrieve(clonedRequest.id));

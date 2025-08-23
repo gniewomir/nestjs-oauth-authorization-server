@@ -1,40 +1,48 @@
 import { Assert } from "@domain/Assert";
 import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
-import {
-  OauthInvalidRequestException,
-  OauthServerErrorException,
-} from "@domain/auth/OAuth/Errors";
+import { OauthServerErrorException } from "@domain/auth/OAuth/Errors";
 import { NumericDateValue } from "@domain/auth/OAuth/NumericDateValue";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthConfig } from "@infrastructure/config/configs";
 
-export class Code {
-  public readonly sub: string;
-  public readonly code: string;
-  public readonly exp: number;
-  public readonly iat: number;
-  public used: boolean;
+export type TCodeConstructorArgs = ConstructorParameters<typeof Code>;
+export type TCodeConstructorParam = TCodeConstructorArgs[0];
 
-  private constructor(params: {
-    sub: IdentityValue;
+export class Code {
+  public readonly subject: IdentityValue;
+  public readonly code: string;
+  public readonly expires: NumericDateValue;
+  public readonly issued: NumericDateValue;
+  public _exchange: NumericDateValue | null;
+
+  public set exchange(when: NumericDateValue) {
+    this._exchange = when;
+  }
+
+  public get exchange(): NumericDateValue | null {
+    return this._exchange;
+  }
+
+  constructor(params: {
+    subject: IdentityValue;
     code: string;
-    used: boolean;
-    exp: NumericDateValue;
-    iat: NumericDateValue;
+    exchange: NumericDateValue | null;
+    expires: NumericDateValue;
+    issued: NumericDateValue;
   }) {
     Assert(
-      params.iat.toNumber() < params.exp.toNumber(),
+      params.issued.toNumber() < params.expires.toNumber(),
       () =>
         new OauthServerErrorException({
           message: "Authorization code cannot expire before it was issued",
         }),
     );
-    this.sub = params.sub.toString();
+    this.subject = params.subject;
     this.code = params.code;
-    this.exp = params.exp.toNumber();
-    this.iat = params.iat.toNumber();
-    this.used = params.used;
+    this.expires = params.expires;
+    this.issued = params.issued;
+    this._exchange = params.exchange ? params.exchange : null;
   }
 
   public static create(
@@ -45,70 +53,36 @@ export class Code {
   ) {
     const now = clock.nowAsSecondsSinceEpoch();
     return new Code({
-      sub: userId,
+      subject: userId,
       code: authorizationCodeInterface.generateAuthorizationCode(),
-      used: false,
-      iat: NumericDateValue.fromNumber(now),
-      exp: NumericDateValue.fromNumber(
+      exchange: null,
+      issued: NumericDateValue.fromNumber(now),
+      expires: NumericDateValue.fromNumber(
         now + authConfig.oauthAuthorizationCodeExpirationSeconds,
       ),
     });
   }
 
-  public static fromUnknown(value: unknown): Code {
-    Assert(
-      !!value && typeof value === "object",
-      () =>
-        new OauthInvalidRequestException({
-          message: "Code have to be an object",
-        }),
-    );
-    Assert(
-      "code" in value && typeof value.code === "string",
-      () =>
-        new OauthInvalidRequestException({
-          message: "Code must be a string",
-        }),
-    );
-    Assert(
-      "iat" in value,
-      () =>
-        new OauthInvalidRequestException({
-          message: "iat is missing",
-        }),
-    );
-    Assert(
-      "exp" in value,
-      () =>
-        new OauthInvalidRequestException({
-          message: "exp is missing",
-        }),
-    );
-    Assert(
-      "used" in value && typeof value.used === "boolean",
-      () =>
-        new OauthInvalidRequestException({
-          message: "Used value must be a boolean",
-        }),
-    );
-    Assert(
-      "sub" in value,
-      () =>
-        new OauthInvalidRequestException({
-          message: "sub is missing",
-        }),
-    );
+  public static fromDatabase({
+    subject,
+    expires,
+    issued,
+    exchange,
+    code,
+  }: Record<keyof TCodeConstructorParam, unknown>) {
+    Assert(typeof subject === "string");
+    Assert(typeof expires === "number");
+    Assert(typeof issued === "number");
+    Assert(typeof exchange === "number" || exchange === null);
+    Assert(typeof code === "string" && code.length > 0);
     return new Code({
-      sub: IdentityValue.fromUnknown(value.sub),
-      code: value.code,
-      iat: NumericDateValue.fromUnknown(value.iat),
-      exp: NumericDateValue.fromUnknown(value.exp),
-      used: value.used,
+      subject: IdentityValue.fromString(subject),
+      code: code,
+      exchange:
+        exchange === null ? null : NumericDateValue.fromNumber(exchange),
+      expires: NumericDateValue.fromNumber(expires),
+      issued: NumericDateValue.fromNumber(issued),
     });
-  }
-
-  public markAsUsed() {
-    this.used = true;
   }
 
   public toString(): string {

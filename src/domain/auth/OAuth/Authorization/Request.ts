@@ -41,8 +41,8 @@ export class Request {
     state: string;
     codeChallenge: string;
     codeChallengeMethod: CodeChallengeMethodValue;
-    authorizationCode: Code | null;
     intent: IntentValue | null;
+    authorizationCode: Code | null;
     resolution: ResolutionValue;
   }) {
     Assert(

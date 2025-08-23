@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
-import { DataSource, Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { IsNull, Repository } from "typeorm";
 
 import {
   IntentValue,
@@ -9,7 +9,7 @@ import {
   ResolutionValue,
   ResponseTypeValue,
 } from "@domain/auth/OAuth/Authorization";
-import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
+import { Code } from "@domain/auth/OAuth/Authorization/Code";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { RedirectUriValue } from "@domain/auth/OAuth/Client";
 import { OauthInvalidCredentialsException } from "@domain/auth/OAuth/Errors";
@@ -24,8 +24,6 @@ export class RequestDomainRepository implements RequestInterface {
   constructor(
     @InjectRepository(DatabaseRequest)
     private readonly requestRepository: Repository<DatabaseRequest>,
-    @InjectDataSource()
-    private readonly dataSource: DataSource,
   ) {}
 
   async persist(authorizationRequest: DomainRequest): Promise<void> {
@@ -52,14 +50,15 @@ export class RequestDomainRepository implements RequestInterface {
       .setLock("pessimistic_write")
       .update(DatabaseRequest)
       .set({
-        authorizationCode: () =>
-          `jsonb_set("authorizationCode", '{used}', 'true')`,
+        authCodeExchange: clock.nowAsSecondsSinceEpoch(),
       })
-      .where("\"authorizationCode\"->>'code' = :code", {
-        code: authorizationCode,
+      .where({
+        authCode: authorizationCode,
       })
-      .andWhere("\"authorizationCode\"->>'used' = :used", { used: false })
-      .andWhere("\"authorizationCode\"->>'exp' > :now", {
+      .andWhere({
+        authCodeExchange: IsNull(),
+      })
+      .andWhere("authCodeExpires > :now", {
         now: clock.nowAsSecondsSinceEpoch(),
       })
       .returning("*")
@@ -87,9 +86,15 @@ export class RequestDomainRepository implements RequestInterface {
       ),
       scope: ScopeValueImmutableSet.fromString(databaseRequest.scope),
       authorizationCode:
-        databaseRequest.authorizationCode === null
-          ? null
-          : Code.fromUnknown(databaseRequest.authorizationCode),
+        databaseRequest.authCode !== null
+          ? Code.fromDatabase({
+              subject: databaseRequest.authCodeSubject,
+              code: databaseRequest.authCode,
+              issued: databaseRequest.authCodeIssued,
+              expires: databaseRequest.authCodeExpires,
+              exchange: databaseRequest.authCodeExchange,
+            })
+          : null,
       intent:
         databaseRequest.intent === null
           ? null
@@ -110,9 +115,25 @@ export class RequestDomainRepository implements RequestInterface {
       codeChallenge: domainRequest.codeChallenge,
       codeChallengeMethod: domainRequest.codeChallengeMethod.toString(),
       scope: domainRequest.scope.toString(),
-      authorizationCode: domainRequest.authorizationCode
-        ? domainRequest.authorizationCode
+      authCode: domainRequest.authorizationCode
+        ? domainRequest.authorizationCode.code
         : null,
+      authCodeSubject:
+        domainRequest.authorizationCode !== null
+          ? domainRequest.authorizationCode.subject.toString()
+          : null,
+      authCodeIssued:
+        domainRequest.authorizationCode !== null
+          ? domainRequest.authorizationCode.issued.toNumber()
+          : null,
+      authCodeExpires:
+        domainRequest.authorizationCode !== null
+          ? domainRequest.authorizationCode.expires.toNumber()
+          : null,
+      authCodeExchange:
+        domainRequest.authorizationCode !== null
+          ? (domainRequest.authorizationCode.exchange?.toNumber() ?? null)
+          : null,
       intent: domainRequest.intent ? domainRequest.intent.toString() : null,
       resolution: domainRequest.resolution.toString(),
     };

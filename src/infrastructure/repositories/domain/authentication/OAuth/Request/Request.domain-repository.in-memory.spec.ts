@@ -104,12 +104,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       const clock = new ClockServiceFake();
       const authCode = randomString();
       const request = requestMother({
-        authorizationCode: Code.fromUnknown({
+        authorizationCode: Code.fromDatabase({
           code: authCode,
-          sub: IdentityValue.create().toString(),
-          exp: clock.nowAsSecondsSinceEpoch() + 3600,
-          iat: clock.nowAsSecondsSinceEpoch(),
-          used: false,
+          subject: IdentityValue.create().toString(),
+          expires: clock.nowAsSecondsSinceEpoch() + 3600,
+          issued: clock.nowAsSecondsSinceEpoch(),
+          exchange: null, // not used
         }),
       });
       await repository.persist(request);
@@ -124,12 +124,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       expect(result).toBeInstanceOf(DomainRequest);
       expect(result.id.toString()).toBe(request.id.toString());
       expect(result.authorizationCode).not.toBeNull();
-      expect(result.authorizationCode?.used).toBe(true);
+      expect(result.authorizationCode?.exchange).not.toBe(null);
       expect(result.authorizationCode?.code).toBe(authCode);
 
       // Verify the code is actually marked as used in storage
       const storedRequest = repository.requests.get(request.id.toString());
-      expect(storedRequest?.authorizationCode?.used).toBe(true);
+      expect(storedRequest?.authorizationCode?.exchange).not.toBe(null);
     });
 
     it("should throw error when authorization code does not exist", async () => {
@@ -150,12 +150,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       const clock = new ClockServiceFake();
       const authCode = randomString();
       const request = requestMother({
-        authorizationCode: Code.fromUnknown({
+        authorizationCode: Code.fromDatabase({
           code: authCode,
-          sub: IdentityValue.create().toString(),
-          exp: clock.nowAsSecondsSinceEpoch() + 3600,
-          iat: clock.nowAsSecondsSinceEpoch(),
-          used: true, // Already used
+          subject: IdentityValue.create().toString(),
+          expires: clock.nowAsSecondsSinceEpoch() + 3600,
+          issued: clock.nowAsSecondsSinceEpoch(),
+          exchange: clock.nowAsSecondsSinceEpoch() + 1800, // Already used
         }),
       });
       await repository.persist(request);
@@ -173,12 +173,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       const clock = new ClockServiceFake();
       const authCode = randomString();
       const request = requestMother({
-        authorizationCode: Code.fromUnknown({
+        authorizationCode: Code.fromDatabase({
           code: authCode,
-          sub: IdentityValue.create().toString(),
-          exp: clock.nowAsSecondsSinceEpoch() - 1, // Expired
-          iat: clock.nowAsSecondsSinceEpoch() - 3600,
-          used: false,
+          subject: IdentityValue.create().toString(),
+          expires: clock.nowAsSecondsSinceEpoch() - 1, // Expired
+          issued: clock.nowAsSecondsSinceEpoch() - 3600,
+          exchange: null, // not used
         }),
       });
       await repository.persist(request);
@@ -210,12 +210,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       const clock = new ClockServiceFake();
       const authCode = randomString();
       const request = requestMother({
-        authorizationCode: Code.fromUnknown({
+        authorizationCode: Code.fromDatabase({
           code: authCode,
-          sub: IdentityValue.create().toString(),
-          exp: clock.nowAsSecondsSinceEpoch() + 3600,
-          iat: clock.nowAsSecondsSinceEpoch(),
-          used: false,
+          subject: IdentityValue.create().toString(),
+          expires: clock.nowAsSecondsSinceEpoch() + 3600,
+          issued: clock.nowAsSecondsSinceEpoch(),
+          exchange: null, // not used
         }),
       });
       await repository.persist(request);
@@ -242,12 +242,12 @@ describe("RequestDomainRepositoryInMemory", () => {
 
       // Verify the successful result has the code marked as used
       if (successResult.status === "fulfilled") {
-        expect(successResult.value.authorizationCode?.used).toBe(true);
+        expect(successResult.value.authorizationCode?.exchange).not.toBe(null);
       }
 
       // Verify only one request was processed
       const storedRequest = repository.requests.get(request.id.toString());
-      expect(storedRequest?.authorizationCode?.used).toBe(true);
+      expect(storedRequest?.authorizationCode?.exchange).not.toBe(null);
     });
 
     it("should return request with all properties intact after atomic update", async () => {
@@ -255,12 +255,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       const clock = new ClockServiceFake();
       const authCode = randomString();
       const request = requestMother({
-        authorizationCode: Code.fromUnknown({
+        authorizationCode: Code.fromDatabase({
           code: authCode,
-          sub: IdentityValue.create().toString(),
-          exp: clock.nowAsSecondsSinceEpoch() + 3600,
-          iat: clock.nowAsSecondsSinceEpoch(),
-          used: false,
+          subject: IdentityValue.create().toString(),
+          expires: clock.nowAsSecondsSinceEpoch() + 3600,
+          issued: clock.nowAsSecondsSinceEpoch(),
+          exchange: null, // not used
         }),
       });
       await repository.persist(request);
@@ -288,7 +288,7 @@ describe("RequestDomainRepositoryInMemory", () => {
       );
 
       // Only the authorization code should be updated
-      expect(result.authorizationCode?.used).toBe(true);
+      expect(result.authorizationCode?.exchange).not.toBe(null);
       expect(result.authorizationCode?.code).toBe(authCode);
     });
 
@@ -297,12 +297,12 @@ describe("RequestDomainRepositoryInMemory", () => {
       const clock = new ClockServiceFake();
       const authCode = randomString();
       const request = requestMother({
-        authorizationCode: Code.fromUnknown({
+        authorizationCode: Code.fromDatabase({
           code: authCode,
-          sub: IdentityValue.create().toString(),
-          exp: clock.nowAsSecondsSinceEpoch() + 3600,
-          iat: clock.nowAsSecondsSinceEpoch(),
-          used: false,
+          subject: IdentityValue.create().toString(),
+          expires: clock.nowAsSecondsSinceEpoch() + 3600,
+          issued: clock.nowAsSecondsSinceEpoch(),
+          exchange: null, // not used
         }),
       });
       await repository.persist(request);
@@ -316,11 +316,11 @@ describe("RequestDomainRepositoryInMemory", () => {
       // Assert - The returned object should be different from the original
       expect(result).not.toBe(request);
       expect(result.authorizationCode).not.toBe(request.authorizationCode);
-      expect(result.authorizationCode?.used).toBe(true);
+      expect(result.authorizationCode?.exchange).not.toBe(null);
 
       // The stored request should be updated
       const storedRequest = repository.requests.get(request.id.toString());
-      expect(storedRequest?.authorizationCode?.used).toBe(true);
+      expect(storedRequest?.authorizationCode?.exchange).not.toBe(null);
     });
   });
 

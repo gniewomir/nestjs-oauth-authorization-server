@@ -2,11 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
-
-import { Code } from "@domain/auth/OAuth";
 
 @Entity()
 export class AuthorizationRequest {
@@ -51,14 +50,42 @@ export class AuthorizationRequest {
   })
   scope: string;
 
-  @Column({
-    type: "jsonb",
-    nullable: true,
-  })
-  authorizationCode: Code | null;
-
   @Column({ type: "varchar", length: 32, nullable: true })
   intent: string | null;
+
+  @Index({
+    unique: true,
+  })
+  @Column({
+    type: "varchar",
+    length: 64,
+    nullable: true,
+  })
+  authCode: string | null;
+
+  @Column({
+    type: "int",
+    nullable: true,
+  })
+  authCodeIssued: number | null;
+
+  @Column({
+    type: "int",
+    nullable: true,
+  })
+  authCodeExpires: number | null;
+
+  @Column({
+    type: "int",
+    nullable: true,
+  })
+  authCodeExchange: number | null;
+
+  @Column({
+    type: "uuid",
+    nullable: true,
+  })
+  authCodeSubject: string | null;
 
   @Column({ type: "varchar", length: 32 })
   resolution: string;

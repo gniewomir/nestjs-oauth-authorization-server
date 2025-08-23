@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { requestMother } from "@test/domain/authentication/Request.mother";
 
-import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
+import { Code } from "@domain/auth/OAuth/Authorization/Code";
 import { Request as DomainAuthorizationRequest } from "@domain/auth/OAuth/Authorization/Request";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
@@ -105,7 +105,7 @@ describe("RequestDomainRepository", () => {
       // Assert
       const savedRequest = await repository.retrieve(domainRequest.id);
       expect(savedRequest.authorizationCode).not.toBeNull();
-      expect(savedRequest.authorizationCode?.sub.toString()).toBe(
+      expect(savedRequest.authorizationCode?.subject.toString()).toBe(
         userId.toString(),
       );
       expect(savedRequest.authorizationCode?.code).toBe(authCode.code);
@@ -175,12 +175,12 @@ describe("RequestDomainRepository", () => {
       expect(result).toBeInstanceOf(DomainAuthorizationRequest);
       expect(result.id.toString()).toBe(domainRequest.id.toString());
       expect(result.authorizationCode).not.toBeNull();
-      expect(result.authorizationCode?.used).toBe(true);
+      expect(result.authorizationCode?.exchange).not.toBe(null);
       expect(result.authorizationCode?.code).toBe(authCode.code);
 
       // Verify the code is actually marked as used in database
       const retrievedRequest = await repository.retrieve(result.id);
-      expect(retrievedRequest.authorizationCode?.used).toBe(true);
+      expect(retrievedRequest.authorizationCode?.exchange).not.toBe(null);
     });
 
     it("should throw error when authorization code does not exist", async () => {
@@ -312,7 +312,7 @@ describe("RequestDomainRepository", () => {
 
       // Verify the successful result has the code marked as used
       if (successResult.status === "fulfilled") {
-        expect(successResult.value.authorizationCode?.used).toBe(true);
+        expect(successResult.value.authorizationCode?.exchange).not.toBe(null);
       }
     });
 
@@ -359,10 +359,10 @@ describe("RequestDomainRepository", () => {
       );
 
       // Only the authorization code should be updated
-      expect(result.authorizationCode?.used).toBe(true);
+      expect(result.authorizationCode?.exchange).not.toBe(null);
       expect(result.authorizationCode?.code).toBe(authCode.code);
-      expect(result.authorizationCode?.sub.toString()).toBe(
-        authCode.sub.toString(),
+      expect(result.authorizationCode?.subject.toString()).toBe(
+        authCode.subject.toString(),
       );
     });
   });

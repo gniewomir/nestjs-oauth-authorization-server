@@ -222,9 +222,7 @@ export class AuthorizationFacade {
     const user = await NotFoundToDomainException(
       () => {
         Assert(request.authorizationCode instanceof Code);
-        return users.retrieve(
-          IdentityValue.fromString(request.authorizationCode.sub),
-        );
+        return users.retrieve(request.authorizationCode.subject);
       },
       () =>
         new OauthServerErrorException({
