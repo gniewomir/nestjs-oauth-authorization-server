@@ -143,6 +143,19 @@ export class OauthController {
               headerTitle: "Action Required",
               headerSubtitle: `Application "${clientName}" is requesting access to your account`,
             })
+            .nextSteps({
+              nextSteps: [
+                {
+                  text: "Authorize, if you already have an account",
+                },
+                {
+                  text: "Register, if you don't",
+                },
+                {
+                  text: "Return, if you don't know how you ended on this page",
+                },
+              ],
+            })
             .actions({
               actions: [
                 {
@@ -198,7 +211,7 @@ export class OauthController {
                   name: "email",
                   type: "email",
                   label: "Email Address",
-                  required: true,
+                  required: false,
                   error: isEmailErrorCode(error)
                     ? userErrorCodeToMessage(error)
                     : undefined,
@@ -209,7 +222,7 @@ export class OauthController {
                   name: "password",
                   type: "password",
                   label: "Password",
-                  required: true,
+                  required: false,
                   error: isPasswordErrorCode(error)
                     ? userErrorCodeToMessage(error)
                     : undefined,

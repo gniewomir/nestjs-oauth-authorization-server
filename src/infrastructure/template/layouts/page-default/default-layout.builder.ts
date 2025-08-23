@@ -38,6 +38,12 @@ type THeaderOptions = {
   headerSubtitle: string;
 };
 
+type TNextStepsOptions = {
+  nextSteps: {
+    text: string;
+  }[];
+};
+
 type TFormOptions = {
   formTitle: string;
   formAction: string;
@@ -67,6 +73,7 @@ type TActionsOptions = {
 };
 
 type TLayoutData = THeaderOptions &
+  TNextStepsOptions &
   TFormOptions &
   TErrorOptions &
   TActionsOptions;
@@ -83,6 +90,14 @@ export class DefaultLayoutBuilder {
   }
 
   header(options: THeaderOptions): this {
+    this.data = {
+      ...this.data,
+      ...options,
+    };
+    return this;
+  }
+
+  nextSteps(options: TNextStepsOptions): this {
     this.data = {
       ...this.data,
       ...options,
