@@ -2,22 +2,22 @@ import { Test, TestingModule } from "@nestjs/testing";
 
 import { DescriptionInterfaceSymbol } from "@domain/tasks/Description.interface";
 
-import { SanitizationService } from "./sanitization.service";
+import { HtmlService } from "./html.service";
 
 describe("SanitizationService", () => {
-  let service: SanitizationService;
+  let service: HtmlService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         {
           provide: DescriptionInterfaceSymbol,
-          useClass: SanitizationService,
+          useClass: HtmlService,
         },
       ],
     }).compile();
 
-    service = module.get<SanitizationService>(DescriptionInterfaceSymbol);
+    service = module.get<HtmlService>(DescriptionInterfaceSymbol);
   });
 
   it("should be defined", () => {

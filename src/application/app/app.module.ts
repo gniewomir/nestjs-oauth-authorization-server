@@ -11,6 +11,7 @@ import {
 import { ConfigModule } from "@infrastructure/config";
 import { DatabaseModule } from "@infrastructure/database";
 import { LoggerModule } from "@infrastructure/logger";
+import { CsrfMiddleware, CsrfModule } from "@infrastructure/security/csrf";
 import { ApiModule } from "@interface/api";
 
 @Module({
@@ -21,6 +22,7 @@ import { ApiModule } from "@interface/api";
     AuthorizationModule,
     DatabaseModule,
     ApiModule,
+    CsrfModule,
   ],
   controllers: [],
   providers: [],
@@ -29,5 +31,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthenticationMiddleware).forRoutes("*");
     consumer.apply(AuthorizationMiddleware).forRoutes("*");
+    consumer.apply(CsrfMiddleware).forRoutes("/oauth/prompt");
   }
 }

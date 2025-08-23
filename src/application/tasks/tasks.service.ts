@@ -72,7 +72,7 @@ export class TasksService {
     @Inject(ContextsInterfaceSymbol)
     private readonly contextsRepository: ContextsInterface,
     @Inject(DescriptionInterfaceSymbol)
-    private readonly sanitizer: DescriptionInterface,
+    private readonly htmlSanitizer: DescriptionInterface,
   ) {}
 
   async createTask(request: CreateTaskRequest): Promise<CreateTaskResponse> {
@@ -81,7 +81,7 @@ export class TasksService {
         identity: IdentityValue.create(),
         description: DescriptionValue.fromInsecureSource(
           request.description,
-          this.sanitizer,
+          this.htmlSanitizer,
         ),
         assigned: IdentityValue.fromString(request.assignedUserId),
         goal: IdentityValue.fromString(request.goalId),
@@ -108,7 +108,7 @@ export class TasksService {
         identity: IdentityValue.create(),
         description: DescriptionValue.fromInsecureSource(
           request.description,
-          this.sanitizer,
+          this.htmlSanitizer,
         ),
         assigned: IdentityValue.fromString(request.assignedUserId),
       },
@@ -133,7 +133,7 @@ export class TasksService {
         identity: IdentityValue.create(),
         description: DescriptionValue.fromInsecureSource(
           request.description,
-          this.sanitizer,
+          this.htmlSanitizer,
         ),
         assigned: IdentityValue.fromString(request.assignedUserId),
       },

@@ -8,7 +8,7 @@ import { TasksInterfaceSymbol } from "@domain/tasks/task/Tasks.interface";
 import { ContextsDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Contexts";
 import { GoalsDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Goals";
 import { TasksDomainRepositoryInMemory } from "@infrastructure/repositories/domain/tasks/Tasks";
-import { SanitizationService } from "@infrastructure/security/sanitizer/sanitization.service";
+import { HtmlService } from "@infrastructure/security/html/html.service";
 
 import { TasksService } from "./tasks.service";
 
@@ -33,7 +33,7 @@ describe("TasksService", () => {
         },
         {
           provide: DescriptionInterfaceSymbol,
-          useClass: SanitizationService,
+          useClass: HtmlService,
         },
       ],
     }).compile();

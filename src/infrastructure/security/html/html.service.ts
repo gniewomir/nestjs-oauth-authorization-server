@@ -15,7 +15,7 @@ const window = new JSDOM("<!DOCTYPE html>").window;
 const domPurify = DOMPurify(window);
 
 @Injectable()
-export class SanitizationService implements DescriptionInterface {
+export class HtmlService implements DescriptionInterface {
   sanitize(text: unknown): string {
     assert(typeof text === "string", "Cannot sanitize non string value");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return

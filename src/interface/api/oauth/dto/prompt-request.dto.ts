@@ -62,4 +62,12 @@ export class PromptRequestDto {
   @IsString()
   @IsIn(Object.values(IntentEnum).map((val) => val.toString()))
   intent: string;
+
+  @ApiProperty({
+    description: "CSRF token for form protection",
+    example: "a1b2c3d4e5f6...",
+  })
+  @IsString()
+  @IsNotEmpty()
+  _csrf: string;
 }

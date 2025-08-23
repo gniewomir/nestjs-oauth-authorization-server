@@ -2,15 +2,15 @@ import { Module } from "@nestjs/common";
 
 import { DescriptionInterfaceSymbol } from "@domain/tasks/Description.interface";
 
-import { SanitizationService } from "./sanitization.service";
+import { HtmlService } from "./html.service";
 
 @Module({
   providers: [
     {
       provide: DescriptionInterfaceSymbol,
-      useClass: SanitizationService,
+      useClass: HtmlService,
     },
   ],
   exports: [DescriptionInterfaceSymbol],
 })
-export class SanitizerModule {}
+export class HtmlModule {}

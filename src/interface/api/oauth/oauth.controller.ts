@@ -21,20 +21,23 @@ import { OauthUnsupportedGrantTypeException } from "@domain/auth/OAuth/Errors";
 import { UserException } from "@domain/auth/OAuth/User/Errors/UserException";
 import { AppConfig, HtmlConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
+import { CsrfService } from "@infrastructure/security/csrf";
 import { DefaultLayoutService } from "@infrastructure/template";
-import { assert } from "@interface/api/utility/assert";
-import { exceptionAsJsonString } from "@interface/api/utility/exception";
 import {
   isEmailErrorCode,
   isPasswordErrorCode,
   isValidErrorCode,
   userErrorCodeToMessage,
-} from "@interface/api/utility/user.error";
+} from "@interface/api/utility";
+import { assert } from "@interface/api/utility/assert";
+import { exceptionAsJsonString } from "@interface/api/utility/exception";
 
-import { AuthorizeRequestDto } from "./dto/authorize-request.dto";
-import { PromptRequestDto } from "./dto/prompt-request.dto";
-import { TokenRequestDto } from "./dto/token-request.dto";
-import { TokenResponseDto } from "./dto/token-response.dto";
+import {
+  AuthorizeRequestDto,
+  PromptRequestDto,
+  TokenRequestDto,
+  TokenResponseDto,
+} from "./dto";
 
 @ApiTags("OAuth2 Authorization")
 @Controller("oauth")
@@ -45,6 +48,7 @@ export class OauthController {
     private readonly authorizationService: AuthorizationService,
     private readonly defaultLayoutService: DefaultLayoutService,
     private readonly htmlConfig: HtmlConfig,
+    private readonly csrfService: CsrfService,
   ) {
     this.logger.setContext("AuthorizationController");
   }
@@ -120,6 +124,9 @@ export class OauthController {
       email,
     });
 
+    // Generate CSRF token for this request
+    const csrfToken = this.csrfService.generateToken(requestId);
+
     const form = {
       [IntentEnum.AUTHORIZE_NEW_USER]: "register",
       [IntentEnum.AUTHORIZE_EXISTING_USER]: "authorize",
@@ -139,12 +146,12 @@ export class OauthController {
             .actions({
               actions: [
                 {
-                  href: `/oauth/prompt?request_id=${requestId}&intent=${IntentEnum.AUTHORIZE_EXISTING_USER.toString()}`,
+                  href: `/oauth/prompt?request_id=${requestId}&intent=${IntentEnum.AUTHORIZE_EXISTING_USER}`,
                   class: "btn-primary",
                   text: "Authorize",
                 },
                 {
-                  href: `/oauth/prompt?request_id=${requestId}&intent=${IntentEnum.AUTHORIZE_NEW_USER.toString()}`,
+                  href: `/oauth/prompt?request_id=${requestId}&intent=${IntentEnum.AUTHORIZE_NEW_USER}`,
                   class: "btn-primary",
                   text: "Register",
                 },
@@ -178,7 +185,11 @@ export class OauthController {
                 },
                 {
                   name: "intent",
-                  value: IntentEnum.AUTHORIZE_EXISTING_USER.toString(),
+                  value: IntentEnum.AUTHORIZE_EXISTING_USER,
+                },
+                {
+                  name: "_csrf",
+                  value: csrfToken,
                 },
               ],
               formFields: [
@@ -252,7 +263,11 @@ export class OauthController {
                 },
                 {
                   name: "intent",
-                  value: IntentEnum.AUTHORIZE_NEW_USER.toString(),
+                  value: IntentEnum.AUTHORIZE_NEW_USER,
+                },
+                {
+                  name: "_csrf",
+                  value: csrfToken,
                 },
               ],
               formFields: [
