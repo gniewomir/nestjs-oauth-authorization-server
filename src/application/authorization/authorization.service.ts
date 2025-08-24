@@ -9,6 +9,7 @@ import {
 } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
 import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import {
   PKCEInterface,
   PKCEInterfaceSymbol,
@@ -18,6 +19,7 @@ import {
   RequestInterfaceSymbol,
 } from "@domain/auth/OAuth/Authorization/Request.interface";
 import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
+import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";
 import {
   ClientInterface,
   ClientInterfaceSymbol,
@@ -47,6 +49,7 @@ import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
+import { AuthorizeRequestDto } from "@interface/api/oauth/dto";
 import { assert } from "@interface/api/utility/assert";
 
 @Injectable()
@@ -75,95 +78,39 @@ export class AuthorizationService {
   ) {}
 
   async createAuthorizationRequest({
-    clientId,
-    responseType,
+    client_id,
+    response_type,
     scope,
     state,
-    codeChallenge,
-    codeChallengeMethod,
+    code_challenge,
+    code_challenge_method,
     intent,
-    redirectUri,
-  }: {
-    clientId: string;
-    responseType: string;
-    scope?: string;
-    state?: string;
-    codeChallengeMethod?: string;
-    codeChallenge?: string;
-    intent?: string;
-    redirectUri?: string;
-  }) {
-    Assert(
-      IdentityValue.isValid(clientId),
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: `Client ID is invalid or missing`,
-        }),
-    );
-    Assert(
-      typeof codeChallenge !== "undefined" && codeChallenge.trim() !== "",
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: `Code challenge is missing - PKCE is mandatory`,
-        }),
-    );
-    Assert(
-      typeof codeChallengeMethod !== "undefined" &&
-        codeChallengeMethod.trim() !== "",
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: `Code challenge method is missing - PKCE is mandatory`,
-        }),
-    );
-    Assert(
-      Boolean(scope),
-      () =>
-        new OauthInvalidRequestException({
-          errorDescription: `No scope in request`,
-        }),
-    );
-
-    // If redirect_uri is provided, validate it against the client's registered redirect URI
-    if (redirectUri) {
-      const client = await NotFoundToDomainException(
-        () => this.clients.retrieve(IdentityValue.fromString(clientId)),
-        (error) =>
-          new OauthServerErrorException({
-            message: error.message,
-          }),
-      );
-
-      const providedRedirectUri = RedirectUriValue.fromString(redirectUri);
-      Assert(
-        client.redirectUri.isEqual(providedRedirectUri),
-        () =>
-          new OauthRedirectUriMismatchException({
-            errorDescription:
-              "The redirect_uri provided in the request does not match the redirect_uri registered for the client application.",
-          }),
-      );
-    }
-
+    redirect_uri,
+  }: AuthorizeRequestDto) {
     const request = await AuthorizationFacade.request(
       {
-        clientId: IdentityValue.fromString(clientId),
-        responseType: ResponseTypeValue.fromString(responseType),
+        clientId: IdentityValue.fromString(client_id),
+        responseType: ResponseTypeValue.fromString(response_type),
         id: IdentityValue.create(),
         scope: scope
-          ? ScopeValueImmutableSet.fromUnknown(scope)
+          ? ScopeValueImmutableSet.fromString(scope)
           : ScopeValueImmutableSet.fromArray([]),
-        state: typeof state === "undefined" ? null : state,
-        codeChallenge: codeChallenge,
-        codeChallengeMethod:
-          CodeChallengeMethodValue.fromString(codeChallengeMethod),
+        state: state ? StateValue.fromUnknown(state) : null,
+        codeChallenge: CodeChallengeValue.fromUnknown(code_challenge),
+        codeChallengeMethod: CodeChallengeMethodValue.fromUnknown(
+          code_challenge_method,
+        ),
         intent: intent ? IntentValue.fromString(intent) : null,
+        redirectUri: redirect_uri
+          ? RedirectUriValue.create(redirect_uri, this.appConfig.nodeEnv)
+          : null,
       },
       this.requests,
       this.clients,
     );
 
     return {
-      requestId: request.id.toString(),
+      request_id: request.id.toString(),
       intent: request.intent ? request.intent.toString() : undefined,
     };
   }
@@ -194,7 +141,7 @@ export class AuthorizationService {
 
     const accessDeniedUrl = request.redirectUri.toURL();
     if (request.state) {
-      accessDeniedUrl.searchParams.set("state", request.state);
+      accessDeniedUrl.searchParams.set("state", request.state.toString());
     }
     accessDeniedUrl.searchParams.set(
       "error",
@@ -249,7 +196,7 @@ export class AuthorizationService {
     const redirect = new URL(request.redirectUri.toString());
     redirect.searchParams.set("code", request.authorizationCode.toString());
     if (request.state) {
-      redirect.searchParams.set("state", request.state);
+      redirect.searchParams.set("state", request.state.toString());
     }
 
     return {
@@ -271,7 +218,7 @@ export class AuthorizationService {
     const redirect = request.redirectUri.toURL();
     redirect.searchParams.set("error", "access_denied");
     if (request.state) {
-      redirect.searchParams.set("state", request.state);
+      redirect.searchParams.set("state", request.state.toString());
     }
 
     return {

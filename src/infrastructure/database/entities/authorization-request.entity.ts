@@ -29,14 +29,14 @@ export class AuthorizationRequest {
 
   @Column({
     type: "varchar",
-    length: 255,
+    length: 2048,
     nullable: true,
   })
   state: string | null;
 
   @Column({
     type: "varchar",
-    length: 255,
+    length: 128,
   })
   codeChallenge: string;
 

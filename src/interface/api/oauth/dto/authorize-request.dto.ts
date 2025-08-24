@@ -60,7 +60,7 @@ export class AuthorizeRequestDto {
     required: false,
   })
   @IsString()
-  @MaxLength(255)
+  @MaxLength(2048)
   @IsOptional()
   state?: string;
 
@@ -71,7 +71,7 @@ export class AuthorizeRequestDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(43)
-  @MaxLength(255)
+  @MaxLength(128)
   code_challenge: string;
 
   @ApiProperty({

@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { IsNull, Repository } from "typeorm";
 
 import {
+  CodeChallengeValue,
   IntentValue,
   Request as DomainRequest,
   RequestInterface,
@@ -11,6 +12,7 @@ import {
 } from "@domain/auth/OAuth/Authorization";
 import { Code } from "@domain/auth/OAuth/Authorization/Code";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";
 import { RedirectUriValue } from "@domain/auth/OAuth/Client";
 import { OauthInvalidCredentialsException } from "@domain/auth/OAuth/Errors";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
@@ -79,8 +81,12 @@ export class RequestDomainRepository implements RequestInterface {
       responseType: ResponseTypeValue.fromString(databaseRequest.responseType),
       clientId: IdentityValue.fromString(databaseRequest.clientId),
       redirectUri: RedirectUriValue.fromString(databaseRequest.redirectUri),
-      state: databaseRequest.state,
-      codeChallenge: databaseRequest.codeChallenge,
+      state: databaseRequest.state
+        ? StateValue.fromString(databaseRequest.state)
+        : null,
+      codeChallenge: CodeChallengeValue.fromString(
+        databaseRequest.codeChallenge,
+      ),
       codeChallengeMethod: CodeChallengeMethodValue.fromString(
         databaseRequest.codeChallengeMethod,
       ),
@@ -111,8 +117,8 @@ export class RequestDomainRepository implements RequestInterface {
       responseType: domainRequest.responseType.toString(),
       clientId: domainRequest.clientId.toString(),
       redirectUri: domainRequest.redirectUri.toString(),
-      state: domainRequest.state,
-      codeChallenge: domainRequest.codeChallenge,
+      state: domainRequest.state ? domainRequest.state.toString() : null,
+      codeChallenge: domainRequest.codeChallenge.toString(),
       codeChallengeMethod: domainRequest.codeChallengeMethod.toString(),
       scope: domainRequest.scope.toString(),
       authCode: domainRequest.authorizationCode

@@ -3,6 +3,7 @@ import { randomString } from "@test/utility/randomString";
 
 import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import { Request as DomainRequest } from "@domain/auth/OAuth/Authorization/Request";
+import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { RequestDomainRepositoryInMemory } from "@infrastructure/repositories/domain";
@@ -33,14 +34,14 @@ describe("RequestDomainRepositoryInMemory", () => {
     it("should overwrite existing request with same id", async () => {
       // Arrange
       const originalRequest = requestMother({
-        state: "original-state",
+        state: StateValue.fromString("original-state"),
       });
       await repository.persist(originalRequest);
 
       // Act - create new request with same id but different state
       const updatedRequest = requestMother({
         id: originalRequest.id, // Same id
-        state: "updated-state", // Different state
+        state: StateValue.fromString("updated-state"), // Different state
       });
       await repository.persist(updatedRequest);
       const result = repository.requests.get(originalRequest.id.toString());
@@ -49,7 +50,9 @@ describe("RequestDomainRepositoryInMemory", () => {
       expect(result).toStrictEqual(updatedRequest);
       expect(result).not.toBe(updatedRequest);
       expect(
-        repository.requests.get(originalRequest.id.toString())?.state,
+        repository.requests
+          .get(originalRequest.id.toString())
+          ?.state?.toString(),
       ).toBe("updated-state");
     });
   });
@@ -67,7 +70,7 @@ describe("RequestDomainRepositoryInMemory", () => {
       expect(result).toStrictEqual(request);
       expect(result).not.toBe(request);
       expect(result.id.toString()).toBe(request.id.toString());
-      expect(result.state).toBe(request.state);
+      expect(result.state?.toString()).toBe(request.state?.toString());
     });
 
     it("should reject when request not found by id", async () => {
@@ -82,8 +85,12 @@ describe("RequestDomainRepositoryInMemory", () => {
 
     it("should handle multiple requests correctly", async () => {
       // Arrange
-      const request1 = requestMother({ state: "state-1" });
-      const request2 = requestMother({ state: "state-2" });
+      const request1 = requestMother({
+        state: StateValue.fromString("state-1"),
+      });
+      const request2 = requestMother({
+        state: StateValue.fromString("state-2"),
+      });
       await repository.persist(request1);
       await repository.persist(request2);
 
@@ -92,8 +99,8 @@ describe("RequestDomainRepositoryInMemory", () => {
       const retrievedRequest2 = await repository.retrieve(request2.id);
 
       // Assert
-      expect(retrievedRequest1.state).toBe("state-1");
-      expect(retrievedRequest2.state).toBe("state-2");
+      expect(retrievedRequest1.state?.toString()).toBe("state-1");
+      expect(retrievedRequest2.state?.toString()).toBe("state-2");
       expect(repository.requests.size).toBe(2);
     });
   });
@@ -277,8 +284,10 @@ describe("RequestDomainRepositoryInMemory", () => {
       expect(result.redirectUri.toString()).toBe(
         request.redirectUri.toString(),
       );
-      expect(result.state).toBe(request.state);
-      expect(result.codeChallenge).toBe(request.codeChallenge);
+      expect(result.state?.toString()).toBe(request.state?.toString());
+      expect(result.codeChallenge.toString()).toBe(
+        request.codeChallenge.toString(),
+      );
       expect(result.scope.toString()).toEqual(request.scope.toString());
       expect(result.responseType.toString()).toBe(
         request.responseType.toString(),

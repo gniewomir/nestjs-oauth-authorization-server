@@ -2,6 +2,7 @@ import { Assert } from "@domain/Assert";
 import {
   Code,
   CodeChallengeMethodValue,
+  CodeChallengeValue,
   CodeInterface,
   IntentValue,
   PKCEInterface,
@@ -9,7 +10,12 @@ import {
   RequestInterface,
   ResponseTypeValue,
 } from "@domain/auth/OAuth/Authorization";
-import { Client, ClientInterface } from "@domain/auth/OAuth/Client";
+import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";
+import {
+  Client,
+  ClientInterface,
+  RedirectUriValue,
+} from "@domain/auth/OAuth/Client";
 import {
   OauthInvalidClientException,
   OauthInvalidCredentialsException,
@@ -61,38 +67,16 @@ export class AuthorizationFacade {
       responseType: ResponseTypeValue;
       clientId: IdentityValue;
       scope: ScopeValueImmutableSet;
-      state: string | null;
-      codeChallenge: string;
+      state: StateValue | null;
+      codeChallenge: CodeChallengeValue;
       codeChallengeMethod: CodeChallengeMethodValue;
       intent: IntentValue | null;
+      redirectUri: RedirectUriValue | null;
     },
     requests: RequestInterface,
     clients: ClientInterface,
   ): Promise<Request> {
-    const client = await NotFoundToDomainException(
-      () => clients.retrieve(params.clientId),
-      (error) =>
-        new OauthInvalidCredentialsException({
-          message: error.message,
-        }),
-    );
-
-    const redirectUri = client.redirectUri;
-
-    Assert(
-      client.scope.isSupersetOf(params.scope),
-      () =>
-        new OauthInvalidScopeException({
-          message: "Requested scope unavailable for provided client",
-        }),
-    );
-    const request = await Request.create(
-      {
-        ...params,
-        redirectUri,
-      },
-      clients,
-    );
+    const request = await Request.create(params, clients);
     await requests.persist(request);
     return request;
   }
@@ -128,7 +112,6 @@ export class AuthorizationFacade {
           message: "User not found",
         }),
     );
-
     Assert(
       params.credentials.email.isEqual(user.email),
       () =>

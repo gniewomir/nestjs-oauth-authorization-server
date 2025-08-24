@@ -1,5 +1,6 @@
 import { createHash, getRandomValues } from "crypto";
 
+import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import { PKCEInterface } from "@domain/auth/OAuth/Authorization/PKCE/PKCE.interface";
 import { PKCEService } from "@infrastructure/security/pkce/pkce.service";
 
@@ -10,6 +11,8 @@ export class PKCEServiceFake extends PKCEService implements PKCEInterface {
   }
 
   public generateChallenge(codeVerifier: string) {
-    return createHash("sha256").update(codeVerifier).digest("base64url");
+    return CodeChallengeValue.fromString(
+      createHash("sha256").update(codeVerifier).digest("base64url"),
+    );
   }
 }

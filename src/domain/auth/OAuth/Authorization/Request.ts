@@ -1,20 +1,24 @@
 import { Assert } from "@domain/Assert";
+import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
 import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { ResolutionValue } from "@domain/auth/OAuth/Authorization/ResolutionValue";
 import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
-import { Client } from "@domain/auth/OAuth/Client/Client";
+import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";
 import { ClientInterface } from "@domain/auth/OAuth/Client/Client.interface";
 import { RedirectUriValue } from "@domain/auth/OAuth/Client/RedirectUriValue";
 import {
   OauthInvalidCredentialsException,
   OauthInvalidRequestException,
+  OauthInvalidScopeException,
+  OauthRedirectUriMismatchException,
 } from "@domain/auth/OAuth/Errors";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope/ScopeValueImmutableSet";
 import { ClockInterface } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
+import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AuthConfig } from "@infrastructure/config/configs";
 
 export type TRequestConstructorArgs = ConstructorParameters<typeof Request>;
@@ -24,8 +28,8 @@ export class Request {
   public readonly id: IdentityValue;
   public readonly clientId: IdentityValue;
   public readonly redirectUri: RedirectUriValue;
-  public readonly state: string | null;
-  public readonly codeChallenge: string;
+  public readonly state: StateValue | null;
+  public readonly codeChallenge: CodeChallengeValue;
   public readonly codeChallengeMethod: CodeChallengeMethodValue;
   public readonly scope: ScopeValueImmutableSet;
   public readonly responseType: ResponseTypeValue;
@@ -38,16 +42,16 @@ export class Request {
     clientId: IdentityValue;
     redirectUri: RedirectUriValue;
     scope: ScopeValueImmutableSet;
-    state: string | null;
-    codeChallenge: string;
+    codeChallenge: CodeChallengeValue;
     codeChallengeMethod: CodeChallengeMethodValue;
-    intent: IntentValue | null;
-    authorizationCode: Code | null;
     resolution: ResolutionValue;
+    authorizationCode: Code | null;
+    state: StateValue | null;
+    intent: IntentValue | null;
   }) {
     Assert(
       params.responseType.isEqual(ResponseTypeValue.TYPE_CODE()),
-      "Authorization Code flow is currently the only one supported",
+      "Authorization Code flow is the only one supported",
     );
     this.id = params.id;
     this.responseType = params.responseType;
@@ -69,18 +73,39 @@ export class Request {
   }
 
   public static async create(
-    params: Omit<TRequestConstructorParam, "authorizationCode" | "resolution">,
+    params: Omit<
+      TRequestConstructorParam,
+      "authorizationCode" | "resolution" | "redirectUri"
+    > & { redirectUri: RedirectUriValue | null },
     clientInterface: ClientInterface,
   ) {
-    Assert(
-      (await clientInterface.retrieve(params.clientId)) instanceof Client,
-      () =>
+    const client = await NotFoundToDomainException(
+      () => clientInterface.retrieve(params.clientId),
+      (error) =>
         new OauthInvalidCredentialsException({
-          message: "OAuth client does not exist",
+          message: error.message,
+        }),
+    );
+    Assert(
+      params.redirectUri === null ||
+        client.redirectUri.isEqual(params.redirectUri),
+      () =>
+        new OauthRedirectUriMismatchException({
+          errorDescription:
+            "The redirect_uri provided in the request does not match the redirect_uri registered for the client application.",
+        }),
+    );
+    Assert(
+      client.scope.isSupersetOf(params.scope),
+      () =>
+        new OauthInvalidScopeException({
+          message: "Requested scope unavailable for provided client",
         }),
     );
     return new Request({
       ...params,
+      redirectUri:
+        params.redirectUri !== null ? params.redirectUri : client.redirectUri,
       resolution: ResolutionValue.PENDING(),
       authorizationCode: null,
     });

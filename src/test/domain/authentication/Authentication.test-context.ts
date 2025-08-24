@@ -15,7 +15,7 @@ export const createAuthenticationTestContext = async (
   const requestedScopes = params.requestedScopes
     ? params.requestedScopes
     : defaultTestClientScopesMother();
-  const authenticationContext = await createAuthorizationTestContext({
+  const authorizationContext = await createAuthorizationTestContext({
     clientScope: requestedScopes,
   });
   const {
@@ -34,7 +34,7 @@ export const createAuthenticationTestContext = async (
     tokenPayloads,
     codeChallenge,
     codeVerifier,
-  } = authenticationContext;
+  } = authorizationContext;
 
   await AuthorizationFacade.request(
     {
@@ -84,7 +84,7 @@ export const createAuthenticationTestContext = async (
     );
 
   return {
-    ...authenticationContext,
+    ...authorizationContext,
     accessToken,
     refreshToken,
     idToken,

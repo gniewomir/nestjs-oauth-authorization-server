@@ -74,22 +74,15 @@ export class OauthController {
     @Query() query: AuthorizeRequestDto,
     @Res() res: Response,
   ): Promise<void> {
-    const request = await this.authorizationService.createAuthorizationRequest({
-      clientId: query.client_id,
-      scope: query.scope,
-      state: query.state,
-      codeChallenge: query.code_challenge,
-      codeChallengeMethod: query.code_challenge_method,
-      responseType: query.response_type,
-      intent: query.intent,
-      redirectUri: query.redirect_uri,
-    });
+    const { request_id, intent } =
+      await this.authorizationService.createAuthorizationRequest(query);
 
     res.redirect(
       HttpStatus.TEMPORARY_REDIRECT,
-      request.intent
-        ? `/oauth/prompt?request_id=${request.requestId}&intent=${request.intent}`
-        : `/oauth/prompt?request_id=${request.requestId}`,
+      this.createRedirectString(`/oauth/prompt`, {
+        request_id,
+        intent,
+      }),
     );
   }
 
@@ -618,7 +611,7 @@ export class OauthController {
     path: string,
     query: {
       request_id: string;
-      intent: string;
+      intent?: string;
       error?: string;
       email?: string;
     },

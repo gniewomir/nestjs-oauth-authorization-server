@@ -83,47 +83,47 @@ describe("AuthorizationService", () => {
     it("should create authorization request without redirect_uri", async () => {
       // Act
       const result = await service.createAuthorizationRequest({
-        clientId: testContext.client.id.toString(),
-        responseType: "code",
+        client_id: testContext.client.id.toString(),
+        response_type: "code",
         scope: "task:api",
         state: "test-state",
-        codeChallenge: testContext.codeChallenge,
-        codeChallengeMethod: "S256",
+        code_challenge: testContext.codeChallenge.toString(),
+        code_challenge_method: "S256",
       });
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.requestId).toBeDefined();
+      expect(result.request_id).toBeDefined();
     });
 
     it("should create authorization request with valid redirect_uri", async () => {
       // Act
       const result = await service.createAuthorizationRequest({
-        clientId: testContext.client.id.toString(),
-        responseType: "code",
+        client_id: testContext.client.id.toString(),
+        response_type: "code",
         scope: "task:api",
         state: "test-state",
-        codeChallenge: testContext.codeChallenge,
-        codeChallengeMethod: "S256",
-        redirectUri: testContext.client.redirectUri.toString(),
+        code_challenge: testContext.codeChallenge.toString(),
+        code_challenge_method: "S256",
+        redirect_uri: testContext.client.redirectUri.toString(),
       });
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.requestId).toBeDefined();
+      expect(result.request_id).toBeDefined();
     });
 
     it("should throw OauthRedirectUriMismatchException when redirect_uri does not match client's registered redirect_uri", async () => {
       // Act & Assert
       await expect(
         service.createAuthorizationRequest({
-          clientId: testContext.client.id.toString(),
-          responseType: "code",
+          client_id: testContext.client.id.toString(),
+          response_type: "code",
           scope: "task:api",
           state: "test-state",
-          codeChallenge: testContext.codeChallenge,
-          codeChallengeMethod: "S256",
-          redirectUri: "https://different-client.com/callback",
+          code_challenge: testContext.codeChallenge.toString(),
+          code_challenge_method: "S256",
+          redirect_uri: "https://different-client.com/callback",
         }),
       ).rejects.toThrow(OauthRedirectUriMismatchException);
     });
@@ -135,19 +135,19 @@ describe("AuthorizationService", () => {
     beforeEach(async () => {
       // Create an authorization request first
       const authRequest = await service.createAuthorizationRequest({
-        clientId: testContext.client.id.toString(),
-        responseType: "code",
+        client_id: testContext.client.id.toString(),
+        response_type: "code",
         scope: "task:api token:refresh",
         state: "test-state",
-        codeChallenge: testContext.codeChallenge,
-        codeChallengeMethod: "S256",
+        code_challenge: testContext.codeChallenge.toString(),
+        code_challenge_method: "S256",
       });
 
-      requestId = authRequest.requestId;
+      requestId = authRequest.request_id;
 
       // Authorize the request to get an authorization code
       const request = await testContext.requests.retrieve(
-        IdentityValue.fromString(requestId),
+        IdentityValue.fromString(authRequest.request_id),
       );
       request.issueAuthorizationCode(
         testContext.user.identity,

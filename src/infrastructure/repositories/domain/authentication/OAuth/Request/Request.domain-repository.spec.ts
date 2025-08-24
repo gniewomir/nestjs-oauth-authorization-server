@@ -4,6 +4,7 @@ import { requestMother } from "@test/domain/authentication/Request.mother";
 
 import { Code } from "@domain/auth/OAuth/Authorization/Code";
 import { Request as DomainAuthorizationRequest } from "@domain/auth/OAuth/Authorization/Request";
+import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";
 import { IdentityValue } from "@domain/IdentityValue";
 import { ClockServiceFake } from "@infrastructure/clock/clock.service.fake";
 import { ConfigModule } from "@infrastructure/config";
@@ -55,8 +56,12 @@ describe("RequestDomainRepository", () => {
       expect(savedRequest.redirectUri.toString()).toBe(
         domainRequest.redirectUri.toString(),
       );
-      expect(savedRequest.state).toBe(domainRequest.state);
-      expect(savedRequest.codeChallenge).toBe(domainRequest.codeChallenge);
+      expect(savedRequest.state?.toString()).toBe(
+        domainRequest.state?.toString(),
+      );
+      expect(savedRequest.codeChallenge.toString()).toBe(
+        domainRequest.codeChallenge.toString(),
+      );
       expect(savedRequest.scope.toString()).toEqual(
         domainRequest.scope.toString(),
       );
@@ -72,14 +77,14 @@ describe("RequestDomainRepository", () => {
       const updatedRequest = requestMother({
         ...originalRequest,
         id: originalRequest.id, // Same id
-        state: "updated-state", // Changed property
+        state: StateValue.fromString("updated-state"), // Changed property
       });
 
       await repository.persist(updatedRequest);
 
       // Assert
       const retrievedRequest = await repository.retrieve(originalRequest.id);
-      expect(retrievedRequest.state).toBe("updated-state");
+      expect(retrievedRequest.state?.toString()).toBe("updated-state");
     });
 
     it("should save OAuth request with authorization code", async () => {
@@ -129,8 +134,10 @@ describe("RequestDomainRepository", () => {
       expect(result.redirectUri.toString()).toBe(
         domainRequest.redirectUri.toString(),
       );
-      expect(result.state).toBe(domainRequest.state);
-      expect(result.codeChallenge).toBe(domainRequest.codeChallenge);
+      expect(result.state?.toString()).toBe(domainRequest.state?.toString());
+      expect(result.codeChallenge.toString()).toBe(
+        domainRequest.codeChallenge.toString(),
+      );
       expect(result.scope.toString()).toEqual(domainRequest.scope.toString());
       expect(result.authorizationCode).toBeNull();
     });
@@ -348,8 +355,10 @@ describe("RequestDomainRepository", () => {
       expect(result.redirectUri.toString()).toBe(
         domainRequest.redirectUri.toString(),
       );
-      expect(result.state).toBe(domainRequest.state);
-      expect(result.codeChallenge).toBe(domainRequest.codeChallenge);
+      expect(result.state?.toString()).toBe(domainRequest.state?.toString());
+      expect(result.codeChallenge.toString()).toBe(
+        domainRequest.codeChallenge.toString(),
+      );
       expect(result.scope.toString()).toEqual(domainRequest.scope.toString());
       expect(result.responseType.toString()).toBe(
         domainRequest.responseType.toString(),

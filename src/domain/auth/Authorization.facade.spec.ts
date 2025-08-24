@@ -45,7 +45,10 @@ describe("AuthorizationFacade", () => {
       assert(requests.requests.size === 0);
 
       const request = await AuthorizationFacade.request(
-        { ...requestMother(), clientId: client.id },
+        {
+          ...requestMother({ redirectUri: client.redirectUri }),
+          clientId: client.id,
+        },
         requests,
         clients,
       );

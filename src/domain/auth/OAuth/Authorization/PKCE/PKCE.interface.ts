@@ -1,3 +1,4 @@
+import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 
 export interface PKCEInterface {
@@ -6,7 +7,7 @@ export interface PKCEInterface {
     codeVerifier,
     method,
   }: {
-    codeChallenge: string;
+    codeChallenge: CodeChallengeValue;
     codeVerifier: string;
     method: CodeChallengeMethodValue;
   }): boolean;

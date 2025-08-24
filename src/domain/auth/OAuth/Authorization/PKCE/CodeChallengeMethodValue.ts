@@ -13,9 +13,20 @@ export class CodeChallengeMethodValue {
         .includes(method),
       () =>
         new OauthInvalidRequestException({
-          message: `Accepted code challenge methods are ${Object.values(CodeChallengeMethodsEnum).join(", ")}`,
+          errorDescription: `Accepted code challenge methods are ${Object.values(CodeChallengeMethodsEnum).join(", ")}`,
         }),
     );
+  }
+
+  public static fromUnknown(value: unknown): CodeChallengeMethodValue {
+    Assert(
+      typeof value === "string",
+      () =>
+        new OauthInvalidRequestException({
+          errorDescription: `Missing code challenge method`,
+        }),
+    );
+    return new CodeChallengeMethodValue(value);
   }
 
   public static METHOD_S256(): CodeChallengeMethodValue {

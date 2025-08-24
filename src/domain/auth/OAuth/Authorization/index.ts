@@ -5,3 +5,4 @@ export * from "./Request";
 export * from "./Request.interface";
 export * from "./ResolutionValue";
 export * from "./ResponseTypeValue";
+export * from "./StateValue";

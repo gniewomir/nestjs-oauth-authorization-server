@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { createHash } from "crypto";
 
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import { PKCEInterface } from "@domain/auth/OAuth/Authorization/PKCE/PKCE.interface";
 import { OauthInvalidRequestException } from "@domain/auth/OAuth/Errors";
 
@@ -12,7 +13,7 @@ export class PKCEService implements PKCEInterface {
     codeVerifier,
     method,
   }: {
-    codeChallenge: string;
+    codeChallenge: CodeChallengeValue;
     codeVerifier: string;
     method: CodeChallengeMethodValue;
   }): boolean {
@@ -20,7 +21,7 @@ export class PKCEService implements PKCEInterface {
       const encoder = new TextEncoder();
       const data = encoder.encode(codeVerifier);
       const verifier = createHash("sha256").update(data).digest("base64url");
-      return verifier === codeChallenge;
+      return verifier === codeChallenge.toString();
     }
     throw new OauthInvalidRequestException({
       errorDescription: `Unrecognized code challenge method`,
