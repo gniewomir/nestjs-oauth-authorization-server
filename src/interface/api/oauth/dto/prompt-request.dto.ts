@@ -1,10 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
   IsBoolean,
+  IsEmail,
   IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
 } from "class-validator";
 
 import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
@@ -16,6 +20,7 @@ export class PromptRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @IsUUID()
   request_id: string;
 
   @ApiProperty({
@@ -24,6 +29,8 @@ export class PromptRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @IsEmail()
+  @MaxLength(254)
   email: string;
 
   @ApiProperty({
@@ -32,6 +39,8 @@ export class PromptRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(72)
   password: string;
 
   @ApiProperty({
@@ -54,14 +63,17 @@ export class PromptRequestDto {
   choice?: string;
 
   @ApiProperty({
-    description: `Indicates if submission came from registration or authorization form`,
-    example: IntentEnum.AUTHORIZE_NEW_USER.toString(),
+    description:
+      `Non standard, optional property to indicate,` +
+      ` if user should be presented with registration or authorization form.`,
+    example: IntentEnum.AUTHORIZE_NEW_USER,
     enum: Object.values(IntentEnum).map((val) => val.toString()),
-    required: true,
+    enumName: "IntentEnum",
   })
   @IsString()
   @IsIn(Object.values(IntentEnum).map((val) => val.toString()))
-  intent: string;
+  @IsOptional()
+  intent?: string;
 
   @ApiProperty({
     description: "CSRF token for form protection",
@@ -69,5 +81,7 @@ export class PromptRequestDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(32)
+  @MaxLength(255)
   _csrf: string;
 }

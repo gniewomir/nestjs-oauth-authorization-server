@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+} from "class-validator";
 
 export class OauthErrorDto {
   @ApiProperty({
@@ -8,6 +14,7 @@ export class OauthErrorDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(50)
   error: string;
 
   @ApiProperty({
@@ -18,12 +25,15 @@ export class OauthErrorDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(1000)
   error_description: string;
 
   @ApiProperty({
     description: "A link to a web page with more information about the error",
   })
   @IsString()
+  @IsUrl()
+  @MaxLength(2048)
   @IsOptional()
   error_uri?: string;
 
@@ -32,6 +42,7 @@ export class OauthErrorDto {
       "The exact state value the client application originally sent, used to prevent CSRF attacks",
   })
   @IsString()
+  @MaxLength(255)
   @IsOptional()
   state?: string;
 }

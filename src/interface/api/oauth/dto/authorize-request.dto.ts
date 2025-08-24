@@ -1,5 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from "class-validator";
 
 import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodsEnum } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
@@ -9,7 +18,7 @@ export class AuthorizeRequestDto {
     description: "OAuth client identifier",
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   client_id: string;
 
@@ -28,6 +37,8 @@ export class AuthorizeRequestDto {
     required: true,
   })
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(2048)
   scope: string;
 
   @ApiProperty({
@@ -37,6 +48,8 @@ export class AuthorizeRequestDto {
     required: false,
   })
   @IsString()
+  @IsUrl()
+  @MaxLength(2048)
   @IsOptional()
   redirect_uri?: string;
 
@@ -47,6 +60,7 @@ export class AuthorizeRequestDto {
     required: false,
   })
   @IsString()
+  @MaxLength(255)
   @IsOptional()
   state?: string;
 
@@ -55,6 +69,9 @@ export class AuthorizeRequestDto {
     example: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
   })
   @IsString()
+  @IsNotEmpty()
+  @MinLength(43)
+  @MaxLength(255)
   code_challenge: string;
 
   @ApiProperty({
@@ -68,10 +85,11 @@ export class AuthorizeRequestDto {
 
   @ApiProperty({
     description:
-      `Non standard property to indicate,` +
-      ` if user should presented with registration or authorization form.`,
+      `Non standard, optional property to indicate,` +
+      ` if user should be presented with registration or authorization form.`,
     example: IntentEnum.AUTHORIZE_NEW_USER,
     enum: Object.values(IntentEnum).map((val) => val.toString()),
+    enumName: "IntentEnum",
   })
   @IsString()
   @IsIn(Object.values(IntentEnum).map((val) => val.toString()))

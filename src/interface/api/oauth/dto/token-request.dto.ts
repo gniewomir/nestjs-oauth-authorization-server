@@ -1,5 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import {
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateIf,
+} from "class-validator";
 
 export class TokenRequestDto {
   @ApiProperty({
@@ -15,7 +22,7 @@ export class TokenRequestDto {
     description: "OAuth client identifier",
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   client_id: string;
 
@@ -34,6 +41,7 @@ export class TokenRequestDto {
     example: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
     required: false,
   })
+  @ValidateIf((o: TokenRequestDto) => o.grant_type === "authorization_code")
   @IsString()
   @IsNotEmpty()
   code?: string;
@@ -43,6 +51,7 @@ export class TokenRequestDto {
     example: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
     required: false,
   })
+  @ValidateIf((o: TokenRequestDto) => o.grant_type === "authorization_code")
   @IsString()
   @IsNotEmpty()
   code_verifier?: string;
@@ -52,6 +61,7 @@ export class TokenRequestDto {
     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     required: false,
   })
+  @ValidateIf((o: TokenRequestDto) => o.grant_type === "refresh_token")
   @IsString()
   @IsNotEmpty()
   refresh_token?: string;
