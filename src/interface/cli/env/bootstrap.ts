@@ -93,6 +93,7 @@ void cliBootstrap({
       `# BEGIN ENV FILE`,
       "",
       `# NOTE: empty values i.e. "APP_PORT=" will fallback to default value.`,
+      `# NOTE: \`npm run env:merge:save\` will drop all environment variables not registered in configuration!`,
       "",
       ...Object.values(envByConfig).flat(),
       `# END ENV FILE`,
