@@ -17,6 +17,8 @@ import { LoggerModule } from "@infrastructure/logger";
 import { CsrfMiddleware, CsrfModule } from "@infrastructure/security/csrf";
 import { ApiModule } from "@interface/api";
 
+import { HttpLoggingMiddleware } from "./http-logging.middleware";
+
 @Module({
   imports: [
     ConfigModule,
@@ -36,11 +38,9 @@ import { ApiModule } from "@interface/api";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthenticationMiddleware)
-      .exclude("/status", "/oauth/*path", "/static/*path")
-      .forRoutes("*");
-    consumer.apply(AuthorizationMiddleware).forRoutes("*");
+    consumer.apply(HttpLoggingMiddleware).forRoutes("*");
+    consumer.apply(AuthenticationMiddleware).forRoutes("/api/*path");
+    consumer.apply(AuthorizationMiddleware).forRoutes("/api/*path");
     consumer.apply(CsrfMiddleware).forRoutes("/oauth/prompt");
   }
 }
