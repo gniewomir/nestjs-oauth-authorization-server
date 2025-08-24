@@ -77,10 +77,10 @@ export class AuthorizeRequestDto {
   @ApiProperty({
     description: `PKCE code challenge method`,
     example: CodeChallengeMethodsEnum.S256,
-    enum: Object.values(CodeChallengeMethodsEnum).map((val) => val.toString()),
+    enum: Object.values(CodeChallengeMethodsEnum),
   })
   @IsString()
-  @IsIn(Object.values(CodeChallengeMethodsEnum).map((val) => val.toString()))
+  @IsIn(Object.values(CodeChallengeMethodsEnum))
   code_challenge_method: string;
 
   @ApiProperty({
@@ -88,11 +88,11 @@ export class AuthorizeRequestDto {
       `Non standard, optional property to indicate,` +
       ` if user should be presented with registration or authorization form.`,
     example: IntentEnum.AUTHORIZE_NEW_USER,
-    enum: Object.values(IntentEnum).map((val) => val.toString()),
+    enum: Object.values(IntentEnum),
     enumName: "IntentEnum",
   })
   @IsString()
-  @IsIn(Object.values(IntentEnum).map((val) => val.toString()))
+  @IsIn(Object.values(IntentEnum))
   @IsOptional()
   intent?: string;
 }

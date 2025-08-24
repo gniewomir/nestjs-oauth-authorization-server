@@ -13,7 +13,7 @@ import {
 
 import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
 
-export class PromptRequestDto {
+export class PromptSubmitRequestDto {
   @ApiProperty({
     description: "Authorization request identifier",
     example: "550e8400-e29b-41d4-a716-446655440000",

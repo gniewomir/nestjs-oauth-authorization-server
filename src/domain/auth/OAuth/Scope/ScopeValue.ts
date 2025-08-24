@@ -5,7 +5,7 @@ import {
 } from "@domain/auth/OAuth/Errors";
 import { deepFreeze } from "@infrastructure/config/utility";
 
-type TScopeDescription = {
+export type TScopeDescription = {
   name: string;
   humanName: string;
   description: string;

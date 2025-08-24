@@ -1,9 +1,9 @@
 import { Assert } from "@domain/Assert";
-import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import { Code } from "@domain/auth/OAuth/Authorization/Code/Code";
 import { CodeInterface } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
 import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import { ResolutionValue } from "@domain/auth/OAuth/Authorization/ResolutionValue";
 import { ResponseTypeValue } from "@domain/auth/OAuth/Authorization/ResponseTypeValue";
 import { StateValue } from "@domain/auth/OAuth/Authorization/StateValue";

@@ -1,6 +1,11 @@
 import { Assert } from "@domain/Assert";
 import { OauthInvalidScopeException } from "@domain/auth/OAuth/Errors";
-import { ScopeValue } from "@domain/auth/OAuth/Scope/ScopeValue";
+import {
+  ScopeValue,
+  TScopeDescription,
+} from "@domain/auth/OAuth/Scope/ScopeValue";
+
+export type TScopesDescription = Readonly<TScopeDescription>[];
 
 export class ScopeValueImmutableSet implements Iterable<ScopeValue> {
   *[Symbol.iterator](): IterableIterator<ScopeValue> {
@@ -88,7 +93,7 @@ export class ScopeValueImmutableSet implements Iterable<ScopeValue> {
     );
   }
 
-  public describe() {
+  public describe(): Readonly<TScopeDescription>[] {
     return Array.from(this.scopes).map((scope) =>
       ScopeValue.fromString(scope).describe(),
     );

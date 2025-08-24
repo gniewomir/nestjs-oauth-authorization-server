@@ -19,6 +19,15 @@ export class IntentValue {
     );
   }
 
+  static isValidIntent(value: unknown) {
+    try {
+      IntentValue.fromUnknown(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   static fromString(value: string) {
     return new IntentValue(value);
   }

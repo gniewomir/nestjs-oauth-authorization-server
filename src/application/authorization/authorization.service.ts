@@ -7,7 +7,10 @@ import {
   CodeInterface,
   CodeInterfaceSymbol,
 } from "@domain/auth/OAuth/Authorization/Code/Code.interface";
-import { IntentValue } from "@domain/auth/OAuth/Authorization/IntentValue";
+import {
+  IntentEnum,
+  IntentValue,
+} from "@domain/auth/OAuth/Authorization/IntentValue";
 import { CodeChallengeMethodValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
 import { CodeChallengeValue } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeValue";
 import {
@@ -49,7 +52,10 @@ import { ClockInterface, ClockInterfaceSymbol } from "@domain/Clock.interface";
 import { IdentityValue } from "@domain/IdentityValue";
 import { NotFoundToDomainException } from "@domain/NotFoundToDomainException";
 import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
-import { AuthorizeRequestDto } from "@interface/api/oauth/dto";
+import {
+  AuthorizeRequestDto,
+  PromptShowRequestDto,
+} from "@interface/api/oauth/dto";
 import { assert } from "@interface/api/utility/assert";
 
 @Injectable()
@@ -116,21 +122,24 @@ export class AuthorizationService {
   }
 
   async prepareAuthorizationPrompt({
-    requestId,
+    request_id,
     email,
-  }: {
-    requestId: string;
-    intent?: string;
-    email?: string;
-  }) {
+    intent,
+  }: PromptShowRequestDto) {
+    Assert(
+      IntentValue.isValid(intent),
+      () =>
+        new OauthInvalidRequestException({
+          message: `Invalid intent value`,
+        }),
+    );
     const request = await NotFoundToDomainException(
-      () => this.requests.retrieve(IdentityValue.fromString(requestId)),
+      () => this.requests.retrieve(IdentityValue.fromString(request_id)),
       () =>
         new OauthInvalidRequestException({
           errorDescription: `Authorization request not found`,
         }),
     );
-
     const client = await NotFoundToDomainException(
       () => this.clients.retrieve(request.clientId),
       (error) =>
@@ -158,6 +167,11 @@ export class AuthorizationService {
       sanitizedEmail: email
         ? EmailValue.create(email, this.emailSanitizer).toString()
         : undefined,
+      form: {
+        [IntentEnum.AUTHORIZE_NEW_USER]: "register",
+        [IntentEnum.AUTHORIZE_EXISTING_USER]: "authorize",
+        default: "choice",
+      }[intent || "default"] as "register" | "authorize" | "choice",
     };
   }
 

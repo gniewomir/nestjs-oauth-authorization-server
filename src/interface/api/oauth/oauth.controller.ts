@@ -23,18 +23,16 @@ import { AppConfig, HtmlConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 import { CsrfService } from "@infrastructure/security/csrf";
 import { DefaultLayoutService } from "@infrastructure/template";
-import {
-  isEmailErrorCode,
-  isPasswordErrorCode,
-  isValidErrorCode,
-  userErrorCodeToMessage,
-} from "@interface/api/utility";
+import { authorizePage } from "@interface/api/oauth/page/authorize.page";
+import { choicePage } from "@interface/api/oauth/page/choice.page";
+import { registerPage } from "@interface/api/oauth/page/register.page";
 import { assert } from "@interface/api/utility/assert";
 import { exceptionAsJsonString } from "@interface/api/utility/exception";
 
 import {
   AuthorizeRequestDto,
-  PromptRequestDto,
+  PromptShowRequestDto,
+  PromptSubmitRequestDto,
   TokenRequestDto,
   TokenResponseDto,
 } from "./dto";
@@ -96,246 +94,69 @@ export class OauthController {
     description: "Authorization prompt HTML page",
   })
   @Header("content-type", "text/html")
-  async prompt(
-    @Query("request_id") requestId: string,
-    @Query("error") error?: string,
-    @Query("intent") intent?: string,
-    @Query("email") email?: string,
-  ): Promise<string> {
-    assert(
-      (error && isValidErrorCode(error)) || typeof error === "undefined",
-      () => new BadRequestException("Invalid error code!"),
-    );
-
+  async prompt(@Query() query: PromptShowRequestDto): Promise<string> {
     const {
       requestedScopes,
       clientName,
       allowRememberMe,
       accessDeniedUrl,
       sanitizedEmail,
-    } = await this.authorizationService.prepareAuthorizationPrompt({
-      requestId,
-      email,
-    });
+      form,
+    } = await this.authorizationService.prepareAuthorizationPrompt(query);
 
-    // Generate CSRF token for this request
-    const csrfToken = this.csrfService.generateToken(requestId);
+    const csrfToken = this.csrfService.generateToken(query.request_id);
 
-    const form = {
-      [IntentEnum.AUTHORIZE_NEW_USER]: "register",
-      [IntentEnum.AUTHORIZE_EXISTING_USER]: "authorize",
-      default: "choice",
-    }[intent || "default"] as "register" | "authorize" | "choice";
-
-    try {
-      if (form === "choice") {
-        return this.defaultLayoutService.renderPageBuilder(
-          this.defaultLayoutService
-            .createPageBuilder()
-            .header({
-              title: `Action Required | ${this.htmlConfig.projectTitle}`,
-              headerTitle: "Action Required",
-              headerSubtitle: `Application "${clientName}" is requesting access to your account`,
-            })
-            .nextSteps({
-              nextSteps: [
-                {
-                  text: "Authorize, if you already have an account",
-                },
-                {
-                  text: "Register, if you don't",
-                },
-                {
-                  text: "Return, if you don't know how you ended on this page",
-                },
-              ],
-            })
-            .actions({
-              actions: [
-                {
-                  href: `/oauth/prompt?request_id=${requestId}&intent=${IntentEnum.AUTHORIZE_EXISTING_USER}`,
-                  class: "btn-primary",
-                  text: "Authorize",
-                },
-                {
-                  href: `/oauth/prompt?request_id=${requestId}&intent=${IntentEnum.AUTHORIZE_NEW_USER}`,
-                  class: "btn-primary",
-                  text: "Register",
-                },
-                {
-                  href: accessDeniedUrl,
-                  class: "btn-secondary",
-                  text: "Return",
-                },
-              ],
-            }),
-        );
-      }
-
-      if (form === "authorize") {
-        return this.defaultLayoutService.renderPageBuilder(
-          this.defaultLayoutService
-            .createPageBuilder()
-            .header({
-              title: `Authorization Required | ${this.htmlConfig.projectTitle}`,
-              headerTitle: "Authorization Required",
-              headerSubtitle: `Application "${clientName}" is requesting access to your account`,
-            })
-            .form({
-              formTitle: "Sign In",
-              formId: "authorize",
-              formAction: `/oauth/prompt`,
-              formHiddenFields: [
-                {
-                  name: "request_id",
-                  value: requestId,
-                },
-                {
-                  name: "intent",
-                  value: IntentEnum.AUTHORIZE_EXISTING_USER,
-                },
-                {
-                  name: "_csrf",
-                  value: csrfToken,
-                },
-              ],
-              formFields: [
-                {
-                  id: "email",
-                  name: "email",
-                  type: "email",
-                  label: "Email Address",
-                  required: false,
-                  error: isEmailErrorCode(error)
-                    ? userErrorCodeToMessage(error)
-                    : undefined,
-                  value: sanitizedEmail ? sanitizedEmail : undefined,
-                },
-                {
-                  id: "password",
-                  name: "password",
-                  type: "password",
-                  label: "Password",
-                  required: false,
-                  error: isPasswordErrorCode(error)
-                    ? userErrorCodeToMessage(error)
-                    : undefined,
-                },
-              ],
-              rememberMe: allowRememberMe,
-              infoBox: {
-                title: "Permissions",
-                items: requestedScopes.map(({ humanName, description }) => ({
-                  name: humanName,
-                  description,
-                })),
-              },
-              formActions: [
-                {
-                  name: "choice",
-                  value: "authorize",
-                  class: "btn-primary",
-                  id: "authorizeBtn",
-                  text: "Authorize",
-                },
-                {
-                  name: "choice",
-                  value: "deny",
-                  class: "btn-secondary",
-                  id: "denyBtn",
-                  text: "Deny",
-                },
-              ],
-            }),
-        );
-      }
-
-      if (form === "register") {
-        return await this.defaultLayoutService.renderPageBuilder(
-          this.defaultLayoutService
-            .createPageBuilder()
-            .header({
-              title: `User Registration | ${this.htmlConfig.projectTitle}`,
-              headerTitle: "Create Account",
-              headerSubtitle: `Gain access to our services`,
-            })
-            .form({
-              formAction: `/oauth/prompt`,
-              formTitle: "Register",
-              formId: "authorize",
-              formHiddenFields: [
-                {
-                  name: "request_id",
-                  value: requestId,
-                },
-                {
-                  name: "intent",
-                  value: IntentEnum.AUTHORIZE_NEW_USER,
-                },
-                {
-                  name: "_csrf",
-                  value: csrfToken,
-                },
-              ],
-              formFields: [
-                {
-                  id: "email",
-                  name: "email",
-                  type: "email",
-                  label: "Email Address",
-                  required: true,
-                  error: isEmailErrorCode(error)
-                    ? userErrorCodeToMessage(error)
-                    : undefined,
-                  value: sanitizedEmail ? sanitizedEmail : undefined,
-                },
-                {
-                  id: "password",
-                  name: "password",
-                  type: "password",
-                  label: "Password",
-                  required: true,
-                  error: isPasswordErrorCode(error)
-                    ? userErrorCodeToMessage(error)
-                    : undefined,
-                },
-              ],
-              infoBox: {
-                title: "Account Information",
-                items: [
-                  {
-                    name: "•",
-                    description:
-                      "Your email will be used for account verification",
-                  },
-                  {
-                    name: "•",
-                    description:
-                      "Password must have 12 or more characters - and half needs to be unique",
-                  },
-                  {
-                    name: "•",
-                    description: "You can update your information later",
-                  },
-                ],
-              },
-              formActions: [
-                {
-                  name: "action",
-                  value: "create",
-                  class: "btn-primary",
-                  id: "createBtn",
-                  text: "Create Account",
-                },
-              ],
-            }),
-        );
-      }
-
-      throw new BadRequestException("Unknown user intent!");
-    } catch (error) {
-      return this.logAndRenderErrorPage(error);
+    if (form === "authorize") {
+      return this.defaultLayoutService.renderPageBuilder(
+        authorizePage(
+          {
+            clientName,
+            title: this.htmlConfig.projectTitle,
+            requestId: query.request_id,
+            allowRememberMe,
+            sanitizedEmail,
+            error: query.error,
+            csrfToken,
+            requestedScopes,
+          },
+          this.defaultLayoutService.createPageBuilder(),
+        ),
+      );
     }
+
+    if (form === "register") {
+      return await this.defaultLayoutService.renderPageBuilder(
+        registerPage(
+          {
+            title: this.htmlConfig.projectTitle,
+            requestId: query.request_id,
+            sanitizedEmail,
+            error: query.error,
+            csrfToken,
+          },
+          this.defaultLayoutService.createPageBuilder(),
+        ),
+      );
+    }
+
+    return this.defaultLayoutService.renderPageBuilder(
+      choicePage(
+        {
+          clientName,
+          accessDeniedUrl,
+          title: this.htmlConfig.projectTitle,
+          authorizeUrl: this.createRedirectString("/oauth/prompt", {
+            request_id: query.request_id,
+            intent: IntentEnum.AUTHORIZE_EXISTING_USER,
+          }),
+          registerUrl: this.createRedirectString("/oauth/prompt", {
+            request_id: query.request_id,
+            intent: IntentEnum.AUTHORIZE_NEW_USER,
+          }),
+        },
+        this.defaultLayoutService.createPageBuilder(),
+      ),
+    );
   }
 
   @Post("prompt")
@@ -357,7 +178,7 @@ export class OauthController {
   })
   @Header("content-type", "text/html")
   async submitPrompt(
-    @Body() body: PromptRequestDto,
+    @Body() body: PromptSubmitRequestDto,
     @Res() response: Response,
   ) {
     if (body.intent === IntentEnum.AUTHORIZE_EXISTING_USER.toString()) {
@@ -557,10 +378,6 @@ export class OauthController {
             errorMessage: "Error has been logged. We are looking into it",
             errorName: exception.name,
             errorStatus: exception.getStatus(),
-            errorDetails:
-              this.appConfig.nodeEnv !== "production"
-                ? exceptionAsJsonString(exception)
-                : undefined,
           })
           .actions({
             actions: returnUrl
@@ -588,10 +405,6 @@ export class OauthController {
           errorMessage: "Error has been logged. We are looking into it",
           errorName: InternalServerErrorException.name,
           errorStatus: HttpStatus.INTERNAL_SERVER_ERROR,
-          errorDetails:
-            this.appConfig.nodeEnv !== "production"
-              ? exceptionAsJsonString(exception)
-              : undefined,
         })
         .actions({
           actions: returnUrl

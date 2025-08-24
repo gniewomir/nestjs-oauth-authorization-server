@@ -3,7 +3,7 @@ import {
   TUserErrorCode,
 } from "@domain/auth/OAuth/User/Errors/UserException";
 
-const map: TUserCodesRecord = {
+export const userErrorCodes: TUserCodesRecord = {
   "invalid-email": "Provided email is invalid",
   "invalid-password": "Password have to be at least 12 characters",
   "password-too-short": "Password have to be at least 12 characters",
@@ -55,5 +55,5 @@ export const isValidErrorCode = (
 };
 
 export const userErrorCodeToMessage = (errorCode: TUserErrorCode) => {
-  return map[errorCode];
+  return userErrorCodes[errorCode];
 };
