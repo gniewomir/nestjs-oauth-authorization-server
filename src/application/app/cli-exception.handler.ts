@@ -1,7 +1,7 @@
-import { HttpException, HttpStatus } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 
 import { OauthException } from "@domain/auth/OAuth/Errors";
-import { LoggerService } from "@infrastructure/logger";
+import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 
 export interface ErrorLog {
   statusCode: number;
@@ -18,10 +18,13 @@ export interface OauthErrorLog extends ErrorLog {
   error_uri?: string;
 }
 
-export class CliExceptionFilter {
-  private readonly logger = new LoggerService();
+@Injectable()
+export class CliExceptionHandler {
+  constructor(
+    @Inject(LoggerInterfaceSymbol) private readonly logger: LoggerInterface,
+  ) {}
 
-  public log(exception: unknown): void {
+  public handle(exception: unknown): void {
     const { message, ...rest } = this.parse(exception);
     this.logger.error(message, rest);
   }

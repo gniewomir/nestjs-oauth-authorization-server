@@ -9,7 +9,6 @@ import { cloneDeep } from "lodash";
 
 import { deepFreeze } from "@infrastructure/config/utility";
 import { pascalCaseToConstantCase } from "@infrastructure/config/utility/pascalCaseToConstantCase";
-import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 
 type TValidator<T> = (value: T) => Promise<void>;
 
@@ -54,13 +53,9 @@ export class ConfigService {
   private readonly registry = new Map<string, TRegisteredEnvVariable>();
 
   constructor(
-    @Inject(LoggerInterfaceSymbol)
-    private readonly logger: LoggerInterface,
     @Inject(NestConfigService)
     private readonly nestConfigService: EnvironmentProvider,
-  ) {
-    logger.setContext("ConfigService");
-  }
+  ) {}
 
   private parseStringAsBoolean<T>({
     configName,
@@ -365,7 +360,7 @@ export class ConfigService {
     const instance = plainToInstance(configCls, result);
     const errors = await validate(instance as object);
     for (const error of errors) {
-      this.logger.error(error.toString(), { error });
+      console.error(error.toString(), { error });
     }
     assert(errors.length === 0, `Errors during config validation`);
     const frozen = deepFreeze(instance);

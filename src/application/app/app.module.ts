@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ServeStaticModule } from "@nestjs/serve-static";
 
+import { CliExceptionHandler } from "@application/app/cli-exception.handler";
 import {
   AuthenticationMiddleware,
   AuthenticationModule,
@@ -34,7 +35,7 @@ import { HttpLoggingMiddleware } from "./http-logging.middleware";
     }),
   ],
   controllers: [],
-  providers: [],
+  providers: [CliExceptionHandler],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

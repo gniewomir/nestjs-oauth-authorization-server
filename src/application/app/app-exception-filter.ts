@@ -8,7 +8,7 @@ import {
 import { Request, Response } from "express";
 
 import { OauthException } from "@domain/auth/OAuth/Errors";
-import { LoggerService } from "@infrastructure/logger";
+import { LoggerInterface } from "@infrastructure/logger";
 
 export interface ErrorResponse {
   statusCode: number;
@@ -45,7 +45,7 @@ export const formatException = (exception: unknown) => {
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
-  private readonly logger = new LoggerService();
+  constructor(private readonly logger: LoggerInterface) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();

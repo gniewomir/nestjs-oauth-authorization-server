@@ -1,6 +1,8 @@
 import { Injectable, Scope } from "@nestjs/common";
 import * as winston from "winston";
 
+import { AppConfig } from "@infrastructure/config/configs";
+
 import { LoggerInfoObject, LoggerInterface } from "./logger.interface";
 
 @Injectable({ scope: Scope.TRANSIENT }) // ensure every consumer gets fresh instance
@@ -8,9 +10,9 @@ export class LoggerService implements LoggerInterface {
   private readonly logger: winston.Logger;
   private context: string;
 
-  constructor() {
+  constructor(appConfig: AppConfig) {
     this.logger = winston.createLogger({
-      level: "debug",
+      level: appConfig.logLevel,
       format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.errors({ stack: true }),
@@ -118,7 +120,7 @@ export class LoggerService implements LoggerInterface {
   }
 
   error(message: string | LoggerInfoObject, ...meta: unknown[]): void {
-    this.logger.warn(
+    this.logger.error(
       typeof message === "string"
         ? {
             message,

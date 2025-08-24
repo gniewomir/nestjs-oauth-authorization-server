@@ -1,3 +1,4 @@
+import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
@@ -12,17 +13,59 @@ export async function appBootstrap() {
     bufferLogs: true, // store logs until custom logger is available
   });
 
-  const logger = await app.resolve<typeof LoggerInterfaceSymbol, LoggerService>(
-    LoggerInterfaceSymbol,
-  );
-  logger.setContext("bootstrap");
-  app.useLogger(logger);
-
-  app.useGlobalFilters(new AppExceptionFilter());
-
+  /**
+   * Logger have to be configured by environment,
+   * Therefore to avoid circular dependencies,
+   * ConfigModule cannot depend on logger,
+   * and should not, as errors during environment validation,
+   * will prevent app from even starting
+   */
   const appConfig = app.get(AppConfig);
-  const openApiConfig = app.get(OpenApiConfig);
 
+  /**
+   * Logger is configured to be transient - each dependent will receive new instance
+   */
+  const bootstrapLogger = await app.resolve<
+    typeof LoggerInterfaceSymbol,
+    LoggerService
+  >(LoggerInterfaceSymbol);
+  bootstrapLogger.setContext("bootstrap");
+  app.useLogger(bootstrapLogger);
+
+  /**
+   * TODO: /oauth*path endpoints have tu serve responses compliant with OAuth2 standard,
+   * in case of failing request DTO validation
+   */
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      skipMissingProperties: false,
+      skipNullProperties: false,
+      skipUndefinedProperties: false,
+      forbidUnknownValues: true,
+      disableErrorMessages: appConfig.nodeEnv === "production",
+      dismissDefaultMessages: false,
+      enableDebugMessages: appConfig.nodeEnv !== "production",
+    }),
+  );
+
+  /**
+   * Logger is configured to be transient - each dependent will receive new instance
+   */
+  const exceptionFilterLogger = await app.resolve<
+    typeof LoggerInterfaceSymbol,
+    LoggerService
+  >(LoggerInterfaceSymbol);
+  exceptionFilterLogger.setContext("AppExceptionFilter");
+  app.useGlobalFilters(new AppExceptionFilter(exceptionFilterLogger));
+
+  /**
+   * OpenAPI have to provide authentication through all supported OAuth grants,
+   * or other authentication methods
+   */
+  const openApiConfig = app.get(OpenApiConfig);
   if (openApiConfig.exposed) {
     const options = new DocumentBuilder()
       .setTitle("Core")
@@ -62,5 +105,5 @@ export async function appBootstrap() {
 
   await app.listen(appConfig.port);
 
-  return { app, logger, appConfig };
+  return { app, logger: bootstrapLogger, appConfig };
 }

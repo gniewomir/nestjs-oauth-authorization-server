@@ -1,8 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule as NestConfigModule } from "@nestjs/config";
 
-import { LoggerModule } from "../logger";
-
 import { ConfigService } from "./config.service";
 import {
   AppConfig,
@@ -13,7 +11,7 @@ import {
 } from "./configs";
 
 @Module({
-  imports: [LoggerModule, NestConfigModule.forRoot()],
+  imports: [NestConfigModule.forRoot()],
   providers: [
     ConfigService,
     AppConfig.provider(),
