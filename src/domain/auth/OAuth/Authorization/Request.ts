@@ -59,6 +59,7 @@ export class Request {
     this.codeChallengeMethod = params.codeChallengeMethod;
     this._authorizationCode = params.authorizationCode;
     this.resolution = params.resolution;
+    this.intent = params.intent;
   }
 
   private _authorizationCode: Code | null;
