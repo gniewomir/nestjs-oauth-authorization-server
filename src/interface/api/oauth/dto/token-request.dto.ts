@@ -33,6 +33,7 @@ export class TokenRequestDto {
     required: false,
   })
   @IsString()
+  @IsNotEmpty()
   @IsOptional()
   redirect_uri?: string;
 
