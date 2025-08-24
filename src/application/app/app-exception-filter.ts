@@ -8,7 +8,6 @@ import {
 import { Request, Response } from "express";
 
 import { OauthException } from "@domain/auth/OAuth/Errors";
-import { LoggerInterface } from "@infrastructure/logger";
 
 export interface ErrorResponse {
   statusCode: number;
@@ -45,28 +44,12 @@ export const formatException = (exception: unknown) => {
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
-  constructor(private readonly logger: LoggerInterface) {}
-
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const [statusCode, message, errorResponse] = this.response(
-      exception,
-      request,
-    );
-
-    this.logger.error({
-      message,
-      method: request.method,
-      url: request.url,
-      userAgent: request.get("User-Agent"),
-      ip: request.ip,
-      statusCode: statusCode,
-      exception: formatException(exception),
-      requestId: this.extractRequestId(request),
-    });
+    const [statusCode, errorResponse] = this.response(exception, request);
 
     response.status(statusCode).json(errorResponse);
   }

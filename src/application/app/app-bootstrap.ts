@@ -6,7 +6,11 @@ import { AppModule } from "@application/app";
 import { AppExceptionFilter } from "@application/app/app-exception-filter";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
-import { LoggerInterfaceSymbol, LoggerService } from "@infrastructure/logger";
+import {
+  LoggerInterfaceSymbol,
+  LoggerService,
+  LoggingInterceptor,
+} from "@infrastructure/logger";
 
 export async function appBootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -60,6 +64,16 @@ export async function appBootstrap() {
   >(LoggerInterfaceSymbol);
   exceptionFilterLogger.setContext("AppExceptionFilter");
   app.useGlobalFilters(new AppExceptionFilter(exceptionFilterLogger));
+
+  /**
+   * Register global logging interceptor for HTTP request/response logging
+   */
+  const loggingInterceptorLogger = await app.resolve<
+    typeof LoggerInterfaceSymbol,
+    LoggerService
+  >(LoggerInterfaceSymbol);
+  const loggingInterceptor = new LoggingInterceptor(loggingInterceptorLogger);
+  app.useGlobalInterceptors(loggingInterceptor);
 
   /**
    * OpenAPI have to provide authentication through all supported OAuth grants,
