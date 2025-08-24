@@ -56,14 +56,9 @@ export async function appBootstrap() {
   );
 
   /**
-   * Logger is configured to be transient - each dependent will receive new instance
+   * TODO: Needs rework
    */
-  const exceptionFilterLogger = await app.resolve<
-    typeof LoggerInterfaceSymbol,
-    LoggerService
-  >(LoggerInterfaceSymbol);
-  exceptionFilterLogger.setContext("AppExceptionFilter");
-  app.useGlobalFilters(new AppExceptionFilter(exceptionFilterLogger));
+  app.useGlobalFilters(new AppExceptionFilter());
 
   /**
    * Register global logging interceptor for HTTP request/response logging
