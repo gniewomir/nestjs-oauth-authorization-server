@@ -134,12 +134,9 @@ describe("OAuth2 Authorization Code Flow (e2e)", () => {
 
       expect(tokenResponse.body).toMatchObject({
         token_type: "Bearer",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        id_token: expect.any(String),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        access_token: expect.any(String),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        refresh_token: expect.any(String),
+        id_token: expect.any(String) as unknown as string,
+        access_token: expect.any(String) as unknown as string,
+        refresh_token: expect.any(String) as unknown as string,
         scope: scope.toString(),
       });
     });
