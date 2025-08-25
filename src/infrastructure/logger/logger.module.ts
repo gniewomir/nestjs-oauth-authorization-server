@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 
 import { ConfigModule } from "@infrastructure/config";
 
+import { ErrorResponseInterceptor } from "./error-response.interceptor";
 import { LoggerInterfaceSymbol } from "./logger.interface";
 import { LoggerService } from "./logger.service";
 
@@ -12,7 +13,8 @@ import { LoggerService } from "./logger.service";
       provide: LoggerInterfaceSymbol,
       useClass: LoggerService,
     },
+    ErrorResponseInterceptor,
   ],
-  exports: [LoggerInterfaceSymbol],
+  exports: [LoggerInterfaceSymbol, ErrorResponseInterceptor],
 })
 export class LoggerModule {}

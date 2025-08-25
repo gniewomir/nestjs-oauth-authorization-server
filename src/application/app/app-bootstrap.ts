@@ -6,6 +6,7 @@ import { AppModule } from "@application/app";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import {
+  ErrorResponseInterceptor,
   LoggerInterfaceSymbol,
   LoggerService,
   LoggingInterceptor,
@@ -89,12 +90,20 @@ export async function appBootstrap() {
   /**
    * Register global logging interceptor for HTTP request/response logging
    */
-  const loggingInterceptorLogger = await app.resolve<
-    typeof LoggerInterfaceSymbol,
-    LoggerService
-  >(LoggerInterfaceSymbol);
+  const loggingInterceptorLogger = await app.resolve<LoggerService>(
+    LoggerInterfaceSymbol,
+  );
   const loggingInterceptor = new LoggingInterceptor(loggingInterceptorLogger);
   app.useGlobalInterceptors(loggingInterceptor);
+
+  /**
+   * Register global error response interceptor,
+   * Intention is to make error responses uniform
+   */
+  const errorResponseInterceptor = await app.resolve<ErrorResponseInterceptor>(
+    ErrorResponseInterceptor,
+  );
+  app.useGlobalInterceptors(errorResponseInterceptor);
 
   /**
    * OpenAPI have to provide authentication through all supported OAuth grants,
