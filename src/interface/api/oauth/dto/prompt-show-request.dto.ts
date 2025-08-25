@@ -9,7 +9,6 @@ export class PromptShowRequestDto {
     description: "Authorization request identifier",
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
-  @IsString()
   @IsUUID()
   request_id: string;
 
@@ -20,9 +19,9 @@ export class PromptShowRequestDto {
     enumName: "UserErrorCodes",
     required: false,
   })
+  @IsOptional()
   @IsString()
   @IsIn(Object.keys(userErrorCodes))
-  @IsOptional()
   error?: string;
 
   @ApiProperty({
@@ -32,9 +31,9 @@ export class PromptShowRequestDto {
     enumName: "IntentEnum",
     required: false,
   })
+  @IsOptional()
   @IsString()
   @IsIn(Object.values(IntentEnum))
-  @IsOptional()
   intent?: string;
 
   @ApiProperty({

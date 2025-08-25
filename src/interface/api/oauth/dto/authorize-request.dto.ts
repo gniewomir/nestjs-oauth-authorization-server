@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   IsUUID,
   MaxLength,
   MinLength,
@@ -19,7 +18,6 @@ export class AuthorizeRequestDto {
     example: "550e8400-e29b-41d4-a716-446655440000",
   })
   @IsUUID()
-  @IsNotEmpty()
   client_id: string;
 
   @ApiProperty({
@@ -27,7 +25,6 @@ export class AuthorizeRequestDto {
     example: "code",
     enum: ["code"],
   })
-  @IsString()
   @IsIn(["code"])
   response_type: string;
 
@@ -47,10 +44,10 @@ export class AuthorizeRequestDto {
     example: "https://client-website.com/callback",
     required: false,
   })
-  @IsString()
-  @IsUrl()
-  @MaxLength(2048)
   @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(2048)
   redirect_uri?: string;
 
   @ApiProperty({
@@ -59,9 +56,9 @@ export class AuthorizeRequestDto {
     example: "random-state-string",
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(2048)
-  @IsOptional()
   state?: string;
 
   @ApiProperty({
@@ -90,9 +87,10 @@ export class AuthorizeRequestDto {
     example: IntentEnum.AUTHORIZE_NEW_USER,
     enum: Object.values(IntentEnum),
     enumName: "IntentEnum",
+    required: false,
   })
+  @IsOptional()
   @IsString()
   @IsIn(Object.values(IntentEnum))
-  @IsOptional()
   intent?: string;
 }

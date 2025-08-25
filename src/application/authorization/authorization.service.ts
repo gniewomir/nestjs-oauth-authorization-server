@@ -132,7 +132,7 @@ export class AuthorizationService {
     intent,
   }: PromptShowRequestDto) {
     Assert(
-      IntentValue.isValid(intent),
+      intent === undefined || IntentValue.isValid(intent),
       () =>
         new OauthInvalidRequestException({
           message: `Invalid intent value`,
@@ -405,22 +405,5 @@ export class AuthorizationService {
       }
       throw error;
     }
-  }
-
-  async show(params: { userId: string }): Promise<{
-    userId: string;
-    email: string;
-    emailVerified: boolean;
-  }> {
-    const user = await NotFoundToDomainException(
-      () => this.users.retrieve(IdentityValue.fromString(params.userId)),
-      () => new Error(`User with ID ${params.userId} not found`),
-    );
-
-    return {
-      userId: user.identity.toString(),
-      email: user.email.toString(),
-      emailVerified: user.emailVerified,
-    };
   }
 }

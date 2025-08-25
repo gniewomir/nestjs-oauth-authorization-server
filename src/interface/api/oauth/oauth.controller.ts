@@ -333,9 +333,8 @@ export class OauthController {
         }),
     );
     const queryString = Object.entries(query)
-      .map(([key, val]) => [key, encodeURIComponent(val)])
-      .map(([key, val]) => (val ? `${key}=${val}` : undefined))
-      .filter((val) => val !== undefined)
+      .filter(([, val]) => val !== undefined)
+      .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
       .join("&");
     return `${path}?${queryString}`;
   }
