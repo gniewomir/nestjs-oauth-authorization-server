@@ -3,10 +3,8 @@ import {
   Controller,
   Get,
   Header,
-  HttpException,
   HttpStatus,
   Inject,
-  InternalServerErrorException,
   Post,
   Query,
   Res,
@@ -18,9 +16,10 @@ import { AuthorizationService } from "@application/authorization/authorization.s
 import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
 import {
   OauthInvalidRequestException,
+  OauthServerErrorException,
   OauthUnsupportedGrantTypeException,
 } from "@domain/auth/OAuth/Errors";
-import { AppConfig, HtmlConfig } from "@infrastructure/config/configs";
+import { HtmlConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 import { CsrfService } from "@infrastructure/security/csrf";
 import { DefaultLayoutService } from "@infrastructure/template";
@@ -28,7 +27,6 @@ import { authorizePage } from "@interface/api/oauth/page/authorize.page";
 import { choicePage } from "@interface/api/oauth/page/choice.page";
 import { registerPage } from "@interface/api/oauth/page/register.page";
 import { assert } from "@interface/api/utility/assert";
-import { exceptionAsJsonString } from "@interface/api/utility/exception";
 
 import {
   AuthorizeRequestDto,
@@ -43,7 +41,6 @@ import {
 export class OauthController {
   constructor(
     @Inject(LoggerInterfaceSymbol) private readonly logger: LoggerInterface,
-    private readonly appConfig: AppConfig,
     private readonly authorizationService: AuthorizationService,
     private readonly defaultLayoutService: DefaultLayoutService,
     private readonly htmlConfig: HtmlConfig,
@@ -313,78 +310,6 @@ export class OauthController {
     throw new OauthUnsupportedGrantTypeException();
   }
 
-  private logAndRenderErrorPage(exception: unknown, returnUrl?: string) {
-    assert(
-      exception instanceof Error,
-      () =>
-        new InternalServerErrorException(
-          "Error page received value that is not instance of Error",
-          {
-            cause: exception,
-          },
-        ),
-    );
-
-    this.logger.error(
-      "Error in OAuth controller",
-      exceptionAsJsonString(exception),
-    );
-
-    if (exception instanceof HttpException) {
-      return this.defaultLayoutService.renderPageBuilder(
-        this.defaultLayoutService
-          .createPageBuilder()
-          .header({
-            title: `Error | ${this.htmlConfig.projectTitle}`,
-            headerTitle: "Oops! Something went wrong",
-            headerSubtitle: "We encountered an unexpected error",
-          })
-          .error({
-            errorMessage: "Error has been logged. We are looking into it",
-            errorName: exception.name,
-            errorStatus: exception.getStatus(),
-          })
-          .actions({
-            actions: returnUrl
-              ? [
-                  {
-                    class: "btn-primary",
-                    href: returnUrl,
-                    text: "Return",
-                  },
-                ]
-              : [],
-          }),
-      );
-    }
-
-    return this.defaultLayoutService.renderPageBuilder(
-      this.defaultLayoutService
-        .createPageBuilder()
-        .header({
-          title: `Error | ${this.htmlConfig.projectTitle}`,
-          headerTitle: "Oops! Something went wrong",
-          headerSubtitle: "We encountered an unexpected error",
-        })
-        .error({
-          errorMessage: "Error has been logged. We are looking into it",
-          errorName: InternalServerErrorException.name,
-          errorStatus: HttpStatus.INTERNAL_SERVER_ERROR,
-        })
-        .actions({
-          actions: returnUrl
-            ? [
-                {
-                  class: "btn-primary",
-                  href: returnUrl,
-                  text: "Return",
-                },
-              ]
-            : [],
-        }),
-    );
-  }
-
   private createRedirectString(
     path: string,
     query: {
@@ -396,11 +321,17 @@ export class OauthController {
   ) {
     assert(
       path.startsWith("/"),
-      () => new Error('Redirect URL path should start with "/"'),
+      () =>
+        new OauthServerErrorException({
+          message: 'Redirect URL path should start with "/"',
+        }),
     );
     assert(
       !path.includes("?") && !path.includes("&"),
-      () => new Error("Redirect URL path should not contain query string"),
+      () =>
+        new OauthServerErrorException({
+          message: "Redirect URL path should not contain query string",
+        }),
     );
     const queryString = Object.entries(query)
       .map(([key, val]) => [key, encodeURIComponent(val)])
