@@ -113,21 +113,10 @@ export class AuthorizationFacade {
         }),
     );
     Assert(
-      params.credentials.email.isEqual(user.email),
-      () =>
-        new UserEmailNotFoundException({
-          errorCode: "unknown-email",
-          message: "User not found",
-        }),
-    );
-
-    const passwordsMatch =
       await params.credentials.password.matchHashedPassword(
         user.password,
         passwords,
-      );
-    Assert(
-      passwordsMatch,
+      ),
       () =>
         new UserPasswordMismatchException({
           errorCode: "unknown-password",
@@ -167,7 +156,6 @@ export class AuthorizationFacade {
           message: "Authorization code not found, already used, or expired",
         }),
     );
-
     const client = await NotFoundToDomainException(
       () => clients.retrieve(request.clientId),
       (error) =>
