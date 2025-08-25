@@ -208,7 +208,6 @@ export class OauthController {
           intent,
         }),
       );
-
       return;
     }
 
