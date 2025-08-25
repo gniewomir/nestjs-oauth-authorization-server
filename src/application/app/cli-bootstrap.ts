@@ -6,7 +6,6 @@ import {
 } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
-import { CliExceptionHandler } from "@application/app/cli-exception.handler";
 import { AppConfig } from "@infrastructure/config/configs";
 import {
   LoggerInterface,
@@ -43,11 +42,7 @@ export async function cliBootstrap({
 
   logger.info(`Environment => ${appConfig.nodeEnv}`);
 
-  try {
-    await payload({ application: command, logger, appConfig });
-  } catch (error) {
-    new CliExceptionHandler(logger).handle(error);
-  }
+  await payload({ application: command, logger, appConfig });
 
   await command.close();
 }

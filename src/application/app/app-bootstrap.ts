@@ -3,7 +3,6 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 import { AppModule } from "@application/app";
-import { AppExceptionFilter } from "@application/app/app-exception-filter";
 import { ScopeValueImmutableSet } from "@domain/auth/OAuth/Scope";
 import { AppConfig, OpenApiConfig } from "@infrastructure/config/configs";
 import {
@@ -42,23 +41,50 @@ export async function appBootstrap() {
    */
   app.useGlobalPipes(
     new ValidationPipe({
+      // What it does: Strips properties that don't have validation decorators
+      // Practical impact: If someone sends { email: "test@test.com", extraField: "hack" } and your DTO only has @IsEmail() email,
+      // the extraField gets removed
       whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      skipMissingProperties: false,
-      skipNullProperties: false,
-      skipUndefinedProperties: false,
+
+      // What it does: Throws error if non-whitelisted properties are found - too strict
+      forbidNonWhitelisted: false,
+
+      // What it does: Throws error if unknown values are passed to known properties
+      // Practical impact: If you have @IsIn(['a', 'b']) and someone sends 'c', it fails
       forbidUnknownValues: true,
+
+      // What it does: Automatically transforms incoming data to match DTO types
+      // Practical impact:
+      // String "123" becomes number 123 if property is typed as number
+      // "true" becomes true for boolean properties
+      // Transforms query parameters from strings to proper types
+      transform: true,
+
+      // What it does: Skips validation for properties not present in the request
+      // Practical impact: If your DTO has @IsEmail() email but request doesn't include email field, validation passes
+      skipMissingProperties: true,
+
+      // What it does: Skips validation for properties with null values
+      // Practical impact: { email: null } would pass validation even if @IsEmail() is present
+      skipNullProperties: false,
+
+      // What it does: Skips validation for properties with undefined values
+      // Practical impact: { email: undefined } would pass validation
+      skipUndefinedProperties: true,
+
+      // What it does: Disables detailed error messages in responses
+      // Practical impact: Instead of "email must be an email", you get generic validation error
       disableErrorMessages: appConfig.nodeEnv === "production",
-      dismissDefaultMessages: false,
+
+      // What it does: Uses custom error messages from decorators instead of default ones
+      // Practical impact: If you have @IsEmail({ message: "Invalid email format" }), it uses your message
+      dismissDefaultMessages: appConfig.nodeEnv === "production",
+
+      // What it does: Includes additional debug information in error responses
+      // Practical impact: Shows which validation failed, what value was received, etc.
       enableDebugMessages: appConfig.nodeEnv !== "production",
     }),
   );
-
-  /**
-   * TODO: Needs rework
-   */
-  app.useGlobalFilters(new AppExceptionFilter());
 
   /**
    * Register global logging interceptor for HTTP request/response logging
