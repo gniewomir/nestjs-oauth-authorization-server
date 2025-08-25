@@ -75,6 +75,12 @@ export class OauthE2eTestContext {
     expect(res.text).toContain("Register");
   }
 
+  static expectIsChoiceForm(res: supertest.Response) {
+    expect(res.text).toContain("Authorize");
+    expect(res.text).toContain("Register");
+    expect(res.text).toContain("What's Next?");
+  }
+
   public async teardown() {
     return this.app.close();
   }

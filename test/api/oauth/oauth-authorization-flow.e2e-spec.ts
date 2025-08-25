@@ -2,12 +2,10 @@ import { HttpStatus } from "@nestjs/common";
 import { defaultTestClientScopesMother } from "@test/domain/authentication/ScopeValueImmutableSet.mother";
 import * as request from "supertest";
 
-import {
-  CodeChallengeMethodsEnum,
-  EmailValue,
-  IntentEnum,
-  RedirectUriValue,
-} from "@domain/auth/OAuth";
+import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
+import { CodeChallengeMethodsEnum } from "@domain/auth/OAuth/Authorization/PKCE/CodeChallengeMethodValue";
+import { RedirectUriValue } from "@domain/auth/OAuth/Client";
+import { EmailValue } from "@domain/auth/OAuth/User/Credentials";
 import { IdentityValue } from "@domain/IdentityValue";
 import { AuthorizeRequestDto } from "@interface/api/oauth/dto";
 
@@ -273,6 +271,128 @@ describe("OAuth2 Authorization Code Flow (e2e)", () => {
       ).toBe(state);
 
       // Step 6: Exchange Authorization Code for Tokens
+      const tokenResponse = await request(context.getApp().getHttpServer())
+        .post("/oauth/token")
+        .set("Content-Type", "application/x-www-form-urlencoded")
+        .send({
+          grant_type: "authorization_code",
+          client_id: clientId.toString(),
+          code,
+          code_verifier: verifier,
+          redirect_uri: redirectUri.toString(),
+        })
+        .expect(201);
+
+      expect(tokenResponse.body).toMatchObject({
+        token_type: "Bearer",
+        id_token: expect.any(String) as unknown as string,
+        access_token: expect.any(String) as unknown as string,
+        refresh_token: expect.any(String) as unknown as string,
+        scope: scope.toString(),
+      });
+    });
+
+    it("should complete full OAuth2 Authorization Code flow with PKCE - with existing user & no intent specified", async () => {
+      const clientId = IdentityValue.create();
+      const scope = defaultTestClientScopesMother();
+      const redirectUri = RedirectUriValue.create(
+        "https://client.com/callback",
+        "production",
+      );
+      await context.createClient({
+        id: clientId,
+        scope,
+        redirectUri,
+      });
+      const userId = IdentityValue.create();
+      const userEmail = EmailValue.fromString(`${userId.toString()}@gmail.com`);
+      const userPlaintextPassword = userId.toString();
+      await context.createUser({
+        identity: userId,
+        plaintextPassword: userPlaintextPassword,
+        email: userEmail,
+      });
+      const state = context.createState();
+      const { challenge, verifier } = context.createPKCECodeChallenge();
+
+      // Step 1: Authorization Request without intent
+      const createAuthorizationRequestResponse = await request(
+        context.getApp().getHttpServer(),
+      )
+        .get("/oauth/authorize/")
+        .query({
+          client_id: clientId.toString(),
+          response_type: "code",
+          scope: scope.toString(),
+          redirect_uri: redirectUri.toString(),
+          state: state,
+          code_challenge: challenge.toString(),
+          code_challenge_method: CodeChallengeMethodsEnum.S256,
+        } satisfies AuthorizeRequestDto)
+        .expect(HttpStatus.TEMPORARY_REDIRECT);
+
+      expect(createAuthorizationRequestResponse.headers.location).toContain(
+        "/oauth/prompt",
+      );
+      const requestId = OauthE2eTestContext.extractRequestIdFromUrl(
+        createAuthorizationRequestResponse.headers.location,
+      );
+
+      // Step 2: Get Choice Prompt (when no intent is specified)
+      const getChoicePromptResponse = await request(
+        context.getApp().getHttpServer(),
+      )
+        .get(createAuthorizationRequestResponse.headers.location)
+        .expect(HttpStatus.OK);
+
+      OauthE2eTestContext.expectIsChoiceForm(getChoicePromptResponse);
+
+      // Step 3: Choose to sign in (existing user)
+      const chooseSignInResponse = await request(
+        context.getApp().getHttpServer(),
+      )
+        .get("/oauth/prompt")
+        .query({
+          request_id: requestId,
+          intent: IntentEnum.AUTHORIZE_EXISTING_USER,
+        })
+        .expect(HttpStatus.OK);
+
+      OauthE2eTestContext.expectIsAuthorizationForm(chooseSignInResponse);
+      const csrfToken =
+        OauthE2eTestContext.extractCSRFToken(chooseSignInResponse);
+
+      // Step 4: Submit Authorization Prompt (with valid credentials)
+      const postAuthorizationPromptResponse = await request(
+        context.getApp().getHttpServer(),
+      )
+        .post("/oauth/prompt")
+        .set("Content-Type", "application/x-www-form-urlencoded")
+        .send({
+          request_id: requestId,
+          intent: IntentEnum.AUTHORIZE_EXISTING_USER,
+          _csrf: csrfToken,
+          email: userEmail.toString(),
+          password: userPlaintextPassword,
+          choice: "authorize",
+          remember_me: false,
+        })
+        .expect(HttpStatus.FOUND); // Redirect with authorization code
+
+      const code = OauthE2eTestContext.extractCodeFromUrl(
+        postAuthorizationPromptResponse.headers.location,
+      );
+
+      expect(postAuthorizationPromptResponse.headers.location).toContain(
+        redirectUri.toString(),
+      );
+      expect(
+        OauthE2eTestContext.extractStateFromUrl(
+          postAuthorizationPromptResponse.headers.location,
+        ),
+      ).toBe(state);
+
+      // Step 5: Exchange Authorization Code for Tokens
       const tokenResponse = await request(context.getApp().getHttpServer())
         .post("/oauth/token")
         .set("Content-Type", "application/x-www-form-urlencoded")
