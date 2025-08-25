@@ -383,36 +383,19 @@ export class AuthorizationFacade {
     },
     users: UsersInterface,
     passwords: PasswordInterface,
-  ): Promise<{
-    user: User;
-    identity: IdentityValue;
-  }> {
-    const uniqueEmailSpecification = new UniqueEmailSpecification(users);
-
-    Assert(
-      await uniqueEmailSpecification.isSatisfied(params.email),
-      "User email must be unique",
-    );
-
+  ) {
     const hashedPassword = await params.password.toPasswordHash(passwords);
-    const identity = IdentityValue.create();
-
     const user = await User.create(
       {
-        identity,
+        identity: IdentityValue.create(),
         email: params.email,
         emailVerified: false,
         password: hashedPassword,
         refreshTokens: [],
       },
-      uniqueEmailSpecification,
+      new UniqueEmailSpecification(users),
     );
 
     await users.persist(user);
-
-    return {
-      user,
-      identity,
-    };
   }
 }

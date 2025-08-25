@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -17,8 +16,10 @@ import { Response } from "express";
 
 import { AuthorizationService } from "@application/authorization/authorization.service";
 import { IntentEnum } from "@domain/auth/OAuth/Authorization/IntentValue";
-import { OauthUnsupportedGrantTypeException } from "@domain/auth/OAuth/Errors";
-import { UserException } from "@domain/auth/OAuth/User/Errors/UserException";
+import {
+  OauthInvalidRequestException,
+  OauthUnsupportedGrantTypeException,
+} from "@domain/auth/OAuth/Errors";
 import { AppConfig, HtmlConfig } from "@infrastructure/config/configs";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
 import { CsrfService } from "@infrastructure/security/csrf";
@@ -95,6 +96,7 @@ export class OauthController {
   })
   @Header("content-type", "text/html")
   async prompt(@Query() query: PromptShowRequestDto): Promise<string> {
+    const csrfToken = this.csrfService.generateToken(query.request_id);
     const {
       requestedScopes,
       clientName,
@@ -103,8 +105,6 @@ export class OauthController {
       sanitizedEmail,
       form,
     } = await this.authorizationService.prepareAuthorizationPrompt(query);
-
-    const csrfToken = this.csrfService.generateToken(query.request_id);
 
     if (form === "authorize") {
       return this.defaultLayoutService.renderPageBuilder(
@@ -181,102 +181,67 @@ export class OauthController {
     @Body() body: PromptSubmitRequestDto,
     @Res() response: Response,
   ) {
-    if (body.intent === IntentEnum.AUTHORIZE_EXISTING_USER.toString()) {
-      if (body.choice === "deny") {
-        try {
-          const { redirectUriWithAccessDeniedErrorAndState } =
-            await this.authorizationService.ownerDenied({
-              requestId: body.request_id,
-            });
+    this.csrfService.validateToken(body.request_id, body._csrf);
 
-          response.redirect(redirectUriWithAccessDeniedErrorAndState);
-        } catch (error) {
-          if (error instanceof UserException) {
-            this.logger.warn("Error during prompt submission", error);
-
-            response.redirect(
-              this.createRedirectString("/oauth/prompt", {
-                request_id: body.request_id,
-                intent: IntentEnum.AUTHORIZE_EXISTING_USER.toString(),
-                error: error.errorCode,
-              }),
-            );
-            return;
-          }
-          return this.logAndRenderErrorPage(error);
-        }
-      }
-
-      if (body.choice === "authorize") {
-        try {
-          const { redirectUriWithAuthorizationCodeAndState } =
-            await this.authorizationService.ownerAuthorized({
-              requestId: body.request_id,
-              credentials: {
-                email: body.email,
-                password: body.password,
-                rememberMe: body.remember_me || false,
-              },
-            });
-
-          response.redirect(redirectUriWithAuthorizationCodeAndState);
-        } catch (error) {
-          if (error instanceof UserException) {
-            this.logger.warn("Error during prompt submission", error);
-
-            response.redirect(
-              this.createRedirectString("/oauth/prompt", {
-                request_id: body.request_id,
-                intent: IntentEnum.AUTHORIZE_EXISTING_USER.toString(),
-                error: error.errorCode,
-                email: body.email,
-              }),
-            );
-            return;
-          }
-          return this.logAndRenderErrorPage(error);
-        }
-      }
-
-      throw new BadRequestException(
-        "Unknown user choice - whether he authorized or denied authorization request",
-      );
+    if (
+      body.intent === IntentEnum.AUTHORIZE_EXISTING_USER.toString() &&
+      body.choice === "deny"
+    ) {
+      const { redirect } = await this.authorizationService.ownerDenied(body);
+      response.redirect(redirect);
+      return;
     }
-    if (body.intent === IntentEnum.AUTHORIZE_NEW_USER.toString()) {
-      try {
-        await this.authorizationService.register({
-          email: body.email,
-          password: body.password,
-        });
 
+    if (
+      body.intent === IntentEnum.AUTHORIZE_EXISTING_USER.toString() &&
+      body.choice === "authorize"
+    ) {
+      const { redirect, error, request_id, intent } =
+        await this.authorizationService.ownerAuthorized(body);
+
+      if (redirect) {
+        response.redirect(redirect);
+        return;
+      }
+
+      response.redirect(
+        this.createRedirectString("/oauth/prompt", {
+          request_id,
+          error,
+          intent,
+        }),
+      );
+
+      return;
+    }
+
+    if (body.intent === IntentEnum.AUTHORIZE_NEW_USER.toString()) {
+      const { request_id, intent, sanitizedEmail, error } =
+        await this.authorizationService.register(body);
+
+      if (!error) {
         response.redirect(
           this.createRedirectString("/oauth/prompt", {
-            request_id: body.request_id,
+            request_id,
             intent: IntentEnum.AUTHORIZE_NEW_USER.toString(),
+            email: sanitizedEmail,
           }),
         );
-      } catch (error) {
-        if (error instanceof UserException) {
-          this.logger.warn(
-            "Error during prompt submission",
-            exceptionAsJsonString(error),
-          );
-          response.redirect(
-            this.createRedirectString("/oauth/prompt", {
-              request_id: body.request_id,
-              intent: IntentEnum.AUTHORIZE_NEW_USER.toString(),
-              error: error.errorCode,
-              email: body.email,
-            }),
-          );
-          return;
-        }
-        return this.logAndRenderErrorPage(error);
+        return;
       }
+
+      response.redirect(
+        this.createRedirectString("/oauth/prompt", {
+          request_id,
+          intent,
+          email: sanitizedEmail,
+          error,
+        }),
+      );
+      return;
     }
-    throw new BadRequestException(
-      "Unknown user intent - whether he submitted authorization or registration form",
-    );
+
+    throw new OauthInvalidRequestException();
   }
 
   @Post("token")

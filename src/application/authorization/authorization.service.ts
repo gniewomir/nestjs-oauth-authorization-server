@@ -39,7 +39,11 @@ import {
   TokenPayloadInterfaceSymbol,
   TokenPayloadsInterface,
 } from "@domain/auth/OAuth/Token";
-import { UsersInterface, UsersInterfaceSymbol } from "@domain/auth/OAuth/User";
+import {
+  UserException,
+  UsersInterface,
+  UsersInterfaceSymbol,
+} from "@domain/auth/OAuth/User";
 import {
   EmailSanitizerInterface,
   EmailSanitizerInterfaceSymbol,
@@ -55,8 +59,9 @@ import { AppConfig, AuthConfig } from "@infrastructure/config/configs";
 import {
   AuthorizeRequestDto,
   PromptShowRequestDto,
+  PromptSubmitRequestDto,
 } from "@interface/api/oauth/dto";
-import { assert } from "@interface/api/utility/assert";
+import { isEmailErrorCode } from "@interface/api/utility";
 
 @Injectable()
 export class AuthorizationService {
@@ -175,54 +180,58 @@ export class AuthorizationService {
     };
   }
 
-  async ownerAuthorized(params: {
-    requestId: string;
-    credentials: {
-      email: string;
-      password: string;
-      rememberMe?: boolean;
-    };
-  }): Promise<{
-    redirectUriWithAuthorizationCodeAndState: string;
-  }> {
-    const request = await AuthorizationFacade.authorizePrompt(
-      {
-        requestId: IdentityValue.fromString(params.requestId),
-        credentials: {
-          email: EmailValue.create(
-            params.credentials.email,
-            this.emailSanitizer,
-          ),
-          password: PasswordValue.fromString(params.credentials.password),
-          rememberMe: params.credentials.rememberMe || false,
+  async ownerAuthorized({
+    request_id,
+    email,
+    password,
+    remember_me,
+    intent,
+  }: PromptSubmitRequestDto) {
+    try {
+      const request = await AuthorizationFacade.authorizePrompt(
+        {
+          requestId: IdentityValue.fromString(request_id),
+          credentials: {
+            email: EmailValue.create(email, this.emailSanitizer),
+            password: PasswordValue.fromString(password),
+            rememberMe: remember_me || false,
+          },
         },
-      },
-      this.requests,
-      this.users,
-      this.passwords,
-      this.codes,
-      this.clock,
-      this.authConfig,
-    );
+        this.requests,
+        this.users,
+        this.passwords,
+        this.codes,
+        this.clock,
+        this.authConfig,
+      );
 
-    Assert(request.authorizationCode instanceof Code);
+      Assert(request.authorizationCode instanceof Code);
 
-    const redirect = new URL(request.redirectUri.toString());
-    redirect.searchParams.set("code", request.authorizationCode.toString());
-    if (request.state) {
-      redirect.searchParams.set("state", request.state.toString());
+      const redirect = new URL(request.redirectUri.toString());
+      redirect.searchParams.set("code", request.authorizationCode.toString());
+      if (request.state) {
+        redirect.searchParams.set("state", request.state.toString());
+      }
+
+      return {
+        redirect: redirect.toString(),
+        request_id,
+      };
+    } catch (error) {
+      if (error instanceof UserException) {
+        return {
+          error: error.errorCode,
+          request_id,
+          intent,
+        };
+      }
+      throw error;
     }
-
-    return {
-      redirectUriWithAuthorizationCodeAndState: redirect.toString(),
-    };
   }
 
-  async ownerDenied({ requestId }: { requestId: string }): Promise<{
-    redirectUriWithAccessDeniedErrorAndState: string;
-  }> {
+  async ownerDenied({ request_id }: PromptSubmitRequestDto) {
     const request = await NotFoundToDomainException(
-      () => this.requests.retrieve(IdentityValue.fromUnknown(requestId)),
+      () => this.requests.retrieve(IdentityValue.fromString(request_id)),
       () =>
         new OauthInvalidRequestException({
           message: `Authorization request not found`,
@@ -236,7 +245,7 @@ export class AuthorizationService {
     }
 
     return {
-      redirectUriWithAccessDeniedErrorAndState: redirect.toString(),
+      redirect: redirect.toString(),
     };
   }
 
@@ -251,7 +260,7 @@ export class AuthorizationService {
     codeVerifier: string | undefined;
     redirectUri: string | undefined;
   }) {
-    assert(
+    Assert(
       IdentityValue.isValid(clientId),
       () =>
         new OauthInvalidRequestException({
@@ -259,7 +268,7 @@ export class AuthorizationService {
         }),
     );
 
-    assert(
+    Assert(
       typeof code === "string" && code.length > 0,
       () =>
         new OauthInvalidRequestException({
@@ -267,7 +276,7 @@ export class AuthorizationService {
         }),
     );
 
-    assert(
+    Assert(
       (typeof codeVerifier === "string" && codeVerifier.length > 0) ||
         this.appConfig.nodeEnv !== "production",
       () =>
@@ -328,7 +337,7 @@ export class AuthorizationService {
   }: {
     refreshToken: string | undefined;
   }) {
-    assert(
+    Assert(
       typeof refreshToken === "string" && refreshToken.length > 0,
       () =>
         new OauthInvalidRequestException({
@@ -361,25 +370,41 @@ export class AuthorizationService {
     };
   }
 
-  async register(params: { email: string; password: string }): Promise<{
-    userId: string;
-    email: string;
-    emailVerified: boolean;
-  }> {
-    const email = EmailValue.create(params.email, this.emailSanitizer);
-    const password = PasswordValue.fromString(params.password);
+  async register({
+    email,
+    password,
+    intent,
+    request_id,
+  }: PromptSubmitRequestDto) {
+    try {
+      const sanitizedEmail = EmailValue.create(email, this.emailSanitizer);
+      await AuthorizationFacade.registerPrompt(
+        {
+          email: sanitizedEmail,
+          password: PasswordValue.fromString(password),
+        },
+        this.users,
+        this.passwords,
+      );
 
-    const result = await AuthorizationFacade.registerPrompt(
-      { email, password },
-      this.users,
-      this.passwords,
-    );
-
-    return {
-      userId: result.identity.toString(),
-      email: result.user.email.toString(),
-      emailVerified: result.user.emailVerified,
-    };
+      return {
+        intent: IntentValue.AUTHORIZE_EXISTING_USER().toString(),
+        request_id,
+        sanitizedEmail: sanitizedEmail.toString(),
+      };
+    } catch (error) {
+      if (error instanceof UserException) {
+        return {
+          error: error.errorCode,
+          request_id,
+          intent,
+          sanitizedEmail: isEmailErrorCode(error.errorCode)
+            ? undefined
+            : EmailValue.create(email, this.emailSanitizer).toString(),
+        };
+      }
+      throw error;
+    }
   }
 
   async show(params: { userId: string }): Promise<{
