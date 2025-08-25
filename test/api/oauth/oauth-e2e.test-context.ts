@@ -34,6 +34,47 @@ export class OauthE2eTestContext {
     return new OauthE2eTestContext(app);
   }
 
+  static extractRequestIdFromUrl(url: string): string {
+    return OauthE2eTestContext.extractParamFromUrl(url, "request_id");
+  }
+
+  static extractIntentFromUrl(url: string): string {
+    return OauthE2eTestContext.extractParamFromUrl(url, "intent");
+  }
+
+  static extractCodeFromUrl(url: string): string {
+    return OauthE2eTestContext.extractParamFromUrl(url, "code");
+  }
+
+  static extractStateFromUrl(url: string): string {
+    return OauthE2eTestContext.extractParamFromUrl(url, "state");
+  }
+
+  static extractParamFromUrl(url: string, paramName: string): string {
+    const [, query] = url.split("?");
+    const queryParams = query.split("&");
+    const param = queryParams.find((val) => val.startsWith(`${paramName}=`));
+    assert(param !== undefined);
+    return param.slice(param.indexOf("=") + 1);
+  }
+
+  static extractCSRFToken(res: supertest.Response): string {
+    const match = res.text.match(/name="_csrf" value="([^"]+)"/);
+    assert(match && typeof match[1] === "string");
+    return match[1];
+  }
+
+  static expectIsAuthorizationForm(res: supertest.Response) {
+    expect(res.text).toContain("Authorization Required");
+    expect(res.text).toContain("Sign In");
+    expect(res.text).toContain('id="authorize"');
+  }
+
+  static expectIsRegistrationForm(res: supertest.Response) {
+    expect(res.text).toContain("Create Account");
+    expect(res.text).toContain("Register");
+  }
+
   public async teardown() {
     return this.app.close();
   }
@@ -72,41 +113,5 @@ export class OauthE2eTestContext {
       verifier,
       challenge,
     };
-  }
-
-  static extractRequestIdFromUrl(url: string): string {
-    return OauthE2eTestContext.extractParamFromUrl(url, "request_id");
-  }
-
-  static extractIntentFromUrl(url: string): string {
-    return OauthE2eTestContext.extractParamFromUrl(url, "intent");
-  }
-
-  static extractCodeFromUrl(url: string): string {
-    return OauthE2eTestContext.extractParamFromUrl(url, "code");
-  }
-
-  static extractStateFromUrl(url: string): string {
-    return OauthE2eTestContext.extractParamFromUrl(url, "state");
-  }
-
-  static extractParamFromUrl(url: string, paramName: string): string {
-    const [, query] = url.split("?");
-    const queryParams = query.split("&");
-    const param = queryParams.find((val) => val.startsWith(`${paramName}=`));
-    assert(param !== undefined);
-    return param.slice(param.indexOf("=") + 1);
-  }
-
-  static extractCSRFToken(res: supertest.Response): string {
-    const match = res.text.match(/name="_csrf" value="([^"]+)"/);
-    assert(match && typeof match[1] === "string");
-    return match[1];
-  }
-
-  static assertIsAuthorizationForm(res: supertest.Response) {
-    expect(res.text).toContain("Authorization Required");
-    expect(res.text).toContain("Sign In");
-    expect(res.text).toContain('id="authorize"');
   }
 }
