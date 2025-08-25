@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject } from "@nestjs/common";
 
 import { OauthException } from "@domain/auth/OAuth/Errors";
 import { LoggerInterface, LoggerInterfaceSymbol } from "@infrastructure/logger";
@@ -18,11 +18,12 @@ export interface OauthErrorLog extends ErrorLog {
   error_uri?: string;
 }
 
-@Injectable()
 export class CliExceptionHandler {
   constructor(
     @Inject(LoggerInterfaceSymbol) private readonly logger: LoggerInterface,
-  ) {}
+  ) {
+    logger.setContext("CliExceptionHandler");
+  }
 
   public handle(exception: unknown): void {
     const { message, ...rest } = this.parse(exception);

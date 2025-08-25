@@ -39,9 +39,6 @@ export async function cliBootstrap({
   logger.setContext(name);
   command.useLogger(logger);
 
-  const exceptionHandler =
-    command.get<CliExceptionHandler>(CliExceptionHandler);
-
   const appConfig = await command.resolve<AppConfig>(AppConfig);
 
   logger.info(`Environment => ${appConfig.nodeEnv}`);
@@ -49,7 +46,7 @@ export async function cliBootstrap({
   try {
     await payload({ application: command, logger, appConfig });
   } catch (error) {
-    exceptionHandler.handle(error);
+    new CliExceptionHandler(logger).handle(error);
   }
 
   await command.close();
